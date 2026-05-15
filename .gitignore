@@ -43,3 +43,15 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment files (API_BASE_URL, secrets, per-developer overrides)
+.env
+.env.local
+.env.*.local
+
+# macOS resource fork / extended-attribute files
+._*
+
+# Flutter Version Manager (if used later)
+.fvm/
+.flutter-version
