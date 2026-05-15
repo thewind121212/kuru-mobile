@@ -1,0 +1,76 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kuru_mobile/core/auth/user_info.dart';
+import 'package:kuru_mobile/core/network/api_exception.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/network/dio_client.dart';
+import 'package:supertokens_flutter/supertokens.dart';
+
+class AuthRepository {
+  AuthRepository(this._dio);
+  final Dio _dio;
+
+  /// SuperTokens EmailPassword sign-in. Path is `/auth/signin` at the host
+  /// root — kuru BE mounts the SuperTokens middleware before `/api/v1`.
+  Future<ApiResult<void>> signIn({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      final res = await _dio.post<Map<String, dynamic>>(
+        '/auth/signin',
+        data: {
+          'formFields': [
+            {'id': 'email', 'value': email},
+            {'id': 'password', 'value': password},
+          ],
+        },
+      );
+      final status = res.data?['status'] as String? ?? 'UNKNOWN';
+      if (status == 'OK') return ApiResult.success(null);
+      if (status == 'WRONG_CREDENTIALS_ERROR') {
+        return ApiResult.failure(
+          const UnauthorizedException('WRONG_CREDENTIALS'),
+        );
+      }
+      return ApiResult.failure(BadRequestException(status));
+    } on DioException catch (e) {
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  /// REST API endpoint — note the `/api/v1` prefix. The dio baseUrl is the
+  /// host root, so every REST call writes the full path here.
+  Future<ApiResult<UserInfo>> getUserInfo() async {
+    try {
+      final res = await _dio.post<Map<String, dynamic>>(
+        '/api/v1/profile/GetUserInfo',
+        data: <String, dynamic>{},
+      );
+      final data = res.data?['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        return ApiResult.failure(
+          const ServerException('Empty body', statusCode: 200),
+        );
+      }
+      return ApiResult.success(UserInfo.fromJson(data));
+    } on DioException catch (e) {
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  Future<void> signOut() async {
+    await SuperTokens.signOut();
+  }
+
+  ApiException _extract(DioException e) {
+    final mapped = e.error;
+    return mapped is ApiException
+        ? mapped
+        : const UnknownException('Unexpected error');
+  }
+}
+
+final authRepositoryProvider = Provider<AuthRepository>(
+  (ref) => AuthRepository(ref.read(dioProvider)),
+);
