@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kuru_mobile/core/auth/supertokens_setup.dart';
 import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/logging/log.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
@@ -18,8 +19,8 @@ final dioProvider = Provider<Dio>((ref) {
     ),
   );
 
-  // Task B5 wires SuperTokens to this dio.
-  // Org-id / logging / error-mapping below.
+  // MUST be first — token attach + refresh wraps the rest.
+  wireSuperTokensToDio(dio);
 
   dio.interceptors.add(_OrgIdInterceptor(ref));
   dio.interceptors.add(_LoggingInterceptor());
