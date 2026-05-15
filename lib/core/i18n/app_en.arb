@@ -1,0 +1,21 @@
+{
+  "@@locale": "en",
+  "appTitle": "Kuru",
+  "splashTagline": "Connecting...",
+
+  "loginTitle": "Welcome back",
+  "loginSubtitle": "Log in to kuru to keep managing your store.",
+  "fieldEmail": "Email",
+  "fieldPassword": "Password",
+  "loginRemember": "Remember me",
+  "loginCta": "Log in",
+  "loginFooterNoAccount": "No account yet?",
+  "loginFooterRegister": "Sign up",
+  "loginErrorBadCredentials": "Email password combination is incorrect.",
+  "loginErrorNetwork": "No internet connection. Try again.",
+  "loginErrorGeneric": "Oops! Something went wrong.",
+
+  "homeStubTitle": "You're logged in",
+  "homeStubBody": "Hi {email}, you're working in {orgName}.",
+  "homeStubLogout": "Log out"
+}

@@ -1,0 +1,27 @@
+{
+  "@@locale": "vi",
+  "appTitle": "Kuru",
+  "splashTagline": "Đang kết nối...",
+
+  "loginTitle": "Chào mừng trở lại",
+  "loginSubtitle": "Đăng nhập kuru để tiếp tục quản lý cửa hàng.",
+  "fieldEmail": "Email",
+  "fieldPassword": "Mật khẩu",
+  "loginRemember": "Ghi nhớ đăng nhập",
+  "loginCta": "Đăng nhập",
+  "loginFooterNoAccount": "Chưa có tài khoản?",
+  "loginFooterRegister": "Đăng ký",
+  "loginErrorBadCredentials": "Email hoặc mật khẩu không chính xác.",
+  "loginErrorNetwork": "Không có kết nối mạng. Thử lại.",
+  "loginErrorGeneric": "Đã có lỗi xảy ra. Thử lại sau.",
+
+  "homeStubTitle": "Đã đăng nhập",
+  "homeStubBody": "Chào {email}, bạn đang ở cửa hàng {orgName}.",
+  "@homeStubBody": {
+    "placeholders": {
+      "email": {"type": "String"},
+      "orgName": {"type": "String"}
+    }
+  },
+  "homeStubLogout": "Đăng xuất"
+}
