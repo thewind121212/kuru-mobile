@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 
 /// Holds the currently selected palette. v1 hard-codes purple; the picker
