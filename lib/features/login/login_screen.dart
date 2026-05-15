@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/auth/auth_repository.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/core/network/api_exception.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/design/auth/auth_backdrop.dart';
 import 'package:kuru_mobile/design/auth/auth_logo.dart';
 import 'package:kuru_mobile/design/widgets/k_form_field.dart';
@@ -29,7 +33,34 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    // wired in Task C8
+    final l = AppLocalizations.of(context);
+    final email = _email.text.trim();
+    final password = _password.text;
+    if (email.isEmpty || password.isEmpty) {
+      setState(() => _errorMessage = l.loginErrorBadCredentials);
+      return;
+    }
+    setState(() {
+      _submitting = true;
+      _errorMessage = null;
+    });
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.signIn(email: email, password: password);
+    if (!mounted) return;
+    switch (result) {
+      case ApiSuccess<void>():
+        // Re-run bootstrap so router redirects us to home.
+        ref.invalidate(appBootstrapProvider);
+      case ApiFailure<void>(:final err):
+        setState(() {
+          _submitting = false;
+          _errorMessage = switch (err) {
+            UnauthorizedException() => l.loginErrorBadCredentials,
+            NetworkException() => l.loginErrorNetwork,
+            _ => l.loginErrorGeneric,
+          };
+        });
+    }
   }
 
   @override
@@ -67,7 +98,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(height: 6),
                             Text(
                               l.loginSubtitle,
-                              style: TextStyle(fontSize: 14, color: c.textMuted),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: c.textMuted,
+                              ),
                             ),
                             const SizedBox(height: 28),
                             KFormField(
