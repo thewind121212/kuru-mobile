@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/supertokens_setup.dart';
 import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/logging/log.dart';
@@ -37,18 +38,13 @@ class _OrgIdInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // currentOrgIdProvider is defined in Task B8.
-    final orgId = _ref.read(_currentOrgIdValueProvider);
+    // Read the live current-org value. The provider is defined in
+    // auth_providers.dart; we import it lazily via the ref.
+    final orgId = _ref.read(currentOrgIdProvider);
     if (orgId != null) options.headers['x-org-id'] = orgId;
     handler.next(options);
   }
 }
-
-/// Placeholder for the current org id while `auth_providers.dart` doesn't
-/// exist yet (Task B8 swaps this for a direct read of `currentOrgIdProvider`).
-/// Don't remove this in Task B4 — keeping it now means the dio client compiles
-/// before the auth-providers file is written.
-final _currentOrgIdValueProvider = Provider<String?>((_) => null);
 
 class _LoggingInterceptor extends Interceptor {
   @override
