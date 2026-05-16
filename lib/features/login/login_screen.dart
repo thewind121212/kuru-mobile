@@ -15,6 +15,7 @@ import 'package:kuru_mobile/design/auth/auth_backdrop.dart';
 import 'package:kuru_mobile/design/auth/auth_logo.dart';
 import 'package:kuru_mobile/design/widgets/k_form_field.dart';
 import 'package:kuru_mobile/design/widgets/k_primary_btn.dart';
+import 'package:kuru_mobile/features/demo/core_design_demo_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -136,6 +137,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             GestureDetector(
                               onLongPress: _devReplayOnboarding,
+                              onDoubleTap: kDebugMode
+                                  ? () => Navigator.of(context).push(
+                                        MaterialPageRoute<void>(
+                                          builder: (_) =>
+                                              const CoreDesignDemoScreen(),
+                                        ),
+                                      )
+                                  : null,
                               behavior: HitTestBehavior.opaque,
                               child: const AuthLogo(),
                             ),
