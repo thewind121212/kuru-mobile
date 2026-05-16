@@ -7,6 +7,7 @@ import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
 import 'package:kuru_mobile/features/login/login_screen.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
+import 'package:kuru_mobile/features/org_picker/org_picker_screen.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
 import 'package:kuru_mobile/features/splash/splash_screen.dart';
 
@@ -33,7 +34,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           if (user.orgInfos.isEmpty) {
             return loc == '/create-org' ? null : '/create-org';
           }
-          // (OrgPicker handled in Task H — for now, all multi-org users go to /home)
+          if (user.orgInfos.length > 1 &&
+              ref.read(currentOrgIdProvider) == null) {
+            return loc == '/org-picker' ? null : '/org-picker';
+          }
           return loc == '/home' ? null : '/home';
         },
       );
@@ -46,6 +50,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/create-org', builder: (_, __) => const CreateOrgScreen()),
+      GoRoute(path: '/org-picker', builder: (_, __) => const OrgPickerScreen()),
       GoRoute(path: '/home', builder: (_, __) => const HomeStubScreen()),
     ],
   );
@@ -56,15 +61,19 @@ class _BootstrapNotifier extends ChangeNotifier {
     _sub = _ref.listen(appBootstrapProvider, (_, __) => notifyListeners());
     _onboardingSub =
         _ref.listen(onboardingSeenProvider, (_, __) => notifyListeners());
+    _orgIdSub =
+        _ref.listen(currentOrgIdProvider, (_, __) => notifyListeners());
   }
   final Ref _ref;
   late final ProviderSubscription<AsyncValue<BootstrapResult>> _sub;
   late final ProviderSubscription<bool> _onboardingSub;
+  late final ProviderSubscription<String?> _orgIdSub;
 
   @override
   void dispose() {
     _sub.close();
     _onboardingSub.close();
+    _orgIdSub.close();
     super.dispose();
   }
 }
