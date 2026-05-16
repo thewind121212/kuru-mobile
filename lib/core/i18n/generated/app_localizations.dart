@@ -193,6 +193,234 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Đăng xuất'**
   String get homeStubLogout;
+
+  /// No description provided for @onboardingSkip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ qua'**
+  String get onboardingSkip;
+
+  /// No description provided for @onboardingNext.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếp theo'**
+  String get onboardingNext;
+
+  /// No description provided for @onboardingStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu'**
+  String get onboardingStart;
+
+  /// No description provided for @onboardingStep1Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bán hàng nhanh hơn, chỉ với một lần quét.'**
+  String get onboardingStep1Title;
+
+  /// No description provided for @onboardingStep1Body.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã vạch để thêm sản phẩm vào giỏ, tính tiền và in hóa đơn — chỉ trong vài giây.'**
+  String get onboardingStep1Body;
+
+  /// No description provided for @onboardingStep2Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý tồn kho theo thời gian thực.'**
+  String get onboardingStep2Title;
+
+  /// No description provided for @onboardingStep2Body.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi giao dịch cập nhật tồn kho tức thì. Cảnh báo khi sắp hết hàng.'**
+  String get onboardingStep2Body;
+
+  /// No description provided for @onboardingStep3Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiểu cửa hàng của bạn qua từng con số.'**
+  String get onboardingStep3Title;
+
+  /// No description provided for @onboardingStep3Body.
+  ///
+  /// In vi, this message translates to:
+  /// **'Báo cáo doanh thu, đơn hàng, khách hàng tự động hoá.'**
+  String get onboardingStep3Body;
+
+  /// No description provided for @registerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo tài khoản'**
+  String get registerTitle;
+
+  /// No description provided for @registerSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu với kuru chỉ trong 30 giây.'**
+  String get registerSubtitle;
+
+  /// No description provided for @fieldFullName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Họ và tên'**
+  String get fieldFullName;
+
+  /// No description provided for @registerStrengthLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Độ mạnh'**
+  String get registerStrengthLabel;
+
+  /// No description provided for @registerStrengthWeak.
+  ///
+  /// In vi, this message translates to:
+  /// **'Yếu'**
+  String get registerStrengthWeak;
+
+  /// No description provided for @registerStrengthFair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khá'**
+  String get registerStrengthFair;
+
+  /// No description provided for @registerStrengthGood.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tốt'**
+  String get registerStrengthGood;
+
+  /// No description provided for @registerStrengthStrong.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mạnh'**
+  String get registerStrengthStrong;
+
+  /// No description provided for @registerStrengthCharsCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{current}/{min} ký tự'**
+  String registerStrengthCharsCount(int current, int min);
+
+  /// No description provided for @registerTerms.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi đồng ý với {tos} và {privacy}.'**
+  String registerTerms(String tos, String privacy);
+
+  /// No description provided for @registerTermsTos.
+  ///
+  /// In vi, this message translates to:
+  /// **'Điều khoản dịch vụ'**
+  String get registerTermsTos;
+
+  /// No description provided for @registerTermsPrivacy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chính sách bảo mật'**
+  String get registerTermsPrivacy;
+
+  /// No description provided for @registerCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo tài khoản'**
+  String get registerCta;
+
+  /// No description provided for @registerFooterHasAccount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có tài khoản?'**
+  String get registerFooterHasAccount;
+
+  /// No description provided for @registerFooterLogin.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng nhập'**
+  String get registerFooterLogin;
+
+  /// No description provided for @registerErrorEmailExists.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email đã được sử dụng.'**
+  String get registerErrorEmailExists;
+
+  /// No description provided for @registerErrorWeakPassword.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mật khẩu chưa đủ mạnh.'**
+  String get registerErrorWeakPassword;
+
+  /// No description provided for @createOrgTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo cửa hàng của bạn'**
+  String get createOrgTitle;
+
+  /// No description provided for @createOrgSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo tổ chức và chi nhánh đầu tiên. Bạn có thể thêm chi nhánh khác sau.'**
+  String get createOrgSubtitle;
+
+  /// No description provided for @createOrgBusinessName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên doanh nghiệp'**
+  String get createOrgBusinessName;
+
+  /// No description provided for @createOrgBranchName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên chi nhánh đầu tiên'**
+  String get createOrgBranchName;
+
+  /// No description provided for @createOrgBranchPlaceholder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mặc định: cùng tên doanh nghiệp'**
+  String get createOrgBranchPlaceholder;
+
+  /// No description provided for @createOrgCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo cửa hàng'**
+  String get createOrgCta;
+
+  /// No description provided for @createOrgErrorNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập tên doanh nghiệp.'**
+  String get createOrgErrorNameRequired;
+
+  /// No description provided for @createOrgErrorServer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tạo được cửa hàng. Thử lại sau.'**
+  String get createOrgErrorServer;
+
+  /// No description provided for @orgPickerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn tổ chức'**
+  String get orgPickerTitle;
+
+  /// No description provided for @orgPickerSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn là thành viên của {count} tổ chức'**
+  String orgPickerSubtitle(int count);
+
+  /// No description provided for @orgPickerCreateNew.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo tổ chức mới'**
+  String get orgPickerCreateNew;
+
+  /// No description provided for @orgPickerNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt.'**
+  String get orgPickerNote;
 }
 
 class _AppLocalizationsDelegate

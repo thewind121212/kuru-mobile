@@ -58,4 +58,131 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeStubLogout => 'Log out';
+
+  @override
+  String get onboardingSkip => 'Skip';
+
+  @override
+  String get onboardingNext => 'Next';
+
+  @override
+  String get onboardingStart => 'Get started';
+
+  @override
+  String get onboardingStep1Title => 'Sell faster — one scan at a time.';
+
+  @override
+  String get onboardingStep1Body =>
+      'Scan a barcode to add a product, cash out, and print a receipt — in seconds.';
+
+  @override
+  String get onboardingStep2Title => 'Inventory updates in real time.';
+
+  @override
+  String get onboardingStep2Body =>
+      'Every sale moves stock instantly. We warn you when items are running low.';
+
+  @override
+  String get onboardingStep3Title =>
+      'Understand your store through its numbers.';
+
+  @override
+  String get onboardingStep3Body =>
+      'Revenue, orders, and customer trends — automated reports, better decisions.';
+
+  @override
+  String get registerTitle => 'Create an account';
+
+  @override
+  String get registerSubtitle => 'Start with kuru in 30 seconds.';
+
+  @override
+  String get fieldFullName => 'Full name';
+
+  @override
+  String get registerStrengthLabel => 'Strength';
+
+  @override
+  String get registerStrengthWeak => 'Weak';
+
+  @override
+  String get registerStrengthFair => 'Fair';
+
+  @override
+  String get registerStrengthGood => 'Good';
+
+  @override
+  String get registerStrengthStrong => 'Strong';
+
+  @override
+  String registerStrengthCharsCount(int current, int min) {
+    return '$current/$min chars';
+  }
+
+  @override
+  String registerTerms(String tos, String privacy) {
+    return 'I agree to the $tos and $privacy.';
+  }
+
+  @override
+  String get registerTermsTos => 'Terms of Service';
+
+  @override
+  String get registerTermsPrivacy => 'Privacy Policy';
+
+  @override
+  String get registerCta => 'Create account';
+
+  @override
+  String get registerFooterHasAccount => 'Already have an account?';
+
+  @override
+  String get registerFooterLogin => 'Log in';
+
+  @override
+  String get registerErrorEmailExists => 'That email is already in use.';
+
+  @override
+  String get registerErrorWeakPassword => 'Password isn\'t strong enough.';
+
+  @override
+  String get createOrgTitle => 'Create your store';
+
+  @override
+  String get createOrgSubtitle =>
+      'Set up your organization and first branch. You can add more branches later.';
+
+  @override
+  String get createOrgBusinessName => 'Business name';
+
+  @override
+  String get createOrgBranchName => 'First branch name';
+
+  @override
+  String get createOrgBranchPlaceholder => 'Default: same as business name';
+
+  @override
+  String get createOrgCta => 'Create store';
+
+  @override
+  String get createOrgErrorNameRequired => 'Please enter a business name.';
+
+  @override
+  String get createOrgErrorServer =>
+      'Couldn\'t create the store. Try again later.';
+
+  @override
+  String get orgPickerTitle => 'Choose an organization';
+
+  @override
+  String orgPickerSubtitle(int count) {
+    return 'You belong to $count organizations';
+  }
+
+  @override
+  String get orgPickerCreateNew => 'Create new organization';
+
+  @override
+  String get orgPickerNote =>
+      'Each organization is an isolated data space. You can switch any time from Settings.';
 }

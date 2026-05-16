@@ -23,5 +23,64 @@
       "orgName": {"type": "String"}
     }
   },
-  "homeStubLogout": "Đăng xuất"
+  "homeStubLogout": "Đăng xuất",
+
+  "onboardingSkip": "Bỏ qua",
+  "onboardingNext": "Tiếp theo",
+  "onboardingStart": "Bắt đầu",
+  "onboardingStep1Title": "Bán hàng nhanh hơn, chỉ với một lần quét.",
+  "onboardingStep1Body": "Quét mã vạch để thêm sản phẩm vào giỏ, tính tiền và in hóa đơn — chỉ trong vài giây.",
+  "onboardingStep2Title": "Quản lý tồn kho theo thời gian thực.",
+  "onboardingStep2Body": "Mỗi giao dịch cập nhật tồn kho tức thì. Cảnh báo khi sắp hết hàng.",
+  "onboardingStep3Title": "Hiểu cửa hàng của bạn qua từng con số.",
+  "onboardingStep3Body": "Báo cáo doanh thu, đơn hàng, khách hàng tự động hoá.",
+
+  "registerTitle": "Tạo tài khoản",
+  "registerSubtitle": "Bắt đầu với kuru chỉ trong 30 giây.",
+  "fieldFullName": "Họ và tên",
+  "registerStrengthLabel": "Độ mạnh",
+  "registerStrengthWeak": "Yếu",
+  "registerStrengthFair": "Khá",
+  "registerStrengthGood": "Tốt",
+  "registerStrengthStrong": "Mạnh",
+  "registerStrengthCharsCount": "{current}/{min} ký tự",
+  "@registerStrengthCharsCount": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "min": {"type": "int"}
+    }
+  },
+  "registerTerms": "Tôi đồng ý với {tos} và {privacy}.",
+  "@registerTerms": {
+    "placeholders": {
+      "tos": {"type": "String"},
+      "privacy": {"type": "String"}
+    }
+  },
+  "registerTermsTos": "Điều khoản dịch vụ",
+  "registerTermsPrivacy": "Chính sách bảo mật",
+  "registerCta": "Tạo tài khoản",
+  "registerFooterHasAccount": "Đã có tài khoản?",
+  "registerFooterLogin": "Đăng nhập",
+  "registerErrorEmailExists": "Email đã được sử dụng.",
+  "registerErrorWeakPassword": "Mật khẩu chưa đủ mạnh.",
+
+  "createOrgTitle": "Tạo cửa hàng của bạn",
+  "createOrgSubtitle": "Tạo tổ chức và chi nhánh đầu tiên. Bạn có thể thêm chi nhánh khác sau.",
+  "createOrgBusinessName": "Tên doanh nghiệp",
+  "createOrgBranchName": "Tên chi nhánh đầu tiên",
+  "createOrgBranchPlaceholder": "Mặc định: cùng tên doanh nghiệp",
+  "createOrgCta": "Tạo cửa hàng",
+  "createOrgErrorNameRequired": "Vui lòng nhập tên doanh nghiệp.",
+  "createOrgErrorServer": "Không tạo được cửa hàng. Thử lại sau.",
+
+  "orgPickerTitle": "Chọn tổ chức",
+  "orgPickerSubtitle": "Bạn là thành viên của {count} tổ chức",
+  "@orgPickerSubtitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "orgPickerCreateNew": "Tạo tổ chức mới",
+  "orgPickerNote": "Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt."
 }

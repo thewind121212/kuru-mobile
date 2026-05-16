@@ -17,5 +17,64 @@
 
   "homeStubTitle": "You're logged in",
   "homeStubBody": "Hi {email}, you're working in {orgName}.",
-  "homeStubLogout": "Log out"
+  "homeStubLogout": "Log out",
+
+  "onboardingSkip": "Skip",
+  "onboardingNext": "Next",
+  "onboardingStart": "Get started",
+  "onboardingStep1Title": "Sell faster — one scan at a time.",
+  "onboardingStep1Body": "Scan a barcode to add a product, cash out, and print a receipt — in seconds.",
+  "onboardingStep2Title": "Inventory updates in real time.",
+  "onboardingStep2Body": "Every sale moves stock instantly. We warn you when items are running low.",
+  "onboardingStep3Title": "Understand your store through its numbers.",
+  "onboardingStep3Body": "Revenue, orders, and customer trends — automated reports, better decisions.",
+
+  "registerTitle": "Create an account",
+  "registerSubtitle": "Start with kuru in 30 seconds.",
+  "fieldFullName": "Full name",
+  "registerStrengthLabel": "Strength",
+  "registerStrengthWeak": "Weak",
+  "registerStrengthFair": "Fair",
+  "registerStrengthGood": "Good",
+  "registerStrengthStrong": "Strong",
+  "registerStrengthCharsCount": "{current}/{min} chars",
+  "@registerStrengthCharsCount": {
+    "placeholders": {
+      "current": {"type": "int"},
+      "min": {"type": "int"}
+    }
+  },
+  "registerTerms": "I agree to the {tos} and {privacy}.",
+  "@registerTerms": {
+    "placeholders": {
+      "tos": {"type": "String"},
+      "privacy": {"type": "String"}
+    }
+  },
+  "registerTermsTos": "Terms of Service",
+  "registerTermsPrivacy": "Privacy Policy",
+  "registerCta": "Create account",
+  "registerFooterHasAccount": "Already have an account?",
+  "registerFooterLogin": "Log in",
+  "registerErrorEmailExists": "That email is already in use.",
+  "registerErrorWeakPassword": "Password isn't strong enough.",
+
+  "createOrgTitle": "Create your store",
+  "createOrgSubtitle": "Set up your organization and first branch. You can add more branches later.",
+  "createOrgBusinessName": "Business name",
+  "createOrgBranchName": "First branch name",
+  "createOrgBranchPlaceholder": "Default: same as business name",
+  "createOrgCta": "Create store",
+  "createOrgErrorNameRequired": "Please enter a business name.",
+  "createOrgErrorServer": "Couldn't create the store. Try again later.",
+
+  "orgPickerTitle": "Choose an organization",
+  "orgPickerSubtitle": "You belong to {count} organizations",
+  "@orgPickerSubtitle": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "orgPickerCreateNew": "Create new organization",
+  "orgPickerNote": "Each organization is an isolated data space. You can switch any time from Settings."
 }
