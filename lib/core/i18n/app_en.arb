@@ -12,6 +12,10 @@
   "loginFooterNoAccount": "No account yet?",
   "loginFooterRegister": "Sign up",
   "loginErrorBadCredentials": "Email password combination is incorrect.",
+  "validationInvalidEmail": "That doesn't look like a valid email.",
+  "validationEmailRequired": "Please enter your email.",
+  "validationPasswordRequired": "Please enter your password.",
+  "validationNameRequired": "Please enter your full name.",
   "loginErrorNetwork": "No internet connection. Try again.",
   "loginErrorGeneric": "Oops! Something went wrong.",
 

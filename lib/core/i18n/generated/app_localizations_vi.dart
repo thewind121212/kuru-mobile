@@ -42,6 +42,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get loginErrorBadCredentials => 'Email hoặc mật khẩu không chính xác.';
 
   @override
+  String get validationInvalidEmail => 'Email không hợp lệ.';
+
+  @override
+  String get validationEmailRequired => 'Vui lòng nhập email.';
+
+  @override
+  String get validationPasswordRequired => 'Vui lòng nhập mật khẩu.';
+
+  @override
+  String get validationNameRequired => 'Vui lòng nhập họ tên.';
+
+  @override
   String get loginErrorNetwork => 'Không có kết nối mạng. Thử lại.';
 
   @override

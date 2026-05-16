@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/auth_repository.dart';
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/validators/email_validator.dart';
 import 'package:kuru_mobile/design/auth/auth_backdrop.dart';
 import 'package:kuru_mobile/design/auth/auth_logo.dart';
 import 'package:kuru_mobile/design/widgets/k_checkbox.dart';
@@ -27,7 +29,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _password = TextEditingController();
   bool _termsAccepted = false;
   bool _submitting = false;
-  String? _errorMessage;
+
+  // Per-field errors — rendered as KFormField.errorText (no banner shift).
+  String? _nameError;
+  String? _emailError;
+  String? _passwordError;
 
   @override
   void initState() {
@@ -45,28 +51,44 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   Future<void> _submit() async {
     final l = AppLocalizations.of(context);
-    if (_name.text.trim().isEmpty ||
-        _email.text.trim().isEmpty ||
-        _password.text.isEmpty) {
-      setState(() => _errorMessage = l.loginErrorBadCredentials);
-      return;
-    }
-    final pw = passwordStrength(_password.text);
-    if (pw.bars < 2) {
-      setState(() => _errorMessage = l.registerErrorWeakPassword);
+    final name = _name.text.trim();
+    final email = _email.text.trim();
+    final password = _password.text;
+
+    // Field-level validation. Each error attaches to its own field.
+    final nameError = name.isEmpty ? l.validationNameRequired : null;
+    final emailError = email.isEmpty
+        ? l.validationEmailRequired
+        : !isValidEmail(email)
+            ? l.validationInvalidEmail
+            : null;
+    final pw = passwordStrength(password);
+    final passwordError = password.isEmpty
+        ? l.validationPasswordRequired
+        : pw.bars < 2
+            ? l.registerErrorWeakPassword
+            : null;
+    if (nameError != null || emailError != null || passwordError != null) {
+      setState(() {
+        _nameError = nameError;
+        _emailError = emailError;
+        _passwordError = passwordError;
+      });
       return;
     }
     if (!_termsAccepted) return; // CTA disabled by terms checkbox
 
     setState(() {
       _submitting = true;
-      _errorMessage = null;
+      _nameError = null;
+      _emailError = null;
+      _passwordError = null;
     });
     final repo = ref.read(authRepositoryProvider);
     final r = await repo.signUp(
-      fullName: _name.text.trim(),
-      email: _email.text.trim(),
-      password: _password.text,
+      fullName: name,
+      email: email,
+      password: password,
     );
     if (!mounted) return;
     switch (r) {
@@ -74,15 +96,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         // Re-run bootstrap; router will route us to /create-org (zero orgs)
         ref.invalidate(appBootstrapProvider);
       case ApiFailure<void>(:final err):
-        setState(() {
-          _submitting = false;
-          _errorMessage = switch (err) {
-            BadRequestException(code: 'EMAIL_EXISTS') =>
-              l.registerErrorEmailExists,
-            NetworkException() => l.loginErrorNetwork,
-            _ => l.loginErrorGeneric,
-          };
-        });
+        setState(() => _submitting = false);
+        switch (err) {
+          case BadRequestException(code: 'EMAIL_EXISTS'):
+            setState(() => _emailError = l.registerErrorEmailExists);
+          case NetworkException():
+            KNotify.networkError(
+              context,
+              l.loginErrorNetwork,
+              onRetry: _submit,
+            );
+          case _:
+            KNotify.networkError(
+              context,
+              l.loginErrorGeneric,
+              onRetry: _submit,
+            );
+        }
     }
   }
 
@@ -136,6 +166,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     controller: _name,
                     icon: const Icon(Icons.person_outline),
                     textInputAction: TextInputAction.next,
+                    errorText: _nameError,
                   ),
                   const SizedBox(height: 12),
                   KFormField(
@@ -145,6 +176,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                     autofillHints: const [AutofillHints.email],
                     textInputAction: TextInputAction.next,
+                    errorText: _emailError,
                   ),
                   const SizedBox(height: 12),
                   KFormField(
@@ -155,6 +187,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     autofillHints: const [AutofillHints.newPassword],
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _submit(),
+                    errorText: _passwordError,
                   ),
                   const SizedBox(height: 8),
                   PasswordStrengthMeter(password: _password.text),
@@ -202,20 +235,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ],
                   ),
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: c.dangerSoft,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        _errorMessage!,
-                        style: TextStyle(fontSize: 13, color: c.danger),
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 16),
                   KPrimaryBtn(
                     fullWidth: true,

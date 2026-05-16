@@ -10,6 +10,7 @@ import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/validators/email_validator.dart';
 import 'package:kuru_mobile/design/auth/auth_backdrop.dart';
 import 'package:kuru_mobile/design/auth/auth_logo.dart';
 import 'package:kuru_mobile/design/widgets/k_form_field.dart';
@@ -27,8 +28,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _password = TextEditingController();
   bool _submitting = false;
 
-  /// Field-level credential error (wrong password, empty fields). Rendered as
-  /// the password field's `errorText` — no banner, no layout jank.
+  /// Email-format error — rendered as the email field's `errorText`.
+  String? _emailError;
+
+  /// Field-level credential error (wrong password, server says no). Rendered
+  /// as the password field's `errorText` — no banner, no layout jank.
   String? _credentialError;
 
   @override
@@ -57,12 +61,26 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final l = AppLocalizations.of(context);
     final email = _email.text.trim();
     final password = _password.text;
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => _credentialError = l.loginErrorBadCredentials);
+
+    // Front-end validation. Errors attach to the offending field.
+    final emailError = email.isEmpty
+        ? l.validationEmailRequired
+        : !isValidEmail(email)
+            ? l.validationInvalidEmail
+            : null;
+    final passwordError =
+        password.isEmpty ? l.validationPasswordRequired : null;
+    if (emailError != null || passwordError != null) {
+      setState(() {
+        _emailError = emailError;
+        _credentialError = passwordError;
+      });
       return;
     }
+
     setState(() {
       _submitting = true;
+      _emailError = null;
       _credentialError = null;
     });
     final repo = ref.read(authRepositoryProvider);
@@ -148,6 +166,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               keyboardType: TextInputType.emailAddress,
                               autofillHints: const [AutofillHints.email],
                               textInputAction: TextInputAction.next,
+                              errorText: _emailError,
                             ),
                             const SizedBox(height: 12),
                             KFormField(

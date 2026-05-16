@@ -12,6 +12,10 @@
   "loginFooterNoAccount": "Chưa có tài khoản?",
   "loginFooterRegister": "Đăng ký",
   "loginErrorBadCredentials": "Email hoặc mật khẩu không chính xác.",
+  "validationInvalidEmail": "Email không hợp lệ.",
+  "validationEmailRequired": "Vui lòng nhập email.",
+  "validationPasswordRequired": "Vui lòng nhập mật khẩu.",
+  "validationNameRequired": "Vui lòng nhập họ tên.",
   "loginErrorNetwork": "Không có kết nối mạng. Thử lại.",
   "loginErrorGeneric": "Đã có lỗi xảy ra. Thử lại sau.",
 

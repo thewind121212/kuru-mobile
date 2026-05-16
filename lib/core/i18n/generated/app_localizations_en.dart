@@ -43,6 +43,18 @@ class AppLocalizationsEn extends AppLocalizations {
       'Email password combination is incorrect.';
 
   @override
+  String get validationInvalidEmail => 'That doesn\'t look like a valid email.';
+
+  @override
+  String get validationEmailRequired => 'Please enter your email.';
+
+  @override
+  String get validationPasswordRequired => 'Please enter your password.';
+
+  @override
+  String get validationNameRequired => 'Please enter your full name.';
+
+  @override
   String get loginErrorNetwork => 'No internet connection. Try again.';
 
   @override

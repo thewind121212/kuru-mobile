@@ -164,6 +164,30 @@ abstract class AppLocalizations {
   /// **'Email hoặc mật khẩu không chính xác.'**
   String get loginErrorBadCredentials;
 
+  /// No description provided for @validationInvalidEmail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Email không hợp lệ.'**
+  String get validationInvalidEmail;
+
+  /// No description provided for @validationEmailRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập email.'**
+  String get validationEmailRequired;
+
+  /// No description provided for @validationPasswordRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập mật khẩu.'**
+  String get validationPasswordRequired;
+
+  /// No description provided for @validationNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng nhập họ tên.'**
+  String get validationNameRequired;
+
   /// No description provided for @loginErrorNetwork.
   ///
   /// In vi, this message translates to:
