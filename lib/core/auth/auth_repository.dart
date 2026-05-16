@@ -141,6 +141,62 @@ class AuthRepository {
     }
   }
 
+  /// Verify a 6-digit TOTP code mid-login. On OK the BE marks the session's
+  /// `mfaCompleted` flag — subsequent calls to `getUserInfo` return
+  /// `totpEnabled=false`, so the bootstrap provider transitions from
+  /// `BootstrapMfaPending` to `BootstrapAuthed` on next invalidate.
+  Future<ApiResult<TotpVerifyResult>> verifyTotpCode({
+    required String code,
+  }) async {
+    try {
+      final res = await _dio.post<Map<String, dynamic>>(
+        '/api/v1/profile/VerifyTotpCode',
+        data: {'code': code},
+      );
+      final data = res.data?['data'] as Map<String, dynamic>?;
+      final verified = data?['verified'] as bool? ?? false;
+      if (verified) return ApiResult.success(const TotpVerifyResult.ok());
+      // BE may return verified:false with no further structure on a wrong code.
+      return ApiResult.success(const TotpVerifyResult.wrongCode());
+    } on DioException catch (e) {
+      final err = _extract(e);
+      if (err is BadRequestException && err.code == 'RATE_LIMITED') {
+        return ApiResult.success(const TotpVerifyResult.rateLimited());
+      }
+      return ApiResult.failure(err);
+    }
+  }
+
+  /// Consume one recovery code. Same session-marking behavior as TOTP verify.
+  Future<ApiResult<TotpVerifyResult>> useRecoveryCode({
+    required String code,
+  }) async {
+    try {
+      final res = await _dio.post<Map<String, dynamic>>(
+        '/api/v1/profile/UseRecoveryCode',
+        data: {'code': code},
+      );
+      final data = res.data?['data'] as Map<String, dynamic>?;
+      // The BE may return either `verified:true` or a more structured success
+      // payload — treat any 200 with non-null data as accepted.
+      if (data == null) {
+        return ApiResult.failure(
+          const ServerException('Empty body', statusCode: 200),
+        );
+      }
+      final ok = (data['verified'] as bool?) ?? true;
+      return ApiResult.success(
+        ok ? const TotpVerifyResult.ok() : const TotpVerifyResult.wrongCode(),
+      );
+    } on DioException catch (e) {
+      final err = _extract(e);
+      if (err is BadRequestException && err.code == 'RATE_LIMITED') {
+        return ApiResult.success(const TotpVerifyResult.rateLimited());
+      }
+      return ApiResult.failure(err);
+    }
+  }
+
   ApiException _extract(DioException e) {
     final mapped = e.error;
     return mapped is ApiException
@@ -152,3 +208,25 @@ class AuthRepository {
 final authRepositoryProvider = Provider<AuthRepository>(
   (ref) => AuthRepository(ref.read(dioProvider)),
 );
+
+/// Outcome of a TOTP or recovery-code verification attempt that the screen
+/// reacts to. `ok` advances the user past MFA; `wrongCode` keeps them on the
+/// screen with an inline error; `rateLimited` shows a longer-cooldown toast.
+sealed class TotpVerifyResult {
+  const TotpVerifyResult();
+  const factory TotpVerifyResult.ok() = TotpOk;
+  const factory TotpVerifyResult.wrongCode() = TotpWrongCode;
+  const factory TotpVerifyResult.rateLimited() = TotpRateLimited;
+}
+
+final class TotpOk extends TotpVerifyResult {
+  const TotpOk();
+}
+
+final class TotpWrongCode extends TotpVerifyResult {
+  const TotpWrongCode();
+}
+
+final class TotpRateLimited extends TotpVerifyResult {
+  const TotpRateLimited();
+}

@@ -95,4 +95,44 @@ void main() {
       expect((r as ApiFailure).err, isA<UnauthorizedException>());
     });
   });
+
+  group('AuthRepository.verifyTotpCode', () {
+    test('returns ok when verified=true', () async {
+      final dio = _dioWith({
+        'data': {'verified': true},
+      });
+      final r = await AuthRepository(dio).verifyTotpCode(code: '123456');
+      expect(r, isA<ApiSuccess<TotpVerifyResult>>());
+      expect((r as ApiSuccess<TotpVerifyResult>).data, isA<TotpOk>());
+    });
+
+    test('returns wrongCode when verified=false', () async {
+      final dio = _dioWith({
+        'data': {'verified': false},
+      });
+      final r = await AuthRepository(dio).verifyTotpCode(code: '000000');
+      expect(r, isA<ApiSuccess<TotpVerifyResult>>());
+      expect((r as ApiSuccess<TotpVerifyResult>).data, isA<TotpWrongCode>());
+    });
+  });
+
+  group('AuthRepository.useRecoveryCode', () {
+    test('returns ok on success', () async {
+      final dio = _dioWith({
+        'data': {'verified': true},
+      });
+      final r = await AuthRepository(dio).useRecoveryCode(code: 'ABCD-1234');
+      expect(r, isA<ApiSuccess<TotpVerifyResult>>());
+      expect((r as ApiSuccess<TotpVerifyResult>).data, isA<TotpOk>());
+    });
+
+    test('returns wrongCode when verified=false', () async {
+      final dio = _dioWith({
+        'data': {'verified': false},
+      });
+      final r = await AuthRepository(dio).useRecoveryCode(code: 'WRONG-CODE');
+      expect(r, isA<ApiSuccess<TotpVerifyResult>>());
+      expect((r as ApiSuccess<TotpVerifyResult>).data, isA<TotpWrongCode>());
+    });
+  });
 }

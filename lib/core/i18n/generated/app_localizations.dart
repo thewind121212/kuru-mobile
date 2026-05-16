@@ -188,6 +188,84 @@ abstract class AppLocalizations {
   /// **'Vui lòng nhập họ tên.'**
   String get validationNameRequired;
 
+  /// No description provided for @totpTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác thực hai yếu tố'**
+  String get totpTitle;
+
+  /// No description provided for @totpRecoveryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng mã khôi phục'**
+  String get totpRecoveryTitle;
+
+  /// No description provided for @totpDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập mã 6 chữ số từ ứng dụng xác thực.'**
+  String get totpDescription;
+
+  /// No description provided for @totpRecoveryDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập một trong các mã khôi phục đã lưu.'**
+  String get totpRecoveryDescription;
+
+  /// No description provided for @totpVerifyButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác minh'**
+  String get totpVerifyButton;
+
+  /// No description provided for @totpUseRecoveryButton.
+  ///
+  /// In vi, this message translates to:
+  /// **'Dùng mã khôi phục'**
+  String get totpUseRecoveryButton;
+
+  /// No description provided for @totpLostDevice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất thiết bị?'**
+  String get totpLostDevice;
+
+  /// No description provided for @totpBackToAuthenticator.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quay lại mã xác thực'**
+  String get totpBackToAuthenticator;
+
+  /// No description provided for @totpSignOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng xuất & đổi tài khoản'**
+  String get totpSignOut;
+
+  /// No description provided for @totpWrongCode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sai mã xác thực, vui lòng thử lại.'**
+  String get totpWrongCode;
+
+  /// No description provided for @totpRecoveryFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã khôi phục không hợp lệ.'**
+  String get totpRecoveryFailed;
+
+  /// No description provided for @totpRateLimited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quá nhiều lần thử. Vui lòng đợi vài phút.'**
+  String get totpRateLimited;
+
+  /// No description provided for @totpRecoveryPlaceholder.
+  ///
+  /// In vi, this message translates to:
+  /// **'XXXX-XXXX'**
+  String get totpRecoveryPlaceholder;
+
   /// No description provided for @loginErrorNetwork.
   ///
   /// In vi, this message translates to:

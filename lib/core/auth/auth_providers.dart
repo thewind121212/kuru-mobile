@@ -39,10 +39,14 @@ final appBootstrapProvider = FutureProvider<BootstrapResult>((ref) async {
   final result = await repo.getUserInfo();
   return switch (result) {
     ApiSuccess<UserInfo>(:final data) => () {
-        // Auto-pick first org for MVP; OrgPicker comes in Plan 2.
-        // Defer the state mutation to a microtask so we don't mutate another
-        // provider's state during this provider's build (Riverpod logs a
-        // warning otherwise and edge cases can loop).
+        // BE returns totpEnabled=true ONLY while the session's mfaCompleted
+        // flag is still false. Once VerifyTotpCode (or UseRecoveryCode)
+        // succeeds, the next getUserInfo call returns totpEnabled=false and
+        // we transition into BootstrapAuthed on the next invalidate.
+        if (data.totpEnabled) {
+          return BootstrapMfaPending(data);
+        }
+        // Auto-pick first org for MVP; OrgPicker handles 2+ orgs.
         if (data.orgInfos.isNotEmpty) {
           Future.microtask(() {
             ref.read(currentOrgIdProvider.notifier).orgId =
@@ -61,6 +65,14 @@ sealed class BootstrapResult {
 
 class BootstrapUnauthed extends BootstrapResult {
   const BootstrapUnauthed();
+}
+
+/// Session exists but the BE says TOTP is still required for this session.
+/// Router redirects to /totp; user verifies, we re-invalidate bootstrap,
+/// next call returns BootstrapAuthed.
+class BootstrapMfaPending extends BootstrapResult {
+  const BootstrapMfaPending(this.user);
+  final UserInfo user;
 }
 
 class BootstrapAuthed extends BootstrapResult {

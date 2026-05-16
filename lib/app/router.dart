@@ -10,6 +10,8 @@ import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
 import 'package:kuru_mobile/features/org_picker/org_picker_screen.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
 import 'package:kuru_mobile/features/splash/splash_screen.dart';
+import 'package:kuru_mobile/features/totp/recovery_code_screen.dart';
+import 'package:kuru_mobile/features/totp/totp_verification_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -28,6 +30,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             }
             const publicRoutes = {'/login', '/register'};
             return publicRoutes.contains(loc) ? null : '/login';
+          }
+          if (result is BootstrapMfaPending) {
+            // Lock the user to /totp and /totp/recovery until verification.
+            const mfaRoutes = {'/totp', '/totp/recovery'};
+            return mfaRoutes.contains(loc) ? null : '/totp';
           }
           // BootstrapAuthed
           final user = (result as BootstrapAuthed).user;
@@ -51,6 +58,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/create-org', builder: (_, __) => const CreateOrgScreen()),
       GoRoute(path: '/org-picker', builder: (_, __) => const OrgPickerScreen()),
+      GoRoute(
+        path: '/totp',
+        builder: (_, __) => const TotpVerificationScreen(),
+      ),
+      GoRoute(
+        path: '/totp/recovery',
+        builder: (_, __) => const RecoveryCodeScreen(),
+      ),
       GoRoute(path: '/home', builder: (_, __) => const HomeStubScreen()),
     ],
   );

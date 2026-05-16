@@ -54,6 +54,46 @@ class AppLocalizationsVi extends AppLocalizations {
   String get validationNameRequired => 'Vui lòng nhập họ tên.';
 
   @override
+  String get totpTitle => 'Xác thực hai yếu tố';
+
+  @override
+  String get totpRecoveryTitle => 'Dùng mã khôi phục';
+
+  @override
+  String get totpDescription => 'Nhập mã 6 chữ số từ ứng dụng xác thực.';
+
+  @override
+  String get totpRecoveryDescription =>
+      'Nhập một trong các mã khôi phục đã lưu.';
+
+  @override
+  String get totpVerifyButton => 'Xác minh';
+
+  @override
+  String get totpUseRecoveryButton => 'Dùng mã khôi phục';
+
+  @override
+  String get totpLostDevice => 'Mất thiết bị?';
+
+  @override
+  String get totpBackToAuthenticator => 'Quay lại mã xác thực';
+
+  @override
+  String get totpSignOut => 'Đăng xuất & đổi tài khoản';
+
+  @override
+  String get totpWrongCode => 'Sai mã xác thực, vui lòng thử lại.';
+
+  @override
+  String get totpRecoveryFailed => 'Mã khôi phục không hợp lệ.';
+
+  @override
+  String get totpRateLimited => 'Quá nhiều lần thử. Vui lòng đợi vài phút.';
+
+  @override
+  String get totpRecoveryPlaceholder => 'XXXX-XXXX';
+
+  @override
   String get loginErrorNetwork => 'Không có kết nối mạng. Thử lại.';
 
   @override

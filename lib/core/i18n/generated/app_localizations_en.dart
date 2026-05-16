@@ -55,6 +55,48 @@ class AppLocalizationsEn extends AppLocalizations {
   String get validationNameRequired => 'Please enter your full name.';
 
   @override
+  String get totpTitle => 'Two-factor verification';
+
+  @override
+  String get totpRecoveryTitle => 'Use recovery code';
+
+  @override
+  String get totpDescription =>
+      'Enter the 6-digit code from your authenticator app.';
+
+  @override
+  String get totpRecoveryDescription =>
+      'Enter one of your saved recovery codes.';
+
+  @override
+  String get totpVerifyButton => 'Verify';
+
+  @override
+  String get totpUseRecoveryButton => 'Use recovery code';
+
+  @override
+  String get totpLostDevice => 'Lost your device?';
+
+  @override
+  String get totpBackToAuthenticator => 'Back to authenticator code';
+
+  @override
+  String get totpSignOut => 'Sign out & switch account';
+
+  @override
+  String get totpWrongCode => 'Wrong code, please try again.';
+
+  @override
+  String get totpRecoveryFailed => 'Invalid recovery code.';
+
+  @override
+  String get totpRateLimited =>
+      'Too many attempts. Try again in a few minutes.';
+
+  @override
+  String get totpRecoveryPlaceholder => 'XXXX-XXXX';
+
+  @override
   String get loginErrorNetwork => 'No internet connection. Try again.';
 
   @override
