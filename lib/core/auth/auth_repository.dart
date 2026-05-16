@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_mobile/core/auth/user_info.dart';
+import 'package:kuru_mobile/core/logging/log.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart';
@@ -124,18 +125,24 @@ class AuthRepository {
             'firstStoreName': firstStoreName,
         },
       );
+      // Log the raw response shape so future debugging doesn't require
+      // re-instrumenting. Only logged at info level; gated by kDebugMode is
+      // unnecessary because dio's logging interceptor already echoes status.
+      log.i('CreateStore ← ${res.statusCode} body=${res.data}');
       final data = res.data?['data'] as Map<String, dynamic>?;
       // Accept `orgId` (canonical from CreateStoreResponse) with a fallback
       // to `storeId` in case the BE shape rolls back to the openapi spec.
       final id = (data?['orgId'] as String?) ?? (data?['storeId'] as String?);
       if (id == null) {
+        log.w('CreateStore success status but missing id. data=$data');
         return ApiResult.failure(
           ServerException(
-            'Missing orgId in response',
+            'Missing orgId in response (got: $data)',
             statusCode: res.statusCode ?? 0,
           ),
         );
       }
+      log.i('CreateStore success orgId=$id');
       return ApiResult.success(id);
     } on DioException catch (e) {
       return ApiResult.failure(_extract(e));
