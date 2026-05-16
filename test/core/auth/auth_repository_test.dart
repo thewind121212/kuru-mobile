@@ -37,6 +37,48 @@ Dio _dioWith(Map<String, dynamic> json, {int status = 200}) {
 }
 
 void main() {
+  group('AuthRepository.signUp', () {
+    test('returns success on OK', () async {
+      final dio = _dioWith({'status': 'OK'});
+      final r = await AuthRepository(dio).signUp(
+        fullName: 'A',
+        email: 'a@b.com',
+        password: 'pw',
+      );
+      expect(r, isA<ApiSuccess<void>>());
+    });
+
+    test('returns BadRequest on EMAIL_ALREADY_EXISTS_ERROR', () async {
+      final dio = _dioWith({'status': 'EMAIL_ALREADY_EXISTS_ERROR'});
+      final r = await AuthRepository(dio).signUp(
+        fullName: 'A',
+        email: 'a@b.com',
+        password: 'pw',
+      );
+      expect(r, isA<ApiFailure<void>>());
+      final err = (r as ApiFailure).err as BadRequestException;
+      expect(err.code, 'EMAIL_EXISTS');
+    });
+  });
+
+  group('AuthRepository.createStore', () {
+    test('returns the storeId on success', () async {
+      final dio = _dioWith({
+        'data': {'storeId': 'store-123'},
+      });
+      final r = await AuthRepository(dio).createStore(name: 'Shop');
+      expect(r, isA<ApiSuccess<String>>());
+      expect((r as ApiSuccess<String>).data, 'store-123');
+    });
+
+    test('returns ServerException when storeId missing', () async {
+      final dio = _dioWith({'data': <String, dynamic>{}});
+      final r = await AuthRepository(dio).createStore(name: 'Shop');
+      expect(r, isA<ApiFailure<String>>());
+      expect((r as ApiFailure).err, isA<ServerException>());
+    });
+  });
+
   group('AuthRepository.signIn', () {
     test('returns success on OK status', () async {
       final dio = _dioWith({'status': 'OK'});
