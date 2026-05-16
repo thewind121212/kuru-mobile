@@ -51,12 +51,12 @@ class CustomerIllustration extends StatelessWidget {
           ),
 
           // VIP star pill (top-left)
-          Positioned(
+          const Positioned(
             top: 30,
             left: 50,
-            child: const _MetricChip(
+            child: _MetricChip(
               icon: Icons.star_rounded,
-              iconColor: const Color(0xFFFACC15),
+              iconColor: Color(0xFFFACC15),
               label: 'VIP',
               value: '4.8',
             ),

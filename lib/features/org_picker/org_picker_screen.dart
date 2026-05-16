@@ -77,7 +77,6 @@ class OrgPickerScreen extends ConsumerWidget {
                       border: Border.all(
                         color: c.border,
                         width: 2,
-                        style: BorderStyle.solid,
                       ),
                     ),
                     child: Row(

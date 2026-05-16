@@ -18,7 +18,6 @@ class KuruApp extends ConsumerWidget {
         debugShowCheckedModeBanner: false,
         theme: buildKuruTheme(palette, Brightness.light),
         darkTheme: buildKuruTheme(palette, Brightness.dark),
-        themeMode: ThemeMode.system,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: const Locale('vi'),

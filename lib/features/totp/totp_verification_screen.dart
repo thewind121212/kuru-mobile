@@ -101,7 +101,11 @@ class _TotpVerificationScreenState
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
-                    child: Icon(Icons.shield_outlined, size: 28, color: c.primary),
+                    child: Icon(
+                      Icons.shield_outlined,
+                      size: 28,
+                      color: c.primary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -140,7 +144,11 @@ class _TotpVerificationScreenState
                   const SizedBox(height: 18),
                   TextButton.icon(
                     onPressed: () => context.go('/totp/recovery'),
-                    icon: Icon(Icons.vpn_key_outlined, color: c.primary, size: 16),
+                    icon: Icon(
+                      Icons.vpn_key_outlined,
+                      color: c.primary,
+                      size: 16,
+                    ),
                     label: Text(
                       l.totpLostDevice,
                       style: TextStyle(

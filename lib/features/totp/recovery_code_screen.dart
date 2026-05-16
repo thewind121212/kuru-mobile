@@ -100,7 +100,11 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     alignment: Alignment.center,
-                    child: Icon(Icons.vpn_key_outlined, size: 28, color: c.primary),
+                    child: Icon(
+                      Icons.vpn_key_outlined,
+                      size: 28,
+                      color: c.primary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
@@ -156,7 +160,9 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen> {
                         ),
                         border: InputBorder.none,
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 14,
+                        ),
                       ),
                       onChanged: (_) {
                         if (hasError) setState(() => _errorText = null);

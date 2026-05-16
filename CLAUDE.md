@@ -141,7 +141,7 @@ To force a fresh start (wipes onboarding-seen flag + session): `xcrun simctl uni
 
 ```bash
 flutter test          # ~49 tests (theme + ApiResult + email validator + auth-repo + smoke tests)
-flutter analyze       # 0 errors; ~10 info-level lints are acceptable
+flutter analyze --fatal-warnings   # CI runs this — info-level lints fail the build, keep it clean.
 ```
 
 Widget tests that include `KPrimaryBtn` **cannot use `pumpAndSettle()`** — the shine animation never settles. Use `pump()` × 2 instead.

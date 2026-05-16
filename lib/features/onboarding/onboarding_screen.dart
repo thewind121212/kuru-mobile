@@ -84,7 +84,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       icon: const Icon(Icons.arrow_back_ios_new, size: 18),
                       color: c.textSecondary,
                       splashRadius: 22,
-                      tooltip: l.onboardingSkip, // back affordance; tooltip optional
+                      tooltip: l.onboardingSkip,
                     ),
                   ),
                   Expanded(

@@ -7,8 +7,6 @@ import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 class ThemeController extends Notifier<KuruPalette> {
   @override
   KuruPalette build() => KuruPalette.indigo;
-
-  void setPalette(KuruPalette p) => state = p;
 }
 
 final themeControllerProvider =

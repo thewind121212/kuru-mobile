@@ -26,6 +26,9 @@ void main() {
     );
     await tester.pump();
     expect(find.text('Bỏ qua'), findsOneWidget);
-    expect(find.text('Bán hàng nhanh hơn, chỉ với một lần quét.'), findsOneWidget);
+    expect(
+      find.text('Bán hàng nhanh hơn, chỉ với một lần quét.'),
+      findsOneWidget,
+    );
   });
 }

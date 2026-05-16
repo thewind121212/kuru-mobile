@@ -23,16 +23,16 @@ class _FakeAdapter implements HttpClientAdapter {
 }
 
 Dio _dioWith(Map<String, dynamic> json, {int status = 200}) {
-  final dio = Dio();
-  dio.httpClientAdapter = _FakeAdapter(
-    ResponseBody.fromString(
-      jsonEncode(json),
-      status,
-      headers: {
-        Headers.contentTypeHeader: ['application/json'],
-      },
-    ),
-  );
+  final dio = Dio()
+    ..httpClientAdapter = _FakeAdapter(
+      ResponseBody.fromString(
+        jsonEncode(json),
+        status,
+        headers: {
+          Headers.contentTypeHeader: ['application/json'],
+        },
+      ),
+    );
   return dio;
 }
 

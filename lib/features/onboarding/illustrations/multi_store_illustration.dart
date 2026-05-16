@@ -51,7 +51,11 @@ class MultiStoreIllustration extends StatelessWidget {
                       color: c.primary,
                       borderRadius: BorderRadius.circular(99),
                     ),
-                    child: const Icon(Icons.person, size: 14, color: Colors.white),
+                    child: const Icon(
+                      Icons.person,
+                      size: 14,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(
@@ -82,11 +86,23 @@ class MultiStoreIllustration extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _StoreCard(label: 'Quận 1', tone: c.primary, shadow: c.shadowSm),
+                _StoreCard(
+                  label: 'Quận 1',
+                  tone: c.primary,
+                  shadow: c.shadowSm,
+                ),
                 const SizedBox(width: 16),
-                _StoreCard(label: 'Hà Nội', tone: c.secondary, shadow: c.shadowSm),
+                _StoreCard(
+                  label: 'Hà Nội',
+                  tone: c.secondary,
+                  shadow: c.shadowSm,
+                ),
                 const SizedBox(width: 16),
-                _StoreCard(label: 'Đà Nẵng', tone: c.accent500, shadow: c.shadowSm),
+                _StoreCard(
+                  label: 'Đà Nẵng',
+                  tone: c.accent500,
+                  shadow: c.shadowSm,
+                ),
               ],
             ),
           ),

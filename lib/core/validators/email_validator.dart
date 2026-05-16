@@ -24,9 +24,9 @@ bool isValidEmail(String input) {
   // WHATWG HTML5 email regex (anchored).
   final re = RegExp(
     r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+"
-    r'@'
-    r'[a-zA-Z0-9]'
-    r'(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?'
+    '@'
+    '[a-zA-Z0-9]'
+    '(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?'
     r'(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+'
     r'$',
   );

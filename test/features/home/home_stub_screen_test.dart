@@ -13,7 +13,9 @@ void main() {
   testWidgets('HomeStubScreen renders authenticated state', (tester) async {
     const user = UserInfo(
       email: 'test@x.com',
-      orgInfos: <OrgInfo>[OrgInfo(id: 'o1', name: 'Test Org', role: 'Chủ sở hữu')],
+      orgInfos: <OrgInfo>[
+        OrgInfo(id: 'o1', name: 'Test Org', role: 'Chủ sở hữu'),
+      ],
     );
     await tester.pumpWidget(
       ProviderScope(

@@ -92,7 +92,11 @@ class PaymentIllustration extends StatelessWidget {
                       color: c.success,
                       borderRadius: BorderRadius.circular(7),
                     ),
-                    child: const Icon(Icons.check, size: 16, color: Colors.white),
+                    child: const Icon(
+                      Icons.check,
+                      size: 16,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: 8),
                   Text(
