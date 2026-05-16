@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
+import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
 import 'package:kuru_mobile/features/login/login_screen.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
@@ -28,6 +29,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             return publicRoutes.contains(loc) ? null : '/login';
           }
           // BootstrapAuthed
+          final user = (result as BootstrapAuthed).user;
+          if (user.orgInfos.isEmpty) {
+            return loc == '/create-org' ? null : '/create-org';
+          }
+          // (OrgPicker handled in Task H — for now, all multi-org users go to /home)
           return loc == '/home' ? null : '/home';
         },
       );
@@ -39,6 +45,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
+      GoRoute(path: '/create-org', builder: (_, __) => const CreateOrgScreen()),
       GoRoute(path: '/home', builder: (_, __) => const HomeStubScreen()),
     ],
   );
