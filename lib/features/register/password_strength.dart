@@ -51,7 +51,7 @@ class PasswordStrengthMeter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final l = AppLocalizations.of(context)!;
+    final l = AppLocalizations.of(context);
     final s = passwordStrength(password);
     final barColor = switch (s.label) {
       PwLabel.weak => c.danger,
