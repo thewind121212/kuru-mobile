@@ -26,7 +26,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
   bool _submitting = false;
-  String? _errorMessage;
+
+  /// Field-level credential error (wrong password, empty fields). Rendered as
+  /// the password field's `errorText` — no banner, no layout jank.
+  String? _credentialError;
 
   @override
   void dispose() {
@@ -55,12 +58,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final email = _email.text.trim();
     final password = _password.text;
     if (email.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = l.loginErrorBadCredentials);
+      setState(() => _credentialError = l.loginErrorBadCredentials);
       return;
     }
     setState(() {
       _submitting = true;
-      _errorMessage = null;
+      _credentialError = null;
     });
     final repo = ref.read(authRepositoryProvider);
     final result = await repo.signIn(email: email, password: password);
@@ -73,11 +76,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         setState(() => _submitting = false);
         switch (err) {
           case UnauthorizedException():
-            // Credential errors → inline banner (user needs to fix a field).
-            setState(() => _errorMessage = l.loginErrorBadCredentials);
+            // Credential errors → field-level error on the password field.
+            setState(() => _credentialError = l.loginErrorBadCredentials);
           case NetworkException():
             // Transient operational error → bottom SnackBar with retry.
-            setState(() => _errorMessage = null);
             KNotify.networkError(
               context,
               l.loginErrorNetwork,
@@ -85,7 +87,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             );
           case _:
             // Generic server / unknown error → SnackBar with retry too.
-            setState(() => _errorMessage = null);
             KNotify.networkError(
               context,
               l.loginErrorGeneric,
@@ -157,24 +158,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               autofillHints: const [AutofillHints.password],
                               textInputAction: TextInputAction.done,
                               onSubmitted: (_) => _submit(),
+                              errorText: _credentialError,
                             ),
-                            if (_errorMessage != null) ...[
-                              const SizedBox(height: 8),
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: c.dangerSoft,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  _errorMessage!,
-                                  style: TextStyle(
-                                    color: c.danger,
-                                    fontSize: 13,
-                                  ),
-                                ),
-                              ),
-                            ],
                             const SizedBox(height: 12),
                             KPrimaryBtn(
                               fullWidth: true,

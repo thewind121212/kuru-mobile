@@ -12,6 +12,8 @@ class KGlass extends StatelessWidget {
     this.padding = EdgeInsets.zero,
     this.solid = false,
     this.blur = 22,
+    this.borderColor,
+    this.borderWidth,
   });
 
   final Widget child;
@@ -19,6 +21,11 @@ class KGlass extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final bool solid;
   final double blur;
+
+  /// Override the default hairline border. Pass a danger token + 1.5px to
+  /// signal an error state on a wrapped form field.
+  final Color? borderColor;
+  final double? borderWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +46,8 @@ class KGlass extends StatelessWidget {
             color: tint,
             borderRadius: borderRadius,
             border: Border.all(
-              color: c.textPrimary.withValues(alpha: 0.12),
-              width: 0.5,
+              color: borderColor ?? c.textPrimary.withValues(alpha: 0.12),
+              width: borderWidth ?? 0.5,
             ),
           ),
           child: child,
