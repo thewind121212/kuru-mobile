@@ -23,6 +23,9 @@ dependencies:
   # Routing
   go_router: ^14.6.2
 
+  # Feedback (toasts + snackbars wrapper — see lib/core/feedback/k_notify.dart)
+  toastification: ^3.2.0
+
   # Auth
   # NOTE: pub.dev's latest (0.6.3) caps SDK at <3.9.0 — incompatible with our
   # Dart 3.11.5. The maintainer's master branch (0.6.5) has the corrected

@@ -6,6 +6,7 @@ import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/auth_repository.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -69,14 +70,28 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         // Re-run bootstrap so router redirects us to home.
         ref.invalidate(appBootstrapProvider);
       case ApiFailure<void>(:final err):
-        setState(() {
-          _submitting = false;
-          _errorMessage = switch (err) {
-            UnauthorizedException() => l.loginErrorBadCredentials,
-            NetworkException() => l.loginErrorNetwork,
-            _ => l.loginErrorGeneric,
-          };
-        });
+        setState(() => _submitting = false);
+        switch (err) {
+          case UnauthorizedException():
+            // Credential errors → inline banner (user needs to fix a field).
+            setState(() => _errorMessage = l.loginErrorBadCredentials);
+          case NetworkException():
+            // Transient operational error → bottom SnackBar with retry.
+            setState(() => _errorMessage = null);
+            KNotify.networkError(
+              context,
+              l.loginErrorNetwork,
+              onRetry: _submit,
+            );
+          case _:
+            // Generic server / unknown error → SnackBar with retry too.
+            setState(() => _errorMessage = null);
+            KNotify.networkError(
+              context,
+              l.loginErrorGeneric,
+              onRetry: _submit,
+            );
+        }
     }
   }
 
