@@ -142,9 +142,16 @@ class AuthRepository {
   }
 
   /// Verify a 6-digit TOTP code mid-login. On OK the BE marks the session's
-  /// `mfaCompleted` flag — subsequent calls to `getUserInfo` return
+  /// `mfaCompleted` flag — subsequent `getUserInfo` calls return
   /// `totpEnabled=false`, so the bootstrap provider transitions from
   /// `BootstrapMfaPending` to `BootstrapAuthed` on next invalidate.
+  ///
+  /// BE semantics observed against kuru:
+  /// - HTTP 200 with `data.verified=true` → ok
+  /// - HTTP 400 with error code (not RATE_LIMITED) → wrong code (same as the
+  ///   web FE's `catch → setOtpError('wrongCode')` path)
+  /// - HTTP 429 with code `RATE_LIMITED` → rate limited
+  /// - Anything else → real failure (network, 5xx)
   Future<ApiResult<TotpVerifyResult>> verifyTotpCode({
     required String code,
   }) async {
@@ -155,19 +162,18 @@ class AuthRepository {
       );
       final data = res.data?['data'] as Map<String, dynamic>?;
       final verified = data?['verified'] as bool? ?? false;
-      if (verified) return ApiResult.success(const TotpVerifyResult.ok());
-      // BE may return verified:false with no further structure on a wrong code.
-      return ApiResult.success(const TotpVerifyResult.wrongCode());
+      return ApiResult.success(
+        verified
+            ? const TotpVerifyResult.ok()
+            : const TotpVerifyResult.wrongCode(),
+      );
     } on DioException catch (e) {
-      final err = _extract(e);
-      if (err is BadRequestException && err.code == 'RATE_LIMITED') {
-        return ApiResult.success(const TotpVerifyResult.rateLimited());
-      }
-      return ApiResult.failure(err);
+      return _interpretMfaError(e);
     }
   }
 
-  /// Consume one recovery code. Same session-marking behavior as TOTP verify.
+  /// Consume one recovery code. Same session-marking behavior as TOTP verify
+  /// and the same 400 → wrong-code mapping.
   Future<ApiResult<TotpVerifyResult>> useRecoveryCode({
     required String code,
   }) async {
@@ -177,8 +183,6 @@ class AuthRepository {
         data: {'code': code},
       );
       final data = res.data?['data'] as Map<String, dynamic>?;
-      // The BE may return either `verified:true` or a more structured success
-      // payload — treat any 200 with non-null data as accepted.
       if (data == null) {
         return ApiResult.failure(
           const ServerException('Empty body', statusCode: 200),
@@ -189,12 +193,23 @@ class AuthRepository {
         ok ? const TotpVerifyResult.ok() : const TotpVerifyResult.wrongCode(),
       );
     } on DioException catch (e) {
-      final err = _extract(e);
-      if (err is BadRequestException && err.code == 'RATE_LIMITED') {
+      return _interpretMfaError(e);
+    }
+  }
+
+  /// Shared mapping for both verifyTotpCode and useRecoveryCode error paths.
+  /// The BE returns 400 for wrong codes (Auth.tsx web FE treats any error
+  /// during verify as a wrong code), 429 for rate-limit, others as real
+  /// network/server failures.
+  ApiResult<TotpVerifyResult> _interpretMfaError(DioException e) {
+    final err = _extract(e);
+    if (err is BadRequestException) {
+      if (err.code == 'RATE_LIMITED') {
         return ApiResult.success(const TotpVerifyResult.rateLimited());
       }
-      return ApiResult.failure(err);
+      return ApiResult.success(const TotpVerifyResult.wrongCode());
     }
+    return ApiResult.failure(err);
   }
 
   ApiException _extract(DioException e) {
