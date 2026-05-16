@@ -53,8 +53,13 @@ class _CreateOrgScreenState extends ConsumerState<CreateOrgScreen> {
     );
     if (!mounted) return;
     switch (storeResult) {
-      case ApiSuccess<String>():
-        // Bootstrap will now find an org → routes to /home
+      case ApiSuccess<String>(:final data):
+        // Set the org id synchronously BEFORE invalidating bootstrap, so the
+        // upcoming getUserInfo (and any feature call after it) carries
+        // `x-org-id` — the dio interceptor reads this provider on each
+        // request. Without the eager set, there's a race where bootstrap's
+        // microtask hasn't fired yet when the next request goes out.
+        ref.read(currentOrgIdProvider.notifier).orgId = data;
         ref.invalidate(appBootstrapProvider);
       case ApiFailure<String>(:final err):
         setState(() {
