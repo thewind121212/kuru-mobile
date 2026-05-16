@@ -83,6 +83,7 @@
   "registerFooterLogin": "Log in",
   "registerErrorEmailExists": "That email is already in use.",
   "registerErrorWeakPassword": "Password isn't strong enough.",
+  "registerErrorTermsRequired": "Please accept the terms to continue.",
 
   "createOrgTitle": "Create your store",
   "createOrgSubtitle": "Set up your organization and first branch. You can add more branches later.",

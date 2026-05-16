@@ -222,6 +222,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get registerErrorWeakPassword => 'Mật khẩu chưa đủ mạnh.';
 
   @override
+  String get registerErrorTermsRequired =>
+      'Vui lòng đồng ý với điều khoản để tiếp tục.';
+
+  @override
   String get createOrgTitle => 'Tạo cửa hàng của bạn';
 
   @override

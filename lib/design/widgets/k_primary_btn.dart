@@ -65,6 +65,7 @@ class _KPrimaryBtnState extends State<KPrimaryBtn>
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
+    final disabled = widget.onPressed == null;
     final btn = Material(
       color: _bg(c),
       borderRadius: BorderRadius.circular(14),
@@ -104,37 +105,44 @@ class _KPrimaryBtnState extends State<KPrimaryBtn>
         ? SizedBox(width: double.infinity, child: btn)
         : btn;
 
-    if (!widget.shine) return sized;
-    return Stack(
-      children: [
-        sized,
-        Positioned.fill(
-          child: IgnorePointer(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
-              child: AnimatedBuilder(
-                animation: _ctl,
-                builder: (context, _) {
-                  final pos = -1.2 + _ctl.value * 3.4;
-                  return ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
-                      begin: Alignment(pos - 0.4, 0),
-                      end: Alignment(pos + 0.4, 0),
-                      colors: const [
-                        Colors.transparent,
-                        Color(0x59FFFFFF),
-                        Colors.transparent,
-                      ],
-                    ).createShader(bounds),
-                    blendMode: BlendMode.srcATop,
-                    child: const SizedBox.expand(),
-                  );
-                },
+    final stack = !widget.shine
+        ? sized
+        : Stack(
+            children: [
+              sized,
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: AnimatedBuilder(
+                      animation: _ctl,
+                      builder: (context, _) {
+                        final pos = -1.2 + _ctl.value * 3.4;
+                        return ShaderMask(
+                          shaderCallback: (bounds) => LinearGradient(
+                            begin: Alignment(pos - 0.4, 0),
+                            end: Alignment(pos + 0.4, 0),
+                            colors: const [
+                              Colors.transparent,
+                              Color(0x59FFFFFF),
+                              Colors.transparent,
+                            ],
+                          ).createShader(bounds),
+                          blendMode: BlendMode.srcATop,
+                          child: const SizedBox.expand(),
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
-      ],
+            ],
+          );
+
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 160),
+      opacity: disabled ? 0.45 : 1,
+      child: stack,
     );
   }
 }

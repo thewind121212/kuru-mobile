@@ -494,6 +494,12 @@ abstract class AppLocalizations {
   /// **'Mật khẩu chưa đủ mạnh.'**
   String get registerErrorWeakPassword;
 
+  /// No description provided for @registerErrorTermsRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Vui lòng đồng ý với điều khoản để tiếp tục.'**
+  String get registerErrorTermsRequired;
+
   /// No description provided for @createOrgTitle.
   ///
   /// In vi, this message translates to:

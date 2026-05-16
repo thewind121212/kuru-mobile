@@ -35,6 +35,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   String? _emailError;
   String? _passwordError;
 
+  /// Set when the user tries to submit without ticking the terms checkbox.
+  /// Renders as a red border on the checkbox + microcopy under the terms row.
+  /// Cleared as soon as the user ticks the box.
+  String? _termsError;
+
   @override
   void initState() {
     super.initState();
@@ -68,21 +73,27 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         : pw.bars < 2
             ? l.registerErrorWeakPassword
             : null;
-    if (nameError != null || emailError != null || passwordError != null) {
+    final termsError =
+        _termsAccepted ? null : l.registerErrorTermsRequired;
+    if (nameError != null ||
+        emailError != null ||
+        passwordError != null ||
+        termsError != null) {
       setState(() {
         _nameError = nameError;
         _emailError = emailError;
         _passwordError = passwordError;
+        _termsError = termsError;
       });
       return;
     }
-    if (!_termsAccepted) return; // CTA disabled by terms checkbox
 
     setState(() {
       _submitting = true;
       _nameError = null;
       _emailError = null;
       _passwordError = null;
+      _termsError = null;
     });
     final repo = ref.read(authRepositoryProvider);
     final r = await repo.signUp(
@@ -120,7 +131,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   Widget build(BuildContext context) {
     final c = kuruColors(context);
     final l = AppLocalizations.of(context);
-    final canSubmit = _termsAccepted && !_submitting;
+    final canSubmit = !_submitting;
 
     return Scaffold(
       body: Stack(
@@ -153,7 +164,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             const SizedBox(height: 4),
                             Text(
                               l.registerSubtitle,
-                              style: TextStyle(fontSize: 12, color: c.textMuted),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: c.textMuted,
+                              ),
                             ),
                           ],
                         ),
@@ -197,7 +211,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       KCheckbox(
                         value: _termsAccepted,
-                        onChanged: (v) => setState(() => _termsAccepted = v),
+                        hasError: _termsError != null,
+                        onChanged: (v) => setState(() {
+                          _termsAccepted = v;
+                          if (v) _termsError = null;
+                        }),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
@@ -234,6 +252,40 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  // Reserved error slot — collapses to zero when no error, so
+                  // the layout doesn't jolt when the message appears. Mirrors
+                  // KFormField's pattern.
+                  AnimatedSize(
+                    duration: const Duration(milliseconds: 160),
+                    curve: Curves.easeOut,
+                    alignment: Alignment.topLeft,
+                    child: _termsError == null
+                        ? const SizedBox(width: double.infinity)
+                        : Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 6, 0, 0),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  size: 12,
+                                  color: c.danger,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    _termsError!,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: c.danger,
+                                      fontWeight: FontWeight.w500,
+                                      height: 1.25,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                   ),
                   const SizedBox(height: 16),
                   KPrimaryBtn(

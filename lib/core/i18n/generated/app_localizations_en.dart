@@ -225,6 +225,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerErrorWeakPassword => 'Password isn\'t strong enough.';
 
   @override
+  String get registerErrorTermsRequired =>
+      'Please accept the terms to continue.';
+
+  @override
   String get createOrgTitle => 'Create your store';
 
   @override

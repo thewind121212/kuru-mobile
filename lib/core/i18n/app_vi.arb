@@ -89,6 +89,7 @@
   "registerFooterLogin": "Đăng nhập",
   "registerErrorEmailExists": "Email đã được sử dụng.",
   "registerErrorWeakPassword": "Mật khẩu chưa đủ mạnh.",
+  "registerErrorTermsRequired": "Vui lòng đồng ý với điều khoản để tiếp tục.",
 
   "createOrgTitle": "Tạo cửa hàng của bạn",
   "createOrgSubtitle": "Tạo tổ chức và chi nhánh đầu tiên. Bạn có thể thêm chi nhánh khác sau.",
