@@ -1,9 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/auth_repository.dart';
+import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -30,6 +32,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _email.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  /// Dev affordance — long-press the logo in a debug build to reset the
+  /// onboarding-seen flag and replay the carousel. No-op in release builds.
+  Future<void> _devReplayOnboarding() async {
+    if (!kDebugMode) return;
+    await ref.read(onboardingSeenProvider.notifier).reset();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Onboarding reset — replaying flow'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+    context.go('/onboarding');
   }
 
   Future<void> _submit() async {
@@ -83,7 +100,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const AuthLogo(),
+                            GestureDetector(
+                              onLongPress: _devReplayOnboarding,
+                              behavior: HitTestBehavior.opaque,
+                              child: const AuthLogo(),
+                            ),
                             const SizedBox(height: 18),
                             Text(
                               l.loginTitle,
