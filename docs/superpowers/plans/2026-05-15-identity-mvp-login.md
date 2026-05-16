@@ -137,7 +137,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  intl: ^0.19.0
+  intl: ^0.20.2 # pinned to match what flutter_localizations vendors
 
   # State + DI
   flutter_riverpod: ^2.6.1
@@ -149,8 +149,14 @@ dependencies:
   # Routing
   go_router: ^14.6.2
 
-  # Auth (pinned to current published version 0.6.3 — verify on pub.dev before bumping)
-  supertokens_flutter: ^0.6.3
+  # Auth
+  # NOTE: pub.dev's latest (0.6.3) caps SDK at <3.9.0 — incompatible with our
+  # Dart 3.11.5. The maintainer's master branch (0.6.5) has the corrected
+  # constraint `>=2.12.0 <4.0.0`. Switch back to a pub.dev pin once 0.6.5+ ships.
+  supertokens_flutter:
+    git:
+      url: https://github.com/supertokens/supertokens-flutter.git
+      ref: master
 
   # Models
   freezed_annotation: ^2.4.4

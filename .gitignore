@@ -55,3 +55,30 @@ app.*.map.json
 # Flutter Version Manager (if used later)
 .fvm/
 .flutter-version
+
+# Apple signing / provisioning assets — never check these in, paid keys
+**/*.p8
+**/*.p12
+**/*.cer
+**/*.mobileprovision
+**/AuthKey_*.p8
+
+# Firebase config (we don't use it yet but if someone adds it)
+**/google-services.json
+**/GoogleService-Info.plist
+firebase-debug.log
+.firebase/
+
+# Design handoff archives — extracted contents are versioned, the zip isn't
+design/*.zip
+design/**/.DS_Store
+
+# Local-only Claude Code settings (also caught by ~/.config/git/ignore)
+.claude/settings.local.json
+
+# Anything that smells like a credential leak
+**/credentials.json
+**/service-account*.json
+secrets/
+*.pem
+*.key
