@@ -66,14 +66,14 @@ void main() {
       final dio = _dioWith({
         'data': {'storeId': 'store-123'},
       });
-      final r = await AuthRepository(dio).createStore(name: 'Shop');
+      final r = await AuthRepository(dio).createStore(orgName: 'Shop');
       expect(r, isA<ApiSuccess<String>>());
       expect((r as ApiSuccess<String>).data, 'store-123');
     });
 
     test('returns ServerException when storeId missing', () async {
       final dio = _dioWith({'data': <String, dynamic>{}});
-      final r = await AuthRepository(dio).createStore(name: 'Shop');
+      final r = await AuthRepository(dio).createStore(orgName: 'Shop');
       expect(r, isA<ApiFailure<String>>());
       expect((r as ApiFailure).err, isA<ServerException>());
     });

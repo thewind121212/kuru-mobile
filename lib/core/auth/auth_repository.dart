@@ -100,39 +100,31 @@ class AuthRepository {
     }
   }
 
-  /// Create a Store (the multi-tenant root entity). Returns the new store id.
-  Future<ApiResult<String>> createStore({required String name}) async {
+  /// Create an Organization + its first Store (branch) in one BE call.
+  /// Matches the canonical `{ orgName, firstStoreName? }` shape from
+  /// `be/core/dto/store/create-store.dto.ts`. If [firstStoreName] is omitted
+  /// the BE auto-creates one using `orgName`. Returns the new store id.
+  ///
+  /// Legacy `{ name }` is also accepted by the BE (preprocess lifts `name`
+  /// into `orgName`) but the explicit shape is clearer and future-proof.
+  Future<ApiResult<String>> createStore({
+    required String orgName,
+    String? firstStoreName,
+  }) async {
     try {
       final res = await _dio.post<Map<String, dynamic>>(
         '/api/v1/store/CreateStore',
-        data: {'name': name},
+        data: {
+          'orgName': orgName,
+          if (firstStoreName != null && firstStoreName.isNotEmpty)
+            'firstStoreName': firstStoreName,
+        },
       );
       final data = res.data?['data'] as Map<String, dynamic>?;
       final id = data?['storeId'] as String?;
       if (id == null) {
         return ApiResult.failure(
           const ServerException('Missing storeId', statusCode: 200),
-        );
-      }
-      return ApiResult.success(id);
-    } on DioException catch (e) {
-      return ApiResult.failure(_extract(e));
-    }
-  }
-
-  /// Create a Storage row (kuru's "branch") inside a store. Best-effort —
-  /// failure is non-fatal; caller may continue with just the store.
-  Future<ApiResult<String>> createStorage({required String name}) async {
-    try {
-      final res = await _dio.post<Map<String, dynamic>>(
-        '/api/v1/storage/CreateStore',
-        data: {'name': name},
-      );
-      final data = res.data?['data'] as Map<String, dynamic>?;
-      final id = data?['storageId'] as String? ?? data?['id'] as String?;
-      if (id == null) {
-        return ApiResult.failure(
-          const ServerException('Missing storageId', statusCode: 200),
         );
       }
       return ApiResult.success(id);

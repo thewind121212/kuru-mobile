@@ -4,6 +4,7 @@ import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/auth_repository.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/design/auth/auth_backdrop.dart';
 import 'package:kuru_mobile/design/widgets/k_form_field.dart';
@@ -33,8 +34,9 @@ class _CreateOrgScreenState extends ConsumerState<CreateOrgScreen> {
 
   Future<void> _submit() async {
     final l = AppLocalizations.of(context);
-    final name = _businessName.text.trim();
-    if (name.isEmpty) {
+    final orgName = _businessName.text.trim();
+    final firstStoreName = _branchName.text.trim();
+    if (orgName.isEmpty) {
       setState(() => _errorMessage = l.createOrgErrorNameRequired);
       return;
     }
@@ -43,22 +45,26 @@ class _CreateOrgScreenState extends ConsumerState<CreateOrgScreen> {
       _errorMessage = null;
     });
     final repo = ref.read(authRepositoryProvider);
-    final storeResult = await repo.createStore(name: name);
+    // Single BE call now handles both org + first branch in one request via
+    // the canonical { orgName, firstStoreName? } shape.
+    final storeResult = await repo.createStore(
+      orgName: orgName,
+      firstStoreName: firstStoreName.isEmpty ? null : firstStoreName,
+    );
     if (!mounted) return;
     switch (storeResult) {
       case ApiSuccess<String>():
-        // Optional: create the first branch / storage with the supplied name.
-        // Failure here is non-fatal — store creation is what unblocks Home.
-        final branch = _branchName.text.trim();
-        if (branch.isNotEmpty) {
-          await repo.createStorage(name: branch);
-        }
         // Bootstrap will now find an org → routes to /home
         ref.invalidate(appBootstrapProvider);
-      case ApiFailure<String>():
+      case ApiFailure<String>(:final err):
         setState(() {
           _submitting = false;
-          _errorMessage = l.createOrgErrorServer;
+          // 4xx errors carry an actionable, user-readable BE message
+          // (e.g. "Organization name must be less than 100 characters").
+          // Surface verbatim. 5xx → localized fallback.
+          _errorMessage = err is BadRequestException
+              ? err.message
+              : l.createOrgErrorServer;
         });
     }
   }
