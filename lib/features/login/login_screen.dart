@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/auth_repository.dart';
@@ -172,22 +173,25 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ),
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '${l.loginFooterNoAccount} ',
-                        style: TextStyle(fontSize: 13, color: c.textMuted),
-                      ),
-                      Text(
-                        l.loginFooterRegister,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: c.primary,
-                          fontWeight: FontWeight.w600,
+                  GestureDetector(
+                    onTap: () => context.go('/register'),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${l.loginFooterNoAccount} ',
+                          style: TextStyle(fontSize: 13, color: c.textMuted),
                         ),
-                      ),
-                    ],
+                        Text(
+                          l.loginFooterRegister,
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: c.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

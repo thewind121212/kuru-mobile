@@ -6,6 +6,7 @@ import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
 import 'package:kuru_mobile/features/login/login_screen.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
+import 'package:kuru_mobile/features/register/register_screen.dart';
 import 'package:kuru_mobile/features/splash/splash_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -23,7 +24,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             if (!seenOnboarding) {
               return loc == '/onboarding' ? null : '/onboarding';
             }
-            return loc == '/login' ? null : '/login';
+            const publicRoutes = {'/login', '/register'};
+            return publicRoutes.contains(loc) ? null : '/login';
           }
           // BootstrapAuthed
           return loc == '/home' ? null : '/home';
@@ -35,6 +37,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/splash', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
+      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: '/home', builder: (_, __) => const HomeStubScreen()),
     ],
