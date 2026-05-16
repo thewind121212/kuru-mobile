@@ -90,6 +90,27 @@ class AppLocalizationsVi extends AppLocalizations {
       'Báo cáo doanh thu, đơn hàng, khách hàng tự động hoá.';
 
   @override
+  String get onboardingStep4Title => 'Mọi cách thanh toán.';
+
+  @override
+  String get onboardingStep4Body =>
+      'Tiền mặt, chuyển khoản, hay quét QR — bạn nhận, kuru ghi nhận tức thì.';
+
+  @override
+  String get onboardingStep5Title => 'Một tài khoản, nhiều cửa hàng.';
+
+  @override
+  String get onboardingStep5Body =>
+      'Quản lý nhiều chi nhánh và đội ngũ trong cùng một nơi. Mỗi cửa hàng vẫn riêng tư.';
+
+  @override
+  String get onboardingStep6Title => 'Thấu hiểu từng khách hàng.';
+
+  @override
+  String get onboardingStep6Body =>
+      'Lịch sử mua hàng và ưu đãi cá nhân hoá — khách hàng quay lại nhiều hơn.';
+
+  @override
   String get registerTitle => 'Tạo tài khoản';
 
   @override

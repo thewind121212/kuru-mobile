@@ -28,6 +28,12 @@
   "onboardingStep2Body": "Every sale moves stock instantly. We warn you when items are running low.",
   "onboardingStep3Title": "Understand your store through its numbers.",
   "onboardingStep3Body": "Revenue, orders, and customer trends — automated reports, better decisions.",
+  "onboardingStep4Title": "Every way to pay.",
+  "onboardingStep4Body": "Cash, bank transfer, or QR — you accept, kuru records every method instantly.",
+  "onboardingStep5Title": "One account, many stores.",
+  "onboardingStep5Body": "Manage multiple branches and teams from one place. Each store stays isolated.",
+  "onboardingStep6Title": "Understand every customer.",
+  "onboardingStep6Body": "Purchase history and personalized offers — keep them coming back.",
 
   "registerTitle": "Create an account",
   "registerSubtitle": "Start with kuru in 30 seconds.",

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 
-/// Holds the currently selected palette. v1 hard-codes purple; the picker
-/// UI lands in a future Settings spec.
+/// Holds the currently selected palette. Default is indigo; users will be
+/// able to switch (purple / indigo, light / dark) from Settings in a later spec.
 class ThemeController extends Notifier<KuruPalette> {
   @override
-  KuruPalette build() => KuruPalette.purple;
+  KuruPalette build() => KuruPalette.indigo;
 
   void setPalette(KuruPalette p) => state = p;
 }

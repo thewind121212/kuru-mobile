@@ -22,7 +22,6 @@ class LoginScreen extends ConsumerStatefulWidget {
 class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _email = TextEditingController();
   final _password = TextEditingController();
-  bool _remember = true;
   bool _submitting = false;
   String? _errorMessage;
 
@@ -122,27 +121,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               autofillHints: const [AutofillHints.password],
                               textInputAction: TextInputAction.done,
                               onSubmitted: (_) => _submit(),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Checkbox(
-                                  value: _remember,
-                                  onChanged: (v) =>
-                                      setState(() => _remember = v ?? true),
-                                  visualDensity: VisualDensity.compact,
-                                  materialTapTargetSize:
-                                      MaterialTapTargetSize.shrinkWrap,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  l.loginRemember,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: c.textSecondary,
-                                  ),
-                                ),
-                              ],
                             ),
                             if (_errorMessage != null) ...[
                               const SizedBox(height: 8),

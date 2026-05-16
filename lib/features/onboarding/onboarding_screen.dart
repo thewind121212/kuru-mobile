@@ -42,6 +42,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
   }
 
+  void _back() {
+    if (_index == 0) return;
+    _pageCtl.previousPage(
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOut,
+    );
+  }
+
+  void _jumpTo(int index) {
+    if (index == _index) return;
+    _pageCtl.animateToPage(
+      index,
+      duration: const Duration(milliseconds: 280),
+      curve: Curves.easeOut,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
@@ -53,20 +70,35 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top row: step count + Skip
+            // Top row: back (when index > 0) + step count + Skip
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    '${_index + 1} ',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: c.textPrimary,
+                  // Back button — hidden on step 1 to preserve spacing.
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 180),
+                    opacity: _index == 0 ? 0 : 1,
+                    child: IconButton(
+                      onPressed: _index == 0 ? null : _back,
+                      icon: const Icon(Icons.arrow_back_ios_new, size: 18),
+                      color: c.textSecondary,
+                      splashRadius: 22,
+                      tooltip: l.onboardingSkip, // back affordance; tooltip optional
                     ),
-                  ).asRichWithFaded(steps.length, c.textMuted),
+                  ),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        '${_index + 1} ',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: c.textPrimary,
+                        ),
+                      ).asRichWithFaded(steps.length, c.textMuted),
+                    ),
+                  ),
                   TextButton(
                     onPressed: _finish,
                     style: TextButton.styleFrom(
@@ -133,7 +165,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 36),
               child: Column(
                 children: [
-                  KStepDots(count: steps.length, current: _index),
+                  KStepDots(
+                    count: steps.length,
+                    current: _index,
+                    onTap: _jumpTo,
+                  ),
                   const SizedBox(height: 18),
                   KPrimaryBtn(
                     fullWidth: true,

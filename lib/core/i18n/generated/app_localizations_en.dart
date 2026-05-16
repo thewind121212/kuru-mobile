@@ -91,6 +91,27 @@ class AppLocalizationsEn extends AppLocalizations {
       'Revenue, orders, and customer trends — automated reports, better decisions.';
 
   @override
+  String get onboardingStep4Title => 'Every way to pay.';
+
+  @override
+  String get onboardingStep4Body =>
+      'Cash, bank transfer, or QR — you accept, kuru records every method instantly.';
+
+  @override
+  String get onboardingStep5Title => 'One account, many stores.';
+
+  @override
+  String get onboardingStep5Body =>
+      'Manage multiple branches and teams from one place. Each store stays isolated.';
+
+  @override
+  String get onboardingStep6Title => 'Understand every customer.';
+
+  @override
+  String get onboardingStep6Body =>
+      'Purchase history and personalized offers — keep them coming back.';
+
+  @override
   String get registerTitle => 'Create an account';
 
   @override

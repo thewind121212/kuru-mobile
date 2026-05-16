@@ -248,6 +248,42 @@ abstract class AppLocalizations {
   /// **'Báo cáo doanh thu, đơn hàng, khách hàng tự động hoá.'**
   String get onboardingStep3Body;
 
+  /// No description provided for @onboardingStep4Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mọi cách thanh toán.'**
+  String get onboardingStep4Title;
+
+  /// No description provided for @onboardingStep4Body.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền mặt, chuyển khoản, hay quét QR — bạn nhận, kuru ghi nhận tức thì.'**
+  String get onboardingStep4Body;
+
+  /// No description provided for @onboardingStep5Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Một tài khoản, nhiều cửa hàng.'**
+  String get onboardingStep5Title;
+
+  /// No description provided for @onboardingStep5Body.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý nhiều chi nhánh và đội ngũ trong cùng một nơi. Mỗi cửa hàng vẫn riêng tư.'**
+  String get onboardingStep5Body;
+
+  /// No description provided for @onboardingStep6Title.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thấu hiểu từng khách hàng.'**
+  String get onboardingStep6Title;
+
+  /// No description provided for @onboardingStep6Body.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lịch sử mua hàng và ưu đãi cá nhân hoá — khách hàng quay lại nhiều hơn.'**
+  String get onboardingStep6Body;
+
   /// No description provided for @registerTitle.
   ///
   /// In vi, this message translates to:
