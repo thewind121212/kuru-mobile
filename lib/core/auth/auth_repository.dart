@@ -201,6 +201,14 @@ class AuthRepository {
   /// The BE returns 400 for wrong codes (Auth.tsx web FE treats any error
   /// during verify as a wrong code), 429 for rate-limit, others as real
   /// network/server failures.
+  ///
+  /// One observed BE quirk: when SuperTokens' `Session.getSession()` throws
+  /// inside the route (e.g. access token expired and no refresh attempted),
+  /// the express error handler turns it into a 500 with the literal message
+  /// "Session does not exist anymore". That's a BE bug — it should be a 401
+  /// so the dio SuperTokens interceptor can refresh transparently. Until the
+  /// BE is patched, we map the message to `TotpVerifyResult.sessionExpired`
+  /// so the screen can sign the user out and route to /login.
   ApiResult<TotpVerifyResult> _interpretMfaError(DioException e) {
     final err = _extract(e);
     if (err is BadRequestException) {
@@ -208,6 +216,17 @@ class AuthRepository {
         return ApiResult.success(const TotpVerifyResult.rateLimited());
       }
       return ApiResult.success(const TotpVerifyResult.wrongCode());
+    }
+    if (err is UnauthorizedException) {
+      return ApiResult.success(const TotpVerifyResult.sessionExpired());
+    }
+    if (err is ServerException) {
+      final body = e.response?.data;
+      final raw = body is Map ? body.toString() : (body?.toString() ?? '');
+      if (raw.toLowerCase().contains('session does not exist') ||
+          raw.toLowerCase().contains('try refresh token')) {
+        return ApiResult.success(const TotpVerifyResult.sessionExpired());
+      }
     }
     return ApiResult.failure(err);
   }
@@ -226,12 +245,15 @@ final authRepositoryProvider = Provider<AuthRepository>(
 
 /// Outcome of a TOTP or recovery-code verification attempt that the screen
 /// reacts to. `ok` advances the user past MFA; `wrongCode` keeps them on the
-/// screen with an inline error; `rateLimited` shows a longer-cooldown toast.
+/// screen with an inline error; `rateLimited` shows a longer-cooldown toast;
+/// `sessionExpired` means the BE no longer recognises our session — caller
+/// should sign out and route to /login.
 sealed class TotpVerifyResult {
   const TotpVerifyResult();
   const factory TotpVerifyResult.ok() = TotpOk;
   const factory TotpVerifyResult.wrongCode() = TotpWrongCode;
   const factory TotpVerifyResult.rateLimited() = TotpRateLimited;
+  const factory TotpVerifyResult.sessionExpired() = TotpSessionExpired;
 }
 
 final class TotpOk extends TotpVerifyResult {
@@ -244,4 +266,8 @@ final class TotpWrongCode extends TotpVerifyResult {
 
 final class TotpRateLimited extends TotpVerifyResult {
   const TotpRateLimited();
+}
+
+final class TotpSessionExpired extends TotpVerifyResult {
+  const TotpSessionExpired();
 }

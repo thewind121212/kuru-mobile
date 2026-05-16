@@ -94,6 +94,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get totpRecoveryPlaceholder => 'XXXX-XXXX';
 
   @override
+  String get totpSessionExpired =>
+      'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
+
+  @override
   String get loginErrorNetwork => 'Không có kết nối mạng. Thử lại.';
 
   @override

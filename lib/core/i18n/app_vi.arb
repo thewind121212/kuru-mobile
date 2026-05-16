@@ -30,6 +30,7 @@
   "totpRecoveryFailed": "Mã khôi phục không hợp lệ.",
   "totpRateLimited": "Quá nhiều lần thử. Vui lòng đợi vài phút.",
   "totpRecoveryPlaceholder": "XXXX-XXXX",
+  "totpSessionExpired": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
   "loginErrorNetwork": "Không có kết nối mạng. Thử lại.",
   "loginErrorGeneric": "Đã có lỗi xảy ra. Thử lại sau.",
 

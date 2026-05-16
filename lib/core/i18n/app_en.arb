@@ -30,6 +30,7 @@
   "totpRecoveryFailed": "Invalid recovery code.",
   "totpRateLimited": "Too many attempts. Try again in a few minutes.",
   "totpRecoveryPlaceholder": "XXXX-XXXX",
+  "totpSessionExpired": "Your session expired. Please sign in again.",
   "loginErrorNetwork": "No internet connection. Try again.",
   "loginErrorGeneric": "Oops! Something went wrong.",
 

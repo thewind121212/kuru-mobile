@@ -57,6 +57,9 @@ class _TotpVerificationScreenState
           case TotpRateLimited():
             setState(() => _submitting = false);
             KNotify.warning(context, l.totpRateLimited);
+          case TotpSessionExpired():
+            KNotify.warning(context, l.totpSessionExpired);
+            await _signOut();
         }
       case ApiFailure<TotpVerifyResult>(:final err):
         setState(() => _submitting = false);

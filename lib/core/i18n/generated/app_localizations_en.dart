@@ -97,6 +97,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totpRecoveryPlaceholder => 'XXXX-XXXX';
 
   @override
+  String get totpSessionExpired =>
+      'Your session expired. Please sign in again.';
+
+  @override
   String get loginErrorNetwork => 'No internet connection. Try again.';
 
   @override

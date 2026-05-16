@@ -266,6 +266,12 @@ abstract class AppLocalizations {
   /// **'XXXX-XXXX'**
   String get totpRecoveryPlaceholder;
 
+  /// No description provided for @totpSessionExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.'**
+  String get totpSessionExpired;
+
   /// No description provided for @loginErrorNetwork.
   ///
   /// In vi, this message translates to:
