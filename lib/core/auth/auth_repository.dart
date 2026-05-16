@@ -103,10 +103,14 @@ class AuthRepository {
   /// Create an Organization + its first Store (branch) in one BE call.
   /// Matches the canonical `{ orgName, firstStoreName? }` shape from
   /// `be/core/dto/store/create-store.dto.ts`. If [firstStoreName] is omitted
-  /// the BE auto-creates one using `orgName`. Returns the new store id.
+  /// the BE auto-creates a Store using `orgName`. Returns the new **orgId**.
   ///
-  /// Legacy `{ name }` is also accepted by the BE (preprocess lifts `name`
-  /// into `orgName`) but the explicit shape is clearer and future-proof.
+  /// BE specifics observed (be/core/api/store/store.routes.ts CreateStore):
+  /// - HTTP **201** Created (not 200) on success
+  /// - Response: `{ success: true, data: { orgId: "..." }, timestamp }`
+  ///   (the openapi spec lists `storeId` but the actual TS type is `orgId`)
+  /// - Legacy `{ name }` is also accepted via the BE's preprocess, but the
+  ///   canonical shape is clearer and future-proof.
   Future<ApiResult<String>> createStore({
     required String orgName,
     String? firstStoreName,
@@ -121,10 +125,15 @@ class AuthRepository {
         },
       );
       final data = res.data?['data'] as Map<String, dynamic>?;
-      final id = data?['storeId'] as String?;
+      // Accept `orgId` (canonical from CreateStoreResponse) with a fallback
+      // to `storeId` in case the BE shape rolls back to the openapi spec.
+      final id = (data?['orgId'] as String?) ?? (data?['storeId'] as String?);
       if (id == null) {
         return ApiResult.failure(
-          const ServerException('Missing storeId', statusCode: 200),
+          ServerException(
+            'Missing orgId in response',
+            statusCode: res.statusCode ?? 0,
+          ),
         );
       }
       return ApiResult.success(id);

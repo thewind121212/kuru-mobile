@@ -62,17 +62,25 @@ void main() {
   });
 
   group('AuthRepository.createStore', () {
-    test('returns the storeId on success', () async {
+    test('returns the orgId on success (201 with data.orgId)', () async {
       final dio = _dioWith({
-        'data': {'storeId': 'store-123'},
-      });
+        'data': {'orgId': 'org-123'},
+      }, status: 201);
       final r = await AuthRepository(dio).createStore(orgName: 'Shop');
       expect(r, isA<ApiSuccess<String>>());
-      expect((r as ApiSuccess<String>).data, 'store-123');
+      expect((r as ApiSuccess<String>).data, 'org-123');
     });
 
-    test('returns ServerException when storeId missing', () async {
-      final dio = _dioWith({'data': <String, dynamic>{}});
+    test('falls back to storeId when orgId missing (back-compat)', () async {
+      final dio = _dioWith({
+        'data': {'storeId': 'store-fallback'},
+      }, status: 201);
+      final r = await AuthRepository(dio).createStore(orgName: 'Shop');
+      expect((r as ApiSuccess<String>).data, 'store-fallback');
+    });
+
+    test('returns ServerException when both ids missing', () async {
+      final dio = _dioWith({'data': <String, dynamic>{}}, status: 201);
       final r = await AuthRepository(dio).createStore(orgName: 'Shop');
       expect(r, isA<ApiFailure<String>>());
       expect((r as ApiFailure).err, isA<ServerException>());
