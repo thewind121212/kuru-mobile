@@ -45,6 +45,9 @@ dependencies:
   # Logging
   logger: ^2.5.0
 
+  # Icons — port of Tabler icon set, matches kuru-web's @tabler/icons-react
+  flutter_tabler_icons: ^1.43.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
