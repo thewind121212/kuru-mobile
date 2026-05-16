@@ -2,7 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the 13 reusable widgets defined in `docs/superpowers/specs/2026-05-16-catalog-core-design.md` under `lib/design/core/`, with a debug-only sandbox screen to visually verify them. Every widget gets unit/widget tests. After this plan, the Catalog v1 feature plan can compose these widgets directly.
+**Goal:** Build the 20 reusable widgets defined in `docs/superpowers/specs/2026-05-16-catalog-core-design.md` under `lib/design/core/`, with a debug-only sandbox screen to visually verify them. Every widget gets unit/widget tests. After this plan, the Catalog v1 feature plan can compose these widgets directly.
+
+**Revision note (2026-05-16, post-review):** Spec grew from 13 → 20 widgets. New tasks inserted for KTextField (Task 13), KTextarea (14), KSelect (18), KListRow (22), KCategoryCard (23). Existing KSearchBar / KIconBtn / KTabNav / KModalSheet / KConfirmDialog / KActionSheet / KColorPicker / KIconPicker tasks updated for API extensions, accessibility (48dp tap targets, IconButton tooltips), test-pattern fixes (`pumpAndSettle` → `pump(Duration)` where a spinner state is in the frame), and `enableDrag: true` on both sheets.
 
 **Architecture:** Bottom-up build — pure data files first (no UI deps), then feedback primitives, then input primitives, then layout, then modal layer (which composes everything), then the demo screen. Each task is one widget (or one tightly-scoped data file) with its own TDD cycle and commit. Every widget reads colors via `kuruColors(context)` from the existing `KuruColors` theme extension — no new theme tokens introduced.
 
@@ -963,9 +965,7 @@ void main() {
 
     await tester.enterText(find.byType(TextField), 'cof');
     await tester.pump();
-    // Tabler X is an IconData — we look for it via byKey since icon equality
-    // varies. Use a Semantics tooltip on the button instead.
-    expect(find.bySemanticsLabel('Clear'), findsOneWidget);
+    expect(find.byTooltip('Clear'), findsOneWidget);
   });
 
   testWidgets('KSearchBar clear button empties text and fires onChanged("")',
@@ -980,7 +980,7 @@ void main() {
     await tester.enterText(find.byType(TextField), 'cof');
     expect(captured, 'cof');
 
-    await tester.tap(find.bySemanticsLabel('Clear'));
+    await tester.tap(find.byTooltip('Clear'));
     await tester.pump();
     expect(captured, '');
   });
@@ -1108,21 +1108,17 @@ class _KSearchBarState extends State<KSearchBar> {
             ),
           ),
           if (hasText)
-            Semantics(
-              label: 'Clear',
-              button: true,
-              child: GestureDetector(
-                onTap: _clear,
-                behavior: HitTestBehavior.opaque,
-                child: Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Icon(
-                    TablerIcons.x,
-                    size: 16,
-                    color: c.textMuted,
-                  ),
-                ),
+            IconButton(
+              icon: Icon(TablerIcons.x, size: 18, color: c.textMuted),
+              tooltip: 'Clear',
+              iconSize: 18,
+              constraints: const BoxConstraints(
+                minWidth: 48,
+                minHeight: 48,
               ),
+              padding: EdgeInsets.zero,
+              splashRadius: 24,
+              onPressed: _clear,
             ),
         ],
       ),
@@ -1564,16 +1560,28 @@ void main() {
     expect(find.byTooltip('Add brand'), findsOneWidget);
   });
 
-  testWidgets('KIconBtn renders at specified size', (tester) async {
+  testWidgets('KIconBtn default size is 48dp (Material 3 min tap target)',
+      (tester) async {
     await tester.pumpWidget(_wrap(KIconBtn(
       icon: const Icon(Icons.add),
-      size: 48,
       onPressed: () {},
     )));
     await tester.pump();
     final box = tester.getSize(find.byType(KIconBtn));
     expect(box.width, 48);
     expect(box.height, 48);
+  });
+
+  testWidgets('KIconBtn respects explicit size override', (tester) async {
+    await tester.pumpWidget(_wrap(KIconBtn(
+      icon: const Icon(Icons.add),
+      size: 56,
+      onPressed: () {},
+    )));
+    await tester.pump();
+    final box = tester.getSize(find.byType(KIconBtn));
+    expect(box.width, 56);
+    expect(box.height, 56);
   });
 }
 ```
@@ -1600,7 +1608,7 @@ class KIconBtn extends StatelessWidget {
     super.key,
     this.onPressed,
     this.tooltip,
-    this.size = 40,
+    this.size = 48, // Material 3 minimum tap target
   });
 
   final Widget icon;
@@ -1858,7 +1866,480 @@ git commit -m "feat(core-design): KTabNav (scrollable pill tabs)"
 
 ---
 
-## Task 13: KPageHeader
+## Task 13: KTextField
+
+**Files:**
+- Create: `lib/design/core/input/k_text_field.dart`
+- Test: `test/design/core/input/k_text_field_test.dart`
+
+Flat-aesthetic text input. Floating label + error slot. Used by CreateBrandDialog (name) and CreateCategoryDialog (name).
+
+- [ ] **Step 1: Write the failing test**
+
+Create `test/design/core/input/k_text_field_test.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/design/core/input/k_text_field.dart';
+
+void main() {
+  Widget _wrap(Widget child) => MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: Scaffold(body: child),
+      );
+
+  testWidgets('KTextField renders label', (tester) async {
+    final ctl = TextEditingController();
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextField(
+      label: 'Brand name',
+      controller: ctl,
+    )));
+    await tester.pump();
+    expect(find.text('Brand name'), findsOneWidget);
+  });
+
+  testWidgets('KTextField updates controller on type', (tester) async {
+    final ctl = TextEditingController();
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextField(
+      label: 'Brand name',
+      controller: ctl,
+    )));
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), 'Coffee');
+    expect(ctl.text, 'Coffee');
+  });
+
+  testWidgets('KTextField shows error text when errorText is non-null',
+      (tester) async {
+    final ctl = TextEditingController();
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextField(
+      label: 'Brand name',
+      controller: ctl,
+      errorText: 'Name is required',
+    )));
+    await tester.pump();
+    expect(find.text('Name is required'), findsOneWidget);
+  });
+
+  testWidgets('KTextField obscureText hides characters', (tester) async {
+    final ctl = TextEditingController();
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextField(
+      label: 'Password',
+      controller: ctl,
+      obscureText: true,
+    )));
+    await tester.pump();
+    final tf = tester.widget<TextField>(find.byType(TextField));
+    expect(tf.obscureText, isTrue);
+  });
+}
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `flutter test test/design/core/input/k_text_field_test.dart`
+Expected: FAIL — `k_text_field.dart` not found.
+
+- [ ] **Step 3: Implement**
+
+Create `lib/design/core/input/k_text_field.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+
+/// Flat-aesthetic single-line text field. Mirrors web's `CommonInput`
+/// with floating label, leading icon, and error slot. Use this for
+/// content screens (Catalog/Settings/Home); the existing glass-aesthetic
+/// `KFormField` stays in `lib/design/widgets/` for auth/onboarding.
+class KTextField extends StatelessWidget {
+  const KTextField({
+    required this.label,
+    required this.controller,
+    super.key,
+    this.errorText,
+    this.leadingIcon,
+    this.placeholder,
+    this.keyboardType,
+    this.textInputAction,
+    this.onSubmitted,
+    this.obscureText = false,
+    this.enabled = true,
+    this.maxLength,
+    this.autofillHints,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final String? errorText;
+  final Widget? leadingIcon;
+  final String? placeholder;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+  final bool obscureText;
+  final bool enabled;
+  final int? maxLength;
+  final Iterable<String>? autofillHints;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final hasError = errorText != null;
+    final accent = hasError ? c.danger : c.accent500;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: controller,
+          enabled: enabled,
+          obscureText: obscureText,
+          keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          onSubmitted: onSubmitted,
+          maxLength: maxLength,
+          autofillHints: autofillHints,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            labelText: label,
+            hintText: placeholder,
+            hintStyle: TextStyle(color: c.textMuted, fontSize: 14),
+            labelStyle: TextStyle(
+              color: hasError ? c.danger : c.textMuted,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+            floatingLabelStyle: TextStyle(
+              color: hasError ? c.danger : accent,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+            prefixIcon: leadingIcon == null
+                ? null
+                : IconTheme(
+                    data: IconThemeData(
+                      color: hasError ? c.danger : c.textMuted,
+                      size: 18,
+                    ),
+                    child: leadingIcon!,
+                  ),
+            filled: true,
+            fillColor: c.surfaceElev,
+            counterText: '',
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: hasError ? c.danger : c.border,
+                width: hasError ? 1.5 : 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: hasError ? c.danger : c.accent500,
+                width: hasError ? 1.5 : 1,
+              ),
+            ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(color: c.borderSoft, width: 1),
+            ),
+          ),
+        ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: hasError
+              ? Padding(
+                  key: const ValueKey('err'),
+                  padding: const EdgeInsets.only(top: 6, left: 4),
+                  child: Text(
+                    errorText!,
+                    style: TextStyle(
+                      color: c.danger,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                )
+              : const SizedBox(key: ValueKey('ok'), height: 0),
+        ),
+      ],
+    );
+  }
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `flutter test test/design/core/input/k_text_field_test.dart`
+Expected: PASS, 4 tests pass.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/design/core/input/k_text_field.dart test/design/core/input/k_text_field_test.dart
+git commit -m "feat(core-design): KTextField (flat input with floating label + error slot)"
+```
+
+---
+
+## Task 14: KTextarea
+
+**Files:**
+- Create: `lib/design/core/input/k_textarea.dart`
+- Test: `test/design/core/input/k_textarea_test.dart`
+
+Multi-line input. Same chrome as KTextField. Used by CreateCategoryDialog (description).
+
+- [ ] **Step 1: Write the failing test**
+
+Create `test/design/core/input/k_textarea_test.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/design/core/input/k_textarea.dart';
+
+void main() {
+  Widget _wrap(Widget child) => MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: Scaffold(body: child),
+      );
+
+  testWidgets('KTextarea renders label and accepts text', (tester) async {
+    final ctl = TextEditingController();
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextarea(
+      label: 'Description',
+      controller: ctl,
+    )));
+    await tester.pump();
+
+    expect(find.text('Description'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'A nice category');
+    expect(ctl.text, 'A nice category');
+  });
+
+  testWidgets('KTextarea respects maxLines', (tester) async {
+    final ctl = TextEditingController();
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextarea(
+      label: 'Description',
+      controller: ctl,
+      minLines: 3,
+      maxLines: 6,
+    )));
+    await tester.pump();
+    final tf = tester.widget<TextField>(find.byType(TextField));
+    expect(tf.minLines, 3);
+    expect(tf.maxLines, 6);
+  });
+
+  testWidgets('KTextarea shows counter when maxLength is set', (tester) async {
+    final ctl = TextEditingController(text: 'abc');
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextarea(
+      label: 'Description',
+      controller: ctl,
+      maxLength: 100,
+    )));
+    await tester.pump();
+    expect(find.text('3/100'), findsOneWidget);
+  });
+
+  testWidgets('KTextarea renders error text', (tester) async {
+    final ctl = TextEditingController();
+    addTearDown(ctl.dispose);
+    await tester.pumpWidget(_wrap(KTextarea(
+      label: 'Description',
+      controller: ctl,
+      errorText: 'Too short',
+    )));
+    await tester.pump();
+    expect(find.text('Too short'), findsOneWidget);
+  });
+}
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `flutter test test/design/core/input/k_textarea_test.dart`
+Expected: FAIL — `k_textarea.dart` not found.
+
+- [ ] **Step 3: Implement**
+
+Create `lib/design/core/input/k_textarea.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+
+/// Flat-aesthetic multi-line text input. Same chrome as `KTextField`
+/// but expands vertically. Optional character counter when `maxLength`
+/// is set. Used for description / notes fields.
+class KTextarea extends StatefulWidget {
+  const KTextarea({
+    required this.label,
+    required this.controller,
+    super.key,
+    this.errorText,
+    this.placeholder,
+    this.minLines = 3,
+    this.maxLines = 6,
+    this.maxLength,
+    this.enabled = true,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final String? errorText;
+  final String? placeholder;
+  final int minLines;
+  final int maxLines;
+  final int? maxLength;
+  final bool enabled;
+
+  @override
+  State<KTextarea> createState() => _KTextareaState();
+}
+
+class _KTextareaState extends State<KTextarea> {
+  @override
+  void initState() {
+    super.initState();
+    if (widget.maxLength != null) {
+      widget.controller.addListener(_onText);
+    }
+  }
+
+  void _onText() => setState(() {});
+
+  @override
+  void dispose() {
+    if (widget.maxLength != null) {
+      widget.controller.removeListener(_onText);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final hasError = widget.errorText != null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: widget.controller,
+          enabled: widget.enabled,
+          minLines: widget.minLines,
+          maxLines: widget.maxLines,
+          maxLength: widget.maxLength,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            labelText: widget.label,
+            hintText: widget.placeholder,
+            hintStyle: TextStyle(color: c.textMuted, fontSize: 14),
+            labelStyle: TextStyle(
+              color: hasError ? c.danger : c.textMuted,
+              fontSize: 14,
+            ),
+            floatingLabelStyle: TextStyle(
+              color: hasError ? c.danger : c.accent500,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+            alignLabelWithHint: true,
+            filled: true,
+            fillColor: c.surfaceElev,
+            counterText: '', // we render our own counter below
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: hasError ? c.danger : c.border,
+                width: hasError ? 1.5 : 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide(
+                color: hasError ? c.danger : c.accent500,
+                width: hasError ? 1.5 : 1,
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 6, left: 4, right: 4),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: hasError
+                    ? Text(
+                        widget.errorText!,
+                        style: TextStyle(
+                          color: c.danger,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              if (widget.maxLength != null)
+                Text(
+                  '${widget.controller.text.length}/${widget.maxLength}',
+                  style: TextStyle(color: c.textMuted, fontSize: 11),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `flutter test test/design/core/input/k_textarea_test.dart`
+Expected: PASS, 4 tests pass.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/design/core/input/k_textarea.dart test/design/core/input/k_textarea_test.dart
+git commit -m "feat(core-design): KTextarea (multi-line input with counter)"
+```
+
+---
+
+## Task 15: KPageHeader
 
 **Files:**
 - Create: `lib/design/core/layout/k_page_header.dart`
@@ -2009,7 +2490,7 @@ git commit -m "feat(core-design): KPageHeader"
 
 ---
 
-## Task 14: KModalSheet (base bottom sheet wrapper)
+## Task 16: KModalSheet (base bottom sheet wrapper)
 
 **Files:**
 - Create: `lib/design/core/modal/k_modal_sheet.dart`
@@ -2096,7 +2577,12 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
+    // Spinner state is in the frame during the awaited onConfirm — use
+    // explicit pump steps instead of pumpAndSettle (which would never
+    // settle while CircularProgressIndicator is animating).
+    await tester.pump(); // _busy = true → spinner visible
+    await tester.pump(const Duration(milliseconds: 50)); // microtask resolves
+    await tester.pump(const Duration(milliseconds: 300)); // sheet pop animation
 
     expect(await future, isNotNull); // closed (any non-null result counts)
     expect(find.text('BODY'), findsNothing);
@@ -2121,10 +2607,85 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Save'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
 
     // Sheet still open.
     expect(find.text('BODY'), findsOneWidget);
+  });
+
+  testWidgets('showKModalSheet disableConfirm renders confirm but no tap',
+      (tester) async {
+    var confirmTapped = 0;
+    late BuildContext capturedCtx;
+    await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
+      capturedCtx = ctx;
+      return const SizedBox.shrink();
+    })));
+    await tester.pump();
+
+    showKModalSheet<bool>(
+      context: capturedCtx,
+      title: 'Test',
+      confirmLabel: 'Save',
+      disableConfirm: true,
+      onConfirm: () async {
+        confirmTapped++;
+        return true;
+      },
+      builder: (_) => const Text('BODY'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Save'), findsOneWidget);
+    await tester.tap(find.text('Save'));
+    await tester.pump();
+    expect(confirmTapped, 0);
+    expect(find.text('BODY'), findsOneWidget);
+  });
+
+  testWidgets('showKModalSheet showCancel=false hides Cancel button',
+      (tester) async {
+    late BuildContext capturedCtx;
+    await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
+      capturedCtx = ctx;
+      return const SizedBox.shrink();
+    })));
+    await tester.pump();
+
+    showKModalSheet<void>(
+      context: capturedCtx,
+      title: 'Pick color',
+      confirmLabel: 'Done',
+      showCancel: false,
+      onConfirm: () async => true,
+      builder: (_) => const Text('GRID'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Done'), findsOneWidget);
+    expect(find.text('Cancel'), findsNothing);
+  });
+
+  testWidgets('showKModalSheet loadingBody replaces builder output',
+      (tester) async {
+    late BuildContext capturedCtx;
+    await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
+      capturedCtx = ctx;
+      return const SizedBox.shrink();
+    })));
+    await tester.pump();
+
+    showKModalSheet<void>(
+      context: capturedCtx,
+      title: 'Edit brand',
+      loadingBody: const Center(child: Text('LOADING')),
+      builder: (_) => const Text('FORM'),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('LOADING'), findsOneWidget);
+    expect(find.text('FORM'), findsNothing);
   });
 }
 ```
@@ -2168,11 +2729,16 @@ Future<T?> showKModalSheet<T>({
   Future<bool> Function()? onConfirm,
   KConfirmTone confirmTone = KConfirmTone.primary,
   bool isDismissible = true,
+  bool enableDrag = true,
+  bool disableConfirm = false,
+  bool showCancel = true,
+  Widget? loadingBody,
 }) {
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: true,
     isDismissible: isDismissible,
+    enableDrag: enableDrag,
     backgroundColor: Colors.transparent,
     builder: (ctx) => _KModalSheet<T>(
       title: title,
@@ -2182,6 +2748,9 @@ Future<T?> showKModalSheet<T>({
       cancelLabel: cancelLabel,
       onConfirm: onConfirm,
       confirmTone: confirmTone,
+      disableConfirm: disableConfirm,
+      showCancel: showCancel,
+      loadingBody: loadingBody,
     ),
   );
 }
@@ -2195,6 +2764,9 @@ class _KModalSheet<T> extends StatefulWidget {
     this.cancelLabel = 'Cancel',
     this.onConfirm,
     this.confirmTone = KConfirmTone.primary,
+    this.disableConfirm = false,
+    this.showCancel = true,
+    this.loadingBody,
   });
 
   final String title;
@@ -2204,6 +2776,9 @@ class _KModalSheet<T> extends StatefulWidget {
   final String cancelLabel;
   final Future<bool> Function()? onConfirm;
   final KConfirmTone confirmTone;
+  final bool disableConfirm;
+  final bool showCancel;
+  final Widget? loadingBody;
 
   @override
   State<_KModalSheet<T>> createState() => _KModalSheetState<T>();
@@ -2250,7 +2825,7 @@ class _KModalSheetState<T> extends State<_KModalSheet<T>> {
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  child: Builder(builder: widget.builder),
+                  child: widget.loadingBody ?? Builder(builder: widget.builder),
                 ),
               ),
               if (widget.confirmLabel != null) _buildFooter(c),
@@ -2318,13 +2893,15 @@ class _KModalSheetState<T> extends State<_KModalSheet<T>> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            KSecondaryBtn(
-              label: widget.cancelLabel,
-              size: KBtnSize.md,
-              fullWidth: false,
-              onPressed: _busy ? null : () => Navigator.of(context).pop(),
-            ),
-            const SizedBox(width: 8),
+            if (widget.showCancel) ...[
+              KSecondaryBtn(
+                label: widget.cancelLabel,
+                size: KBtnSize.md,
+                fullWidth: false,
+                onPressed: _busy ? null : () => Navigator.of(context).pop(),
+              ),
+              const SizedBox(width: 8),
+            ],
             _buildConfirmButton(c),
           ],
         ),
@@ -2334,7 +2911,7 @@ class _KModalSheetState<T> extends State<_KModalSheet<T>> {
     final bg = widget.confirmTone == KConfirmTone.danger
         ? c.danger
         : c.accent600;
-    final disabled = _busy;
+    final disabled = _busy || widget.disableConfirm;
     return SizedBox(
       height: 40,
       child: ElevatedButton(
@@ -2366,18 +2943,18 @@ class _KModalSheetState<T> extends State<_KModalSheet<T>> {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/design/core/modal/k_modal_sheet_test.dart`
-Expected: PASS, 4 tests pass.
+Expected: PASS, 7 tests pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add lib/design/core/modal/k_modal_sheet.dart test/design/core/modal/k_modal_sheet_test.dart
-git commit -m "feat(core-design): KModalSheet (bottom-sheet base with header/footer)"
+git commit -m "feat(core-design): KModalSheet with disableConfirm/showCancel/loadingBody"
 ```
 
 ---
 
-## Task 15: KConfirmDialog
+## Task 17: KConfirmDialog
 
 **Files:**
 - Create: `lib/design/core/modal/k_confirm_dialog.dart`
@@ -2494,6 +3071,7 @@ Create `lib/design/core/modal/k_confirm_dialog.dart`:
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/design/core/feedback/k_spinner.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
 
 enum KConfirmDialogTone { destructive, info }
@@ -2501,6 +3079,12 @@ enum KConfirmDialogTone { destructive, info }
 /// Shows a centered Material AlertDialog used for confirm/cancel flows
 /// (delete, sign out, discard changes). Returns `true` on confirm,
 /// `null` on cancel/dismiss.
+///
+/// If [onConfirm] is provided, the confirm button shows a spinner and
+/// the dialog stays open (barrier non-dismissible) while the future
+/// resolves — matches kuru-web ConfirmModal `isLoading={isDeleting}`.
+/// On exception, the dialog closes resolving `null` (caller surfaces
+/// the error toast).
 Future<bool?> showKConfirmDialog({
   required BuildContext context,
   required String title,
@@ -2508,26 +3092,30 @@ Future<bool?> showKConfirmDialog({
   String confirmLabel = 'Confirm',
   String cancelLabel = 'Cancel',
   KConfirmDialogTone tone = KConfirmDialogTone.destructive,
+  Future<void> Function()? onConfirm,
 }) {
   return showDialog<bool>(
     context: context,
+    barrierDismissible: onConfirm == null, // lock during async work
     builder: (ctx) => _KConfirmDialog(
       title: title,
       subtitle: subtitle,
       confirmLabel: confirmLabel,
       cancelLabel: cancelLabel,
       tone: tone,
+      onConfirm: onConfirm,
     ),
   );
 }
 
-class _KConfirmDialog extends StatelessWidget {
+class _KConfirmDialog extends StatefulWidget {
   const _KConfirmDialog({
     required this.title,
     required this.confirmLabel,
     required this.cancelLabel,
     required this.tone,
     this.subtitle,
+    this.onConfirm,
   });
 
   final String title;
@@ -2535,11 +3123,35 @@ class _KConfirmDialog extends StatelessWidget {
   final String confirmLabel;
   final String cancelLabel;
   final KConfirmDialogTone tone;
+  final Future<void> Function()? onConfirm;
+
+  @override
+  State<_KConfirmDialog> createState() => _KConfirmDialogState();
+}
+
+class _KConfirmDialogState extends State<_KConfirmDialog> {
+  bool _busy = false;
+
+  Future<void> _handleConfirm() async {
+    if (widget.onConfirm == null) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+    setState(() => _busy = true);
+    try {
+      await widget.onConfirm!();
+      if (!mounted) return;
+      Navigator.of(context).pop(true);
+    } catch (_) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // null — caller toasts error
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final isDestructive = tone == KConfirmDialogTone.destructive;
+    final isDestructive = widget.tone == KConfirmDialogTone.destructive;
     final iconBg = isDestructive ? c.dangerSoft : c.accent50;
     final iconColor = isDestructive ? c.danger : c.accent600;
     final icon = isDestructive ? TablerIcons.alert_triangle : TablerIcons.info_circle;
@@ -2562,7 +3174,7 @@ class _KConfirmDialog extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Text(
-                title,
+                widget.title,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: c.textPrimary,
@@ -2570,10 +3182,10 @@ class _KConfirmDialog extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                 ),
               ),
-              if (subtitle != null) ...[
+              if (widget.subtitle != null) ...[
                 const SizedBox(height: 8),
                 Text(
-                  subtitle!,
+                  widget.subtitle!,
                   textAlign: TextAlign.center,
                   style: TextStyle(color: c.textMuted, fontSize: 14),
                 ),
@@ -2583,9 +3195,9 @@ class _KConfirmDialog extends StatelessWidget {
                 children: [
                   Expanded(
                     child: KSecondaryBtn(
-                      label: cancelLabel,
+                      label: widget.cancelLabel,
                       size: KBtnSize.md,
-                      onPressed: () => Navigator.of(context).pop(),
+                      onPressed: _busy ? null : () => Navigator.of(context).pop(),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -2593,22 +3205,26 @@ class _KConfirmDialog extends StatelessWidget {
                     child: SizedBox(
                       height: 40,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(true),
+                        onPressed: _busy ? null : _handleConfirm,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isDestructive ? c.danger : c.accent600,
+                          disabledBackgroundColor: (isDestructive ? c.danger : c.accent600)
+                              .withValues(alpha: 0.5),
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
                         ),
-                        child: Text(
-                          confirmLabel,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
+                        child: _busy
+                            ? const KSpinner(size: 16, color: Colors.white)
+                            : Text(
+                                widget.confirmLabel,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -2623,21 +3239,85 @@ class _KConfirmDialog extends StatelessWidget {
 }
 ```
 
-- [ ] **Step 4: Run test to verify it passes**
+- [ ] **Step 4: Add async-onConfirm test**
+
+Append this to `test/design/core/modal/k_confirm_dialog_test.dart` (before the closing `}`):
+
+```dart
+  testWidgets('showKConfirmDialog with onConfirm shows spinner during await',
+      (tester) async {
+    late BuildContext capturedCtx;
+    await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
+      capturedCtx = ctx;
+      return const SizedBox.shrink();
+    })));
+    await tester.pump();
+
+    final completer = Completer<void>();
+    final future = showKConfirmDialog(
+      context: capturedCtx,
+      title: 'Delete?',
+      onConfirm: () => completer.future,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Confirm'));
+    await tester.pump(); // _busy = true
+    // Spinner is animating — use timed pump, never pumpAndSettle here.
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    completer.complete();
+    await tester.pump(); // microtask settles
+    await tester.pump(const Duration(milliseconds: 300)); // dialog dismiss
+
+    expect(await future, isTrue);
+  });
+
+  testWidgets('showKConfirmDialog onConfirm throws → resolves null',
+      (tester) async {
+    late BuildContext capturedCtx;
+    await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
+      capturedCtx = ctx;
+      return const SizedBox.shrink();
+    })));
+    await tester.pump();
+
+    final future = showKConfirmDialog(
+      context: capturedCtx,
+      title: 'Delete?',
+      onConfirm: () async => throw Exception('boom'),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Confirm'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(await future, isNull);
+  });
+```
+
+Also add at the top of the imports:
+```dart
+import 'dart:async';
+```
+
+- [ ] **Step 5: Run test to verify it passes**
 
 Run: `flutter test test/design/core/modal/k_confirm_dialog_test.dart`
-Expected: PASS, 4 tests pass.
+Expected: PASS, 6 tests pass.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
 git add lib/design/core/modal/k_confirm_dialog.dart test/design/core/modal/k_confirm_dialog_test.dart
-git commit -m "feat(core-design): KConfirmDialog with destructive/info tones"
+git commit -m "feat(core-design): KConfirmDialog with async onConfirm + tones"
 ```
 
 ---
 
-## Task 16: KActionSheet
+## Task 18: KActionSheet
 
 **Files:**
 - Create: `lib/design/core/modal/k_action_sheet.dart`
@@ -2703,6 +3383,36 @@ void main() {
 
     expect(await future, 'delete');
   });
+
+  testWidgets('showKActionSheet disabled action does not return its id',
+      (tester) async {
+    late BuildContext capturedCtx;
+    await tester.pumpWidget(_wrap(Builder(builder: (ctx) {
+      capturedCtx = ctx;
+      return const SizedBox.shrink();
+    })));
+    await tester.pump();
+
+    final future = showKActionSheet<String>(
+      context: capturedCtx,
+      actions: const [
+        KActionItem(id: 'edit', label: 'Edit'),
+        KActionItem(id: 'delete', label: 'Delete', enabled: false),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Delete'));
+    await tester.pump();
+
+    // Sheet stays open; delete didn't fire.
+    expect(find.text('Edit'), findsOneWidget);
+
+    // Tap the still-enabled Edit to close the sheet for cleanup.
+    await tester.tap(find.text('Edit'));
+    await tester.pumpAndSettle();
+    expect(await future, 'edit');
+  });
 }
 ```
 
@@ -2727,12 +3437,17 @@ class KActionItem<T> {
     required this.label,
     this.icon,
     this.danger = false,
+    this.enabled = true,
   });
 
   final T id;
   final String label;
   final IconData? icon;
   final bool danger;
+  /// Disabled items render at 40% opacity and are untap­pable. Use this
+  /// as the lightweight mobile equivalent of web's `<PermissionGate>` —
+  /// feature code computes `enabled: hasPermission`.
+  final bool enabled;
 }
 
 /// Shows a bottom-up action sheet — Material 3 idiomatic replacement
@@ -2742,10 +3457,12 @@ Future<T?> showKActionSheet<T>({
   required BuildContext context,
   required List<KActionItem<T>> actions,
   String? title,
+  bool enableDrag = true,
 }) {
   return showModalBottomSheet<T>(
     context: context,
     isScrollControlled: false,
+    enableDrag: enableDrag,
     backgroundColor: Colors.transparent,
     builder: (ctx) => _KActionSheet<T>(actions: actions, title: title),
   );
@@ -2805,30 +3522,33 @@ class _KActionSheet<T> extends StatelessWidget {
 
   Widget _row(BuildContext context, KuruColors c, KActionItem<T> a) {
     final color = a.danger ? c.danger : c.textPrimary;
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => Navigator.of(context).pop(a.id),
-        child: Container(
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              if (a.icon != null) ...[
-                Icon(a.icon, size: 20, color: color),
-                const SizedBox(width: 16),
-              ],
-              Expanded(
-                child: Text(
-                  a.label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+    return Opacity(
+      opacity: a.enabled ? 1.0 : 0.4,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: a.enabled ? () => Navigator.of(context).pop(a.id) : null,
+          child: Container(
+            height: 52,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                if (a.icon != null) ...[
+                  Icon(a.icon, size: 20, color: color),
+                  const SizedBox(width: 16),
+                ],
+                Expanded(
+                  child: Text(
+                    a.label,
+                    style: TextStyle(
+                      color: color,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -2840,18 +3560,281 @@ class _KActionSheet<T> extends StatelessWidget {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `flutter test test/design/core/modal/k_action_sheet_test.dart`
-Expected: PASS, 2 tests pass.
+Expected: PASS, 3 tests pass.
 
 - [ ] **Step 5: Commit**
 
 ```bash
 git add lib/design/core/modal/k_action_sheet.dart test/design/core/modal/k_action_sheet_test.dart
-git commit -m "feat(core-design): KActionSheet (bottom action list)"
+git commit -m "feat(core-design): KActionSheet (bottom action list with enabled flag)"
 ```
 
 ---
 
-## Task 17: KColorPicker
+## Task 19: KSelect
+
+**Files:**
+- Create: `lib/design/core/input/k_select.dart`
+- Test: `test/design/core/input/k_select_test.dart`
+
+Button-styled picker that opens a KActionSheet on tap. Visually mirrors KTextField (so it slots into forms as another labeled row). Used by CreateCategoryDialog for parent-category and status selectors.
+
+**Depends on:** KActionSheet (Task 18) — must be implemented after Task 18 even though file lives in `input/`.
+
+- [ ] **Step 1: Write the failing test**
+
+Create `test/design/core/input/k_select_test.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/design/core/input/k_select.dart';
+
+void main() {
+  Widget _wrap(Widget child) => MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: Scaffold(body: child),
+      );
+
+  testWidgets('KSelect shows placeholder when value is null', (tester) async {
+    await tester.pumpWidget(_wrap(KSelect<String>(
+      label: 'Status',
+      value: null,
+      placeholder: 'Choose status',
+      options: const [
+        KSelectOption(value: 'active', label: 'Active'),
+        KSelectOption(value: 'inactive', label: 'Inactive'),
+      ],
+      onChanged: (_) {},
+    )));
+    await tester.pump();
+    expect(find.text('Choose status'), findsOneWidget);
+  });
+
+  testWidgets('KSelect shows selected option label', (tester) async {
+    await tester.pumpWidget(_wrap(KSelect<String>(
+      label: 'Status',
+      value: 'active',
+      options: const [
+        KSelectOption(value: 'active', label: 'Active'),
+        KSelectOption(value: 'inactive', label: 'Inactive'),
+      ],
+      onChanged: (_) {},
+    )));
+    await tester.pump();
+    expect(find.text('Active'), findsOneWidget);
+  });
+
+  testWidgets('KSelect tapping opens action sheet with options',
+      (tester) async {
+    await tester.pumpWidget(_wrap(KSelect<String>(
+      label: 'Status',
+      value: null,
+      options: const [
+        KSelectOption(value: 'active', label: 'Active'),
+        KSelectOption(value: 'inactive', label: 'Inactive'),
+      ],
+      onChanged: (_) {},
+    )));
+    await tester.pump();
+    await tester.tap(find.byType(KSelect<String>));
+    await tester.pumpAndSettle();
+
+    // Both options appear in the action sheet.
+    expect(find.text('Active'), findsOneWidget);
+    expect(find.text('Inactive'), findsOneWidget);
+  });
+
+  testWidgets('KSelect picking an option fires onChanged', (tester) async {
+    String? captured;
+    await tester.pumpWidget(_wrap(KSelect<String>(
+      label: 'Status',
+      value: null,
+      options: const [
+        KSelectOption(value: 'active', label: 'Active'),
+        KSelectOption(value: 'inactive', label: 'Inactive'),
+      ],
+      onChanged: (v) => captured = v,
+    )));
+    await tester.pump();
+    await tester.tap(find.byType(KSelect<String>));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Inactive'));
+    await tester.pumpAndSettle();
+
+    expect(captured, 'inactive');
+  });
+}
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `flutter test test/design/core/input/k_select_test.dart`
+Expected: FAIL — `k_select.dart` not found.
+
+- [ ] **Step 3: Implement**
+
+Create `lib/design/core/input/k_select.dart`:
+
+```dart
+// ignore_for_file: non_constant_identifier_names
+import 'package:flutter/material.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
+
+class KSelectOption<T> {
+  const KSelectOption({required this.value, required this.label, this.icon});
+  final T value;
+  final String label;
+  final IconData? icon;
+}
+
+/// Button-styled picker that looks like a KTextField but opens a
+/// `showKActionSheet` on tap. Mobile-native replacement for HTML
+/// `<select>`.
+class KSelect<T> extends StatelessWidget {
+  const KSelect({
+    required this.label,
+    required this.value,
+    required this.options,
+    required this.onChanged,
+    super.key,
+    this.errorText,
+    this.placeholder,
+    this.enabled = true,
+  });
+
+  final String label;
+  final T? value;
+  final List<KSelectOption<T>> options;
+  final ValueChanged<T> onChanged;
+  final String? errorText;
+  final String? placeholder;
+  final bool enabled;
+
+  String? get _displayLabel {
+    if (value == null) return null;
+    for (final o in options) {
+      if (o.value == value) return o.label;
+    }
+    return null;
+  }
+
+  Future<void> _open(BuildContext context) async {
+    final picked = await showKActionSheet<T>(
+      context: context,
+      title: label,
+      actions: [
+        for (final o in options)
+          KActionItem(id: o.value, label: o.label, icon: o.icon),
+      ],
+    );
+    if (picked != null) onChanged(picked);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final hasError = errorText != null;
+    final display = _displayLabel;
+    final isEmpty = display == null;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: c.surfaceElev,
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: enabled ? () => _open(context) : null,
+            borderRadius: BorderRadius.circular(12),
+            child: Opacity(
+              opacity: enabled ? 1 : 0.5,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: hasError ? c.danger : c.border,
+                    width: hasError ? 1.5 : 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            label,
+                            style: TextStyle(
+                              color: hasError ? c.danger : c.textMuted,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            display ?? (placeholder ?? ''),
+                            style: TextStyle(
+                              color: isEmpty ? c.textMuted : c.textPrimary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      TablerIcons.chevron_down,
+                      size: 18,
+                      color: c.textMuted,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        if (hasError)
+          Padding(
+            padding: const EdgeInsets.only(top: 6, left: 4),
+            child: Text(
+              errorText!,
+              style: TextStyle(
+                color: c.danger,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `flutter test test/design/core/input/k_select_test.dart`
+Expected: PASS, 4 tests pass.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/design/core/input/k_select.dart test/design/core/input/k_select_test.dart
+git commit -m "feat(core-design): KSelect (picker via KActionSheet)"
+```
+
+---
+
+## Task 20: KColorPicker
 
 **Files:**
 - Create: `lib/design/core/modal/k_color_picker.dart`
@@ -2929,8 +3912,9 @@ import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/design/core/modal/color_options.dart';
 import 'package:kuru_mobile/design/core/modal/k_modal_sheet.dart';
 
-/// Shows the 26-color picker as a bottom sheet. Returns the picked id
-/// (e.g. 'blue-400'), or null if dismissed.
+/// Shows the 26-color picker as a bottom sheet. Tapping a swatch updates
+/// the displayed "Selected: <label>" line; the picker resolves with the
+/// final selection when the user taps Done (or null if dismissed).
 Future<String?> showKColorPicker({
   required BuildContext context,
   required String selected,
@@ -2938,65 +3922,113 @@ Future<String?> showKColorPicker({
   return showKModalSheet<String>(
     context: context,
     title: 'Pick color',
-    builder: (_) => _KColorPickerBody(selected: selected),
+    showCancel: false,
+    confirmLabel: 'Done',
+    builder: (_) => _KColorPickerBody(initialSelected: selected),
   );
 }
 
-class _KColorPickerBody extends StatelessWidget {
-  const _KColorPickerBody({required this.selected});
+class _KColorPickerBody extends StatefulWidget {
+  const _KColorPickerBody({required this.initialSelected});
 
-  final String selected;
+  final String initialSelected;
+
+  @override
+  State<_KColorPickerBody> createState() => _KColorPickerBodyState();
+}
+
+class _KColorPickerBodyState extends State<_KColorPickerBody> {
+  late String _current = widget.initialSelected;
+
+  String get _currentLabel =>
+      kAllColors.firstWhere(
+        (c) => c.id == _current,
+        orElse: () => const KColorOption(
+          id: '',
+          label: 'Custom',
+          swatch: Colors.transparent,
+        ),
+      ).label;
 
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    return GridView.count(
-      crossAxisCount: 6,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        for (final option in kAllColors)
-          _swatch(context, option, c),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Text.rich(
+            TextSpan(
+              text: 'Selected: ',
+              style: TextStyle(color: c.textMuted, fontSize: 14),
+              children: [
+                TextSpan(
+                  text: _currentLabel,
+                  style: TextStyle(
+                    color: c.accent700,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        GridView.count(
+          crossAxisCount: 6,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          children: [
+            for (final option in kAllColors) _swatch(option, c),
+          ],
+        ),
       ],
     );
   }
 
-  Widget _swatch(BuildContext context, KColorOption opt, KuruColors c) {
-    final isSelected = opt.id == selected;
+  Widget _swatch(KColorOption opt, KuruColors c) {
+    final isSelected = opt.id == _current;
+    // Visible ring uses an outer transparent container with a 4dp colored
+    // border around a 2dp gap, mirroring web's `ring-4 ring-offset-2`.
     return Semantics(
       label: opt.label,
       button: true,
+      selected: isSelected,
       child: GestureDetector(
-        onTap: () => Navigator.of(context).pop(opt.id),
+        onTap: () {
+          // Tap inside the picker: just update the displayed selection.
+          // Final commit happens when user taps the sheet's Done button —
+          // but for parity with web (which closes on tap), we close here
+          // and pass the selected id back through the sheet result.
+          Navigator.of(context).pop(opt.id);
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
-            color: opt.swatch,
             shape: BoxShape.circle,
             border: isSelected
                 ? Border.all(color: opt.swatch, width: 4)
                 : null,
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: opt.swatch.withValues(alpha: 0.5),
-                      blurRadius: 0,
-                      spreadRadius: 2,
+          ),
+          padding: isSelected ? const EdgeInsets.all(2) : EdgeInsets.zero,
+          child: Container(
+            decoration: BoxDecoration(
+              color: opt.swatch,
+              shape: BoxShape.circle,
+            ),
+            child: isSelected
+                ? const Center(
+                    child: Icon(
+                      TablerIcons.check,
+                      size: 18,
+                      color: Colors.white,
                     ),
-                  ]
+                  )
                 : null,
           ),
-          child: isSelected
-              ? Center(
-                  child: Icon(
-                    TablerIcons.check,
-                    size: 18,
-                    color: Colors.white,
-                  ),
-                )
-              : null,
         ),
       ),
     );
@@ -3018,7 +4050,7 @@ git commit -m "feat(core-design): KColorPicker (26 swatches via bottom sheet)"
 
 ---
 
-## Task 18: KIconPicker
+## Task 21: KIconPicker
 
 **Files:**
 - Create: `lib/design/core/modal/k_icon_picker.dart`
@@ -3122,7 +4154,11 @@ import 'package:kuru_mobile/design/core/modal/icon_mapping.dart';
 import 'package:kuru_mobile/design/core/modal/k_modal_sheet.dart';
 
 /// Shows the curated icon picker as a bottom sheet. Search filters the
-/// same curated set by substring (no full-Tabler search-all in v1).
+/// same curated set by substring (no full-Tabler search-all in v1 — see
+/// spec §6.4 KIconPicker for the null-fallback contract: consumers must
+/// handle `resolveIconName() == null` by falling back to
+/// `TablerIcons.layout_grid`).
+///
 /// Returns the picked icon name (e.g. 'package'), or null if dismissed.
 Future<String?> showKIconPicker({
   required BuildContext context,
@@ -3131,6 +4167,8 @@ Future<String?> showKIconPicker({
   return showKModalSheet<String>(
     context: context,
     title: 'Pick icon',
+    showCancel: false,
+    confirmLabel: 'Done',
     builder: (_) => _KIconPickerBody(selected: selected),
   );
 }
@@ -3215,7 +4253,432 @@ git commit -m "feat(core-design): KIconPicker with search-filtered curated grid"
 
 ---
 
-## Task 19: Demo / sandbox screen + login long-press wiring
+## Task 22: KListRow
+
+**Files:**
+- Create: `lib/design/core/catalog/k_list_row.dart`
+- Test: `test/design/core/catalog/k_list_row_test.dart`
+
+Single-row list item with leading widget (typically a colored icon circle), title, optional subtitle, optional trailing widget (typically a 3-dot KIconBtn). Used for brand list rows and category list-view rows.
+
+- [ ] **Step 1: Write the failing test**
+
+Create `test/design/core/catalog/k_list_row_test.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/design/core/catalog/k_list_row.dart';
+
+void main() {
+  Widget _wrap(Widget child) => MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: Scaffold(body: child),
+      );
+
+  testWidgets('KListRow renders title and subtitle', (tester) async {
+    await tester.pumpWidget(_wrap(const KListRow(
+      leading: Icon(Icons.bookmark),
+      title: 'Coffee Co',
+      subtitle: '15 products',
+    )));
+    await tester.pump();
+    expect(find.text('Coffee Co'), findsOneWidget);
+    expect(find.text('15 products'), findsOneWidget);
+  });
+
+  testWidgets('KListRow fires onTap', (tester) async {
+    var tapped = 0;
+    await tester.pumpWidget(_wrap(KListRow(
+      leading: const Icon(Icons.bookmark),
+      title: 'Coffee Co',
+      onTap: () => tapped++,
+    )));
+    await tester.pump();
+    await tester.tap(find.byType(KListRow));
+    expect(tapped, 1);
+  });
+
+  testWidgets('KListRow renders trailing widget', (tester) async {
+    await tester.pumpWidget(_wrap(KListRow(
+      leading: const Icon(Icons.bookmark),
+      title: 'Coffee Co',
+      trailing: IconButton(
+        icon: const Icon(Icons.more_vert),
+        onPressed: () {},
+      ),
+    )));
+    await tester.pump();
+    expect(find.byIcon(Icons.more_vert), findsOneWidget);
+  });
+
+  testWidgets('KListRow fires onLongPress', (tester) async {
+    var lp = 0;
+    await tester.pumpWidget(_wrap(KListRow(
+      leading: const Icon(Icons.bookmark),
+      title: 'Coffee Co',
+      onLongPress: () => lp++,
+    )));
+    await tester.pump();
+    await tester.longPress(find.byType(KListRow));
+    expect(lp, 1);
+  });
+}
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `flutter test test/design/core/catalog/k_list_row_test.dart`
+Expected: FAIL — `k_list_row.dart` not found.
+
+- [ ] **Step 3: Implement**
+
+Create `lib/design/core/catalog/k_list_row.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+
+/// Single-row list item with leading widget, title, optional subtitle,
+/// optional trailing. Used for brand list rows and category list-view
+/// rows. Mirrors web's `BrandRow` chrome (border + hover-accent edge).
+class KListRow extends StatelessWidget {
+  const KListRow({
+    required this.leading,
+    required this.title,
+    super.key,
+    this.subtitle,
+    this.trailing,
+    this.onTap,
+    this.onLongPress,
+  });
+
+  final Widget leading;
+  final String title;
+  final String? subtitle;
+  final Widget? trailing;
+  final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        onLongPress: onLongPress,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            border: Border.all(color: c.border, width: 1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              SizedBox(width: 40, height: 40, child: Center(child: leading)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: c.textMuted, fontSize: 12),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (trailing != null) ...[
+                const SizedBox(width: 8),
+                trailing!,
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `flutter test test/design/core/catalog/k_list_row_test.dart`
+Expected: PASS, 4 tests pass.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/design/core/catalog/k_list_row.dart test/design/core/catalog/k_list_row_test.dart
+git commit -m "feat(core-design): KListRow (brand/category list item)"
+```
+
+---
+
+## Task 23: KCategoryCard
+
+**Files:**
+- Create: `lib/design/core/catalog/k_category_card.dart`
+- Test: `test/design/core/catalog/k_category_card_test.dart`
+
+Grid card showing category icon, name, 2 stat boxes, optional low-stock badge, optional trailing action, optional 3-dot menu. Mirrors web's `MainCategoryCard.tsx`.
+
+- [ ] **Step 1: Write the failing test**
+
+Create `test/design/core/catalog/k_category_card_test.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/design/core/catalog/k_category_card.dart';
+
+void main() {
+  Widget _wrap(Widget child) => MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: Scaffold(body: SingleChildScrollView(child: child)),
+      );
+
+  testWidgets('KCategoryCard renders name + stats', (tester) async {
+    await tester.pumpWidget(_wrap(const KCategoryCard(
+      icon: Icons.coffee,
+      iconBg: Colors.brown,
+      name: 'Coffee',
+      stats: [
+        KCategoryCardStat(label: 'Items', value: '15'),
+        KCategoryCardStat(label: 'Value', value: '₫1,200,000'),
+      ],
+    )));
+    await tester.pump();
+    expect(find.text('Coffee'), findsOneWidget);
+    expect(find.text('Items'), findsOneWidget);
+    expect(find.text('15'), findsOneWidget);
+    expect(find.text('Value'), findsOneWidget);
+  });
+
+  testWidgets('KCategoryCard fires onTap', (tester) async {
+    var tapped = 0;
+    await tester.pumpWidget(_wrap(KCategoryCard(
+      icon: Icons.coffee,
+      iconBg: Colors.brown,
+      name: 'Coffee',
+      stats: const [
+        KCategoryCardStat(label: 'Items', value: '15'),
+      ],
+      onTap: () => tapped++,
+    )));
+    await tester.pump();
+    await tester.tap(find.byType(KCategoryCard));
+    expect(tapped, 1);
+  });
+
+  testWidgets('KCategoryCard renders lowStockBadge + trailingAction + menu',
+      (tester) async {
+    await tester.pumpWidget(_wrap(KCategoryCard(
+      icon: Icons.coffee,
+      iconBg: Colors.brown,
+      name: 'Coffee',
+      stats: const [KCategoryCardStat(label: 'Items', value: '15')],
+      lowStockBadge: const Text('2 low stock'),
+      trailingAction: const Text('Filter products'),
+      menu: const Icon(Icons.more_vert),
+    )));
+    await tester.pump();
+    expect(find.text('2 low stock'), findsOneWidget);
+    expect(find.text('Filter products'), findsOneWidget);
+    expect(find.byIcon(Icons.more_vert), findsOneWidget);
+  });
+}
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `flutter test test/design/core/catalog/k_category_card_test.dart`
+Expected: FAIL — `k_category_card.dart` not found.
+
+- [ ] **Step 3: Implement**
+
+Create `lib/design/core/catalog/k_category_card.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+
+class KCategoryCardStat {
+  const KCategoryCardStat({required this.label, required this.value});
+  final String label;
+  final String value;
+}
+
+/// Grid card for the Category screen's grid view. 32dp icon circle,
+/// name, 2-column stat grid, optional low-stock badge + trailing action
+/// + 3-dot menu. Mirrors `core-design/card/main-category-card/MainCategoryCard.tsx`.
+class KCategoryCard extends StatelessWidget {
+  const KCategoryCard({
+    required this.icon,
+    required this.iconBg,
+    required this.name,
+    required this.stats,
+    super.key,
+    this.lowStockBadge,
+    this.trailingAction,
+    this.menu,
+    this.onTap,
+  });
+
+  final IconData icon;
+  final Color iconBg;
+  final String name;
+  final List<KCategoryCardStat> stats;
+  final Widget? lowStockBadge;
+  final Widget? trailingAction;
+  final Widget? menu;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.border, width: 1),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: iconBg,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: c.surfaceElev, width: 2),
+                    ),
+                    child: Icon(icon, size: 16, color: Colors.white),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  if (menu != null) menu!,
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  for (var i = 0; i < stats.length; i++) ...[
+                    if (i > 0) const SizedBox(width: 8),
+                    Expanded(child: _statBox(c, stats[i])),
+                  ],
+                ],
+              ),
+              if (lowStockBadge != null || trailingAction != null) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    if (lowStockBadge != null) lowStockBadge!,
+                    const Spacer(),
+                    if (trailingAction != null) trailingAction!,
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statBox(KuruColors c, KCategoryCardStat s) => Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: c.surfaceHover,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: c.borderSoft, width: 1),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              s.label,
+              style: TextStyle(color: c.textMuted, fontSize: 12),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              s.value,
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      );
+}
+```
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `flutter test test/design/core/catalog/k_category_card_test.dart`
+Expected: PASS, 3 tests pass.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add lib/design/core/catalog/k_category_card.dart test/design/core/catalog/k_category_card_test.dart
+git commit -m "feat(core-design): KCategoryCard (grid view card)"
+```
+
+---
+
+## Task 24: Demo / sandbox screen + login long-press wiring
 
 **Files:**
 - Create: `lib/features/demo/core_design_demo_screen.dart`
@@ -3251,6 +4714,7 @@ void main() {
     expect(find.text('Input'), findsOneWidget);
     expect(find.text('Layout'), findsOneWidget);
     expect(find.text('Modal'), findsOneWidget);
+    expect(find.text('Catalog'), findsOneWidget);
   });
 }
 ```
@@ -3267,6 +4731,8 @@ Create `lib/features/demo/core_design_demo_screen.dart`:
 ```dart
 import 'package:flutter/material.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/design/core/catalog/k_category_card.dart';
+import 'package:kuru_mobile/design/core/catalog/k_list_row.dart';
 import 'package:kuru_mobile/design/core/feedback/k_badge.dart';
 import 'package:kuru_mobile/design/core/feedback/k_empty_state.dart';
 import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
@@ -3275,7 +4741,10 @@ import 'package:kuru_mobile/design/core/input/k_danger_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_icon_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_search_bar.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
+import 'package:kuru_mobile/design/core/input/k_select.dart';
 import 'package:kuru_mobile/design/core/input/k_tab_nav.dart';
+import 'package:kuru_mobile/design/core/input/k_text_field.dart';
+import 'package:kuru_mobile/design/core/input/k_textarea.dart';
 import 'package:kuru_mobile/design/core/layout/k_page_header.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 import 'package:kuru_mobile/design/core/modal/k_color_picker.dart';
@@ -3297,6 +4766,16 @@ class _CoreDesignDemoScreenState extends State<CoreDesignDemoScreen> {
   String _tab = 'all';
   String _color = 'red-400';
   String _icon = 'box';
+  String? _status = 'active';
+  final _textCtl = TextEditingController(text: 'Coffee Co');
+  final _textareaCtl = TextEditingController();
+
+  @override
+  void dispose() {
+    _textCtl.dispose();
+    _textareaCtl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -3321,6 +4800,7 @@ class _CoreDesignDemoScreenState extends State<CoreDesignDemoScreen> {
             _section(c, 'Input', _inputSection(c)),
             _section(c, 'Layout', _layoutSection(c)),
             _section(c, 'Modal', _modalSection(context, c)),
+            _section(c, 'Catalog', _catalogSection(c)),
             const SizedBox(height: 32),
           ],
         ),
@@ -3430,6 +4910,35 @@ class _CoreDesignDemoScreenState extends State<CoreDesignDemoScreen> {
             active: _tab,
             onChange: (id) => setState(() => _tab = id),
           ),
+          const SizedBox(height: 16),
+          const Text('TextField'),
+          const SizedBox(height: 4),
+          KTextField(
+            label: 'Brand name',
+            controller: _textCtl,
+            placeholder: 'e.g. Coffee Co',
+          ),
+          const SizedBox(height: 16),
+          const Text('Textarea'),
+          const SizedBox(height: 4),
+          KTextarea(
+            label: 'Description',
+            controller: _textareaCtl,
+            placeholder: 'A short description...',
+            maxLength: 200,
+          ),
+          const SizedBox(height: 16),
+          const Text('Select'),
+          const SizedBox(height: 4),
+          KSelect<String>(
+            label: 'Status',
+            value: _status,
+            options: const [
+              KSelectOption(value: 'active', label: 'Active'),
+              KSelectOption(value: 'inactive', label: 'Inactive'),
+            ],
+            onChanged: (v) => setState(() => _status = v),
+          ),
         ],
       );
 
@@ -3438,6 +4947,47 @@ class _CoreDesignDemoScreenState extends State<CoreDesignDemoScreen> {
         child: Text(
           'PageHeader rendered at top of this screen — scroll to see.',
         ),
+      );
+
+  Widget _catalogSection(KuruColors c) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('ListRow'),
+          const SizedBox(height: 4),
+          KListRow(
+            leading: const Icon(Icons.bookmark, color: Colors.orange),
+            title: 'Coffee Co',
+            subtitle: '15 products',
+            trailing: KIconBtn(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {},
+            ),
+            onTap: () {},
+          ),
+          const SizedBox(height: 16),
+          const Text('CategoryCard'),
+          const SizedBox(height: 4),
+          KCategoryCard(
+            icon: Icons.coffee,
+            iconBg: Colors.brown,
+            name: 'Coffee',
+            stats: const [
+              KCategoryCardStat(label: 'Items', value: '15'),
+              KCategoryCardStat(label: 'Value', value: '₫1.2M'),
+            ],
+            lowStockBadge: const KBadge(
+              label: '2 low stock',
+              tone: KBadgeTone.danger,
+              leadingIcon: Icons.warning_amber_rounded,
+            ),
+            menu: KIconBtn(
+              icon: const Icon(Icons.more_vert),
+              size: 32,
+              onPressed: () {},
+            ),
+            onTap: () {},
+          ),
+        ],
       );
 
   Widget _modalSection(BuildContext context, KuruColors c) => Column(
@@ -3557,14 +5107,14 @@ git commit -m "chore(core-design): debug-only demo screen + double-tap-logo entr
 
 ---
 
-## Task 20: Full test suite + analyzer wrap-up
+## Task 25: Full test suite + analyzer wrap-up
 
 **Files:** None modified directly — this task only runs commands and writes a final tag-less commit if anything needed adjusting.
 
 - [ ] **Step 1: Run the full test suite**
 
 Run: `flutter test`
-Expected: PASS, all tests (existing ~49 + ~35 new from this plan ≈ ~84 tests) green.
+Expected: PASS, all tests (existing ~49 + ~60 new from this plan ≈ ~109 tests) green.
 
 If any fail:
 - Read the failure message carefully.
@@ -3624,11 +5174,16 @@ For quick lookup when reviewing or debugging:
 | `lib/design/core/input/k_danger_btn.dart` | 10 |
 | `lib/design/core/input/k_icon_btn.dart` | 11 |
 | `lib/design/core/input/k_tab_nav.dart` | 12 |
-| `lib/design/core/layout/k_page_header.dart` | 13 |
-| `lib/design/core/modal/k_modal_sheet.dart` | 14 |
-| `lib/design/core/modal/k_confirm_dialog.dart` | 15 |
-| `lib/design/core/modal/k_action_sheet.dart` | 16 |
-| `lib/design/core/modal/k_color_picker.dart` | 17 |
-| `lib/design/core/modal/k_icon_picker.dart` | 18 |
-| `lib/features/demo/core_design_demo_screen.dart` + login wiring | 19 |
-| (full test + analyze) | 20 |
+| `lib/design/core/input/k_text_field.dart` | 13 |
+| `lib/design/core/input/k_textarea.dart` | 14 |
+| `lib/design/core/layout/k_page_header.dart` | 15 |
+| `lib/design/core/modal/k_modal_sheet.dart` | 16 |
+| `lib/design/core/modal/k_confirm_dialog.dart` | 17 |
+| `lib/design/core/modal/k_action_sheet.dart` | 18 |
+| `lib/design/core/input/k_select.dart` | 19 |
+| `lib/design/core/modal/k_color_picker.dart` | 20 |
+| `lib/design/core/modal/k_icon_picker.dart` | 21 |
+| `lib/design/core/catalog/k_list_row.dart` | 22 |
+| `lib/design/core/catalog/k_category_card.dart` | 23 |
+| `lib/features/demo/core_design_demo_screen.dart` + login wiring | 24 |
+| (full test + analyze) | 25 |
