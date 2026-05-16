@@ -1,6 +1,6 @@
 # kuru-mobile
 
-Flutter mobile companion app for **kuru** (codebase `gen-barcode`) — a multi-tenant retail / inventory management platform. The backend + web FE live at `../gen-barcode/`.
+Flutter identity flow demo for a multi-tenant retail / inventory platform. Portfolio-style learning project; the backend is a separate private repo using SuperTokens for auth + REST API for everything else.
 
 If you're a new Claude session: read this whole file first. It captures the conventions, recurring gotchas, and where to look for ground truth.
 
