@@ -20,6 +20,7 @@ import 'package:kuru_mobile/design/core/modal/k_color_picker.dart';
 import 'package:kuru_mobile/design/core/modal/k_confirm_dialog.dart';
 import 'package:kuru_mobile/design/core/modal/k_icon_picker.dart';
 import 'package:kuru_mobile/design/core/modal/k_modal_sheet.dart';
+import 'package:kuru_mobile/design/core/modal/k_popup_menu.dart';
 
 /// Debug-only sandbox that renders every core-design widget in one
 /// scrollable column. Used for manual visual verification — the unit/widget
@@ -235,6 +236,32 @@ class _CoreDesignDemoScreenState extends State<CoreDesignDemoScreen> {
               onPressed: () {},
             ),
             onTap: () {},
+          ),
+          const SizedBox(height: 16),
+          const Text('PopupMenu (long-press the row →)'),
+          const SizedBox(height: 4),
+          KPopupMenu<String>(
+            actions: const [
+              KActionItem(id: 'edit', label: 'Edit', icon: Icons.edit),
+              KActionItem(
+                id: 'duplicate',
+                label: 'Duplicate',
+                icon: Icons.copy,
+              ),
+              KActionItem(
+                id: 'delete',
+                label: 'Delete',
+                icon: Icons.delete_outline,
+                danger: true,
+              ),
+            ],
+            onSelected: (_) {},
+            child: KListRow(
+              leading: const Icon(Icons.local_cafe, color: Colors.brown),
+              title: 'Espresso',
+              subtitle: 'Long-press for native menu',
+              onTap: () {},
+            ),
           ),
           const SizedBox(height: 16),
           const Text('CategoryCard'),

@@ -48,6 +48,10 @@ dependencies:
   # Icons — port of Tabler icon set, matches kuru-web's @tabler/icons-react
   flutter_tabler_icons: ^1.43.0
 
+  # Native iOS/Android context menus — paired with KPopupMenu, sits
+  # alongside KActionSheet for bottom-sheet-vs-popup choice per use case
+  super_context_menu: ^0.9.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
