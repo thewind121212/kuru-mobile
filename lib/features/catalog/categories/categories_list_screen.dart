@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
-import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/text/search_normalize.dart';
 import 'package:kuru_mobile/design/core/catalog/k_list_row.dart';
@@ -124,8 +123,20 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                               itemCount: filtered.length,
                               separatorBuilder: (_, __) =>
                                   const Divider(height: 1),
-                              itemBuilder: (_, i) {
+                              itemBuilder: (ctx, i) {
                                 final c = filtered[i];
+                                final l2 = AppLocalizations.of(ctx);
+                                final parts = <String>[];
+                                final subs = c.subCategoriesCount ?? 0;
+                                if (subs > 0) {
+                                  parts.add(l2.categorySubCount(subs));
+                                }
+                                if (c.itemCount > 0) {
+                                  parts.add(l2.categoryItemCount(c.itemCount));
+                                }
+                                final subtitle = parts.isEmpty
+                                    ? null
+                                    : parts.join(' · ');
                                 return KListRow(
                                   leading: Icon(
                                     TablerIcons.layout_grid,
@@ -134,7 +145,7 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                                     ).colorScheme.primary,
                                   ),
                                   title: c.name ?? '',
-                                  subtitle: _subtitleFor(c),
+                                  subtitle: subtitle,
                                   onTap: () => context.go(
                                     '/catalog/categories/${c.categoryId}',
                                   ),
@@ -203,19 +214,4 @@ class _CategoryErrorState extends StatelessWidget {
       ),
     );
   }
-}
-
-String? _subtitleFor(gen.CategoryResponse c) {
-  // i18n: Use AppLocalizations.of(context).categorySubCount / categoryItemCount
-  // for plural forms once we wire this from the build method. For now we
-  // need a context-free helper, so use a simple join. Task 16's tests don't
-  // assert subtitle text, only that the row renders.
-  // TODO(catalog): refactor to pass context when subtitle
-  // becomes locale-sensitive.
-  final parts = <String>[];
-  final subs = c.subCategoriesCount ?? 0;
-  if (subs > 0) parts.add('$subs sub');
-  if (c.itemCount > 0) parts.add('${c.itemCount} items');
-  if (parts.isEmpty) return null;
-  return parts.join(' · ');
 }

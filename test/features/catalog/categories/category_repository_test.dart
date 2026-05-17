@@ -156,6 +156,78 @@ void main() {
         isA<NetworkException>(),
       );
     });
+
+    test('returns ApiFailure(UnauthorizedException) on 401', () async {
+      when(
+        () => api.getCategoryOverviewWithDepth(depth: any(named: 'depth')),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(),
+            statusCode: 401,
+            data: <String, dynamic>{
+              'success': false,
+              'error': <String, dynamic>{'message': 'unauthorized'},
+            },
+          ),
+        ),
+      );
+
+      final result = await repo.getOverview();
+
+      expect(result, isA<ApiFailure<List<gen.CategoryResponse>>>());
+      expect(
+        (result as ApiFailure<List<gen.CategoryResponse>>).err,
+        isA<UnauthorizedException>(),
+      );
+    });
+
+    test('returns ApiFailure(ServerException) on 500', () async {
+      when(
+        () => api.getCategoryOverviewWithDepth(depth: any(named: 'depth')),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(),
+            statusCode: 500,
+            data: <String, dynamic>{
+              'success': false,
+              'error': <String, dynamic>{'message': 'internal error'},
+            },
+          ),
+        ),
+      );
+
+      final result = await repo.getOverview();
+
+      expect(result, isA<ApiFailure<List<gen.CategoryResponse>>>());
+      final err = (result as ApiFailure<List<gen.CategoryResponse>>).err;
+      expect(err, isA<ServerException>());
+      expect((err as ServerException).statusCode, 500);
+    });
+
+    test('returns ApiFailure(TimeoutException) on connectionTimeout', () async {
+      when(
+        () => api.getCategoryOverviewWithDepth(depth: any(named: 'depth')),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.connectionTimeout,
+        ),
+      );
+
+      final result = await repo.getOverview();
+
+      expect(result, isA<ApiFailure<List<gen.CategoryResponse>>>());
+      expect(
+        (result as ApiFailure<List<gen.CategoryResponse>>).err,
+        isA<TimeoutException>(),
+      );
+    });
   });
 
   // ---------------------------------------------------------------------------
@@ -206,6 +278,84 @@ void main() {
         (result as ApiFailure<gen.CategoryResponse>).err,
         isA<ForbiddenException>(),
       );
+    });
+
+    test('returns ApiFailure(UnauthorizedException) on 401', () async {
+      when(
+        () => api.getCategoryById(
+          getCategoryByIdRequest: any(named: 'getCategoryByIdRequest'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(),
+            statusCode: 401,
+            data: <String, dynamic>{
+              'success': false,
+              'error': <String, dynamic>{'message': 'unauthorized'},
+            },
+          ),
+        ),
+      );
+
+      final result = await repo.getById('abc');
+
+      expect(result, isA<ApiFailure<gen.CategoryResponse>>());
+      expect(
+        (result as ApiFailure<gen.CategoryResponse>).err,
+        isA<UnauthorizedException>(),
+      );
+    });
+
+    test('returns ApiFailure(NetworkException) on connectionError', () async {
+      when(
+        () => api.getCategoryById(
+          getCategoryByIdRequest: any(named: 'getCategoryByIdRequest'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.connectionError,
+        ),
+      );
+
+      final result = await repo.getById('abc');
+
+      expect(result, isA<ApiFailure<gen.CategoryResponse>>());
+      expect(
+        (result as ApiFailure<gen.CategoryResponse>).err,
+        isA<NetworkException>(),
+      );
+    });
+
+    test('returns ApiFailure(ServerException) on 500', () async {
+      when(
+        () => api.getCategoryById(
+          getCategoryByIdRequest: any(named: 'getCategoryByIdRequest'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(),
+            statusCode: 500,
+            data: <String, dynamic>{
+              'success': false,
+              'error': <String, dynamic>{'message': 'internal error'},
+            },
+          ),
+        ),
+      );
+
+      final result = await repo.getById('abc');
+
+      expect(result, isA<ApiFailure<gen.CategoryResponse>>());
+      final err = (result as ApiFailure<gen.CategoryResponse>).err;
+      expect(err, isA<ServerException>());
+      expect((err as ServerException).statusCode, 500);
     });
   });
 }

@@ -103,6 +103,30 @@ void main() {
     },
   );
 
+  test(
+    'categoryByIdProvider re-fires when currentOrgIdProvider changes',
+    () async {
+      var callCount = 0;
+      final fakeRepo = _FakeCategoryRepo(onGetById: (_) => callCount++);
+
+      final container = ProviderContainer(
+        overrides: [categoryRepositoryProvider.overrideWithValue(fakeRepo)],
+      );
+      addTearDown(container.dispose);
+
+      // First read with org A.
+      container.read(currentOrgIdProvider.notifier).orgId = 'org-a';
+      await container.read(categoryByIdProvider('cat-1').future);
+      expect(callCount, 1);
+
+      // Switch to org B — provider should refire on next read.
+      container.read(currentOrgIdProvider.notifier).orgId = 'org-b';
+      container.invalidate(categoryByIdProvider('cat-1'));
+      await container.read(categoryByIdProvider('cat-1').future);
+      expect(callCount, 2);
+    },
+  );
+
   test('categoryByIdProvider.family fetches by UUID string', () async {
     final fakeRepo = _FakeCategoryRepo(
       onGetById: (id) => callCountsByid[id] = (callCountsByid[id] ?? 0) + 1,
