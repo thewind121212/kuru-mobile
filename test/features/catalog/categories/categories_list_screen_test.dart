@@ -158,4 +158,52 @@ void main() {
     expect(find.text('Electronics'), findsOneWidget);
     expect(find.text('Audio'), findsNothing);
   });
+
+  testWidgets('typing in search filters rows by normalized name', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const CategoriesListScreen(),
+        overrideOverview: categoryOverviewProvider.overrideWith(
+          (ref) async => [
+            _cat(id: '1', name: 'Điện tử'),
+            _cat(id: '2', name: 'Thực phẩm'),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.enterText(find.byType(TextField), 'dien');
+    await tester.pump();
+    expect(find.text('Điện tử'), findsOneWidget);
+    expect(find.text('Thực phẩm'), findsNothing);
+  });
+
+  testWidgets('search applies within active layer, not across all', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const CategoriesListScreen(),
+        overrideOverview: categoryOverviewProvider.overrideWith(
+          (ref) async => [
+            _cat(id: '1', name: 'Electronics'),
+            _cat(id: '2', name: 'Electron beam', layer: '2'),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    // Switch to layer 2 ("Sub")
+    await tester.tap(find.text('Sub'));
+    await tester.pump();
+    await tester.enterText(find.byType(TextField), 'electron');
+    await tester.pump();
+    // Only layer-2 match is visible
+    expect(find.text('Electron beam'), findsOneWidget);
+    expect(find.text('Electronics'), findsNothing);
+  });
 }

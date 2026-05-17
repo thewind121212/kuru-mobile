@@ -7,6 +7,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/core/text/search_normalize.dart';
 import 'package:kuru_mobile/design/core/catalog/k_list_row.dart';
 import 'package:kuru_mobile/design/core/feedback/k_empty_state.dart';
 import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
@@ -25,8 +26,7 @@ class CategoriesListScreen extends ConsumerStatefulWidget {
 }
 
 class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
-  // TODO(task-18): wire _searchQuery into categoriesListProvider filter.
-  String _searchQuery = ''; // ignore: unused_field
+  String _searchQuery = '';
   String _activeLayer = 'all';
 
   String _layerLabel(BuildContext context, String layer) {
@@ -97,6 +97,16 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                           : categories
                                 .where((c) => (c.layer ?? '1') == _activeLayer)
                                 .toList();
+                      final normalizedQuery = normalizeForSearch(_searchQuery);
+                      final filtered = normalizedQuery.isEmpty
+                          ? visible
+                          : visible
+                                .where(
+                                  (c) => normalizeForSearch(
+                                    c.name ?? '',
+                                  ).contains(normalizedQuery),
+                                )
+                                .toList();
                       return Column(
                         children: [
                           Padding(
@@ -111,11 +121,11 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                           const SizedBox(height: 12),
                           Expanded(
                             child: ListView.separated(
-                              itemCount: visible.length,
+                              itemCount: filtered.length,
                               separatorBuilder: (_, __) =>
                                   const Divider(height: 1),
                               itemBuilder: (_, i) {
-                                final c = visible[i];
+                                final c = filtered[i];
                                 return KListRow(
                                   leading: Icon(
                                     TablerIcons.layout_grid,
