@@ -18,7 +18,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginTitle => 'Welcome back';
 
   @override
-  String get loginSubtitle => 'Log in to kuru to keep managing your store.';
+  String get loginSubtitle =>
+      'Log in to Simplestore to keep managing your store.';
 
   @override
   String get fieldEmail => 'Email';
@@ -159,7 +160,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStep4Body =>
-      'Cash, bank transfer, or QR — you accept, kuru records every method instantly.';
+      'Cash, bank transfer, or QR — you accept, Simplestore records every method instantly.';
 
   @override
   String get onboardingStep5Title => 'One account, many stores.';
@@ -179,7 +180,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerTitle => 'Create an account';
 
   @override
-  String get registerSubtitle => 'Start with kuru in 30 seconds.';
+  String get registerSubtitle => 'Start with Simplestore in 30 seconds.';
 
   @override
   String get fieldFullName => 'Full name';

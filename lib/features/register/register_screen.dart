@@ -138,163 +138,172 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         children: [
           const AuthBackdrop(),
           SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
               child: Column(
                 children: [
-                  Row(
-                    children: [
-                      const AuthLogo(small: true),
-                      const SizedBox(width: 12),
-                      Expanded(
+                  Expanded(
+                    child: Center(
+                      child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            const AuthLogo(),
+                            const SizedBox(height: 18),
                             Text(
                               l.registerTitle,
                               style: TextStyle(
-                                fontSize: 22,
+                                fontSize: 30,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: -0.55,
+                                letterSpacing: -0.9,
                                 color: c.textPrimary,
-                                height: 1,
+                                height: 1.05,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
                               l.registerSubtitle,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 14,
                                 color: c.textMuted,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 22),
-                  KFormField(
-                    label: l.fieldFullName,
-                    controller: _name,
-                    icon: const Icon(Icons.person_outline),
-                    textInputAction: TextInputAction.next,
-                    errorText: _nameError,
-                  ),
-                  const SizedBox(height: 12),
-                  KFormField(
-                    label: l.fieldEmail,
-                    controller: _email,
-                    icon: const Icon(Icons.mail_outline),
-                    keyboardType: TextInputType.emailAddress,
-                    autofillHints: const [AutofillHints.email],
-                    textInputAction: TextInputAction.next,
-                    errorText: _emailError,
-                  ),
-                  const SizedBox(height: 12),
-                  KFormField(
-                    label: l.fieldPassword,
-                    controller: _password,
-                    icon: const Icon(Icons.lock_outline),
-                    obscureText: true,
-                    autofillHints: const [AutofillHints.newPassword],
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _submit(),
-                    errorText: _passwordError,
-                  ),
-                  const SizedBox(height: 8),
-                  PasswordStrengthMeter(password: _password.text),
-                  const SizedBox(height: 8),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      KCheckbox(
-                        value: _termsAccepted,
-                        hasError: _termsError != null,
-                        onChanged: (v) => setState(() {
-                          _termsAccepted = v;
-                          if (v) _termsError = null;
-                        }),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 1),
-                          child: Text.rich(
-                            TextSpan(
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: c.textSecondary,
-                                height: 1.45,
-                              ),
-                              children: [
-                                TextSpan(text: '${_termsPrefix(l)} '),
-                                TextSpan(
-                                  text: l.registerTermsTos,
-                                  style: TextStyle(
-                                    color: c.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                TextSpan(text: ' ${_termsConjunction(l)} '),
-                                TextSpan(
-                                  text: l.registerTermsPrivacy,
-                                  style: TextStyle(
-                                    color: c.primary,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const TextSpan(text: '.'),
-                              ],
+                            const SizedBox(height: 28),
+                            KFormField(
+                              label: l.fieldFullName,
+                              controller: _name,
+                              icon: const Icon(Icons.person_outline),
+                              textInputAction: TextInputAction.next,
+                              errorText: _nameError,
                             ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  // Reserved error slot — collapses to zero when no error, so
-                  // the layout doesn't jolt when the message appears. Mirrors
-                  // KFormField's pattern.
-                  AnimatedSize(
-                    duration: const Duration(milliseconds: 160),
-                    curve: Curves.easeOut,
-                    alignment: Alignment.topLeft,
-                    child: _termsError == null
-                        ? const SizedBox(width: double.infinity)
-                        : Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 6, 0, 0),
-                            child: Row(
+                            const SizedBox(height: 12),
+                            KFormField(
+                              label: l.fieldEmail,
+                              controller: _email,
+                              icon: const Icon(Icons.mail_outline),
+                              keyboardType: TextInputType.emailAddress,
+                              autofillHints: const [AutofillHints.email],
+                              textInputAction: TextInputAction.next,
+                              errorText: _emailError,
+                            ),
+                            const SizedBox(height: 12),
+                            KFormField(
+                              label: l.fieldPassword,
+                              controller: _password,
+                              icon: const Icon(Icons.lock_outline),
+                              obscureText: true,
+                              autofillHints: const [AutofillHints.newPassword],
+                              textInputAction: TextInputAction.done,
+                              onSubmitted: (_) => _submit(),
+                              errorText: _passwordError,
+                            ),
+                            const SizedBox(height: 8),
+                            PasswordStrengthMeter(password: _password.text),
+                            const SizedBox(height: 8),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Icon(
-                                  Icons.error_outline,
-                                  size: 12,
-                                  color: c.danger,
+                                KCheckbox(
+                                  value: _termsAccepted,
+                                  hasError: _termsError != null,
+                                  onChanged: (v) => setState(() {
+                                    _termsAccepted = v;
+                                    if (v) _termsError = null;
+                                  }),
                                 ),
-                                const SizedBox(width: 4),
-                                Flexible(
-                                  child: Text(
-                                    _termsError!,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: c.danger,
-                                      fontWeight: FontWeight.w500,
-                                      height: 1.25,
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 1),
+                                    child: Text.rich(
+                                      TextSpan(
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: c.textSecondary,
+                                          height: 1.45,
+                                        ),
+                                        children: [
+                                          TextSpan(
+                                            text: '${_termsPrefix(l)} ',
+                                          ),
+                                          TextSpan(
+                                            text: l.registerTermsTos,
+                                            style: TextStyle(
+                                              color: c.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          TextSpan(
+                                            text:
+                                                ' ${_termsConjunction(l)} ',
+                                          ),
+                                          TextSpan(
+                                            text: l.registerTermsPrivacy,
+                                            style: TextStyle(
+                                              color: c.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                          const TextSpan(text: '.'),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
+                            // Reserved error slot — collapses to zero when no
+                            // error, so the layout doesn't jolt when the
+                            // message appears. Mirrors KFormField's pattern.
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 160),
+                              curve: Curves.easeOut,
+                              alignment: Alignment.topLeft,
+                              child: _termsError == null
+                                  ? const SizedBox(width: double.infinity)
+                                  : Padding(
+                                      padding: const EdgeInsets.fromLTRB(
+                                        0,
+                                        6,
+                                        0,
+                                        0,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.error_outline,
+                                            size: 12,
+                                            color: c.danger,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              _termsError!,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: c.danger,
+                                                fontWeight: FontWeight.w500,
+                                                height: 1.25,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                            ),
+                            const SizedBox(height: 12),
+                            KPrimaryBtn(
+                              fullWidth: true,
+                              icon: const Icon(Icons.arrow_outward),
+                              onPressed: canSubmit ? _submit : null,
+                              child: Text(l.registerCta),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 16),
-                  KPrimaryBtn(
-                    fullWidth: true,
-                    icon: const Icon(Icons.arrow_outward),
-                    onPressed: canSubmit ? _submit : null,
-                    child: Text(l.registerCta),
-                  ),
-                  const SizedBox(height: 18),
                   GestureDetector(
                     onTap: () => context.go('/login'),
                     child: Row(
