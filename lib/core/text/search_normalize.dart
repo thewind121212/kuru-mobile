@@ -9,7 +9,7 @@ String normalizeForSearch(String input) {
   final lower = trimmed.toLowerCase();
   final decomposed = _toNfd(lower);
   // Strip Unicode combining marks (range U+0300-U+036F).
-  final stripped = decomposed.replaceAll(RegExp(r'[̀-ͯ]'), '');
+  final stripped = decomposed.replaceAll(RegExp('[̀-ͯ]'), '');
   // đ is not handled by NFD — replace explicitly.
   return stripped.replaceAll('đ', 'd');
 }

@@ -7,11 +7,11 @@ import 'package:kuru_mobile/features/settings/settings_stub_screen.dart';
 void main() {
   testWidgets('SettingsStubScreen shows the placeholder text', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const SettingsStubScreen(),
+          home: SettingsStubScreen(),
         ),
       ),
     );

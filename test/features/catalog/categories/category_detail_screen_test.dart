@@ -9,11 +9,11 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      ProviderScope(
+      const ProviderScope(
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const CategoryDetailScreen(categoryId: 'abc'),
+          home: CategoryDetailScreen(categoryId: 'abc'),
         ),
       ),
     );
