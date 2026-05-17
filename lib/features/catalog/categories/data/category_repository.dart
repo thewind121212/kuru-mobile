@@ -5,8 +5,8 @@ import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart' show mapDioError;
 
-/// Wraps the generated [gen.CategoryApi] with DioException → ApiException
-/// translation and [ApiResult]<T> returns.
+/// Wraps the generated `CategoryApi` with DioException → ApiException
+/// translation and `ApiResult<T>` returns.
 ///
 /// Owns **no** UI state — callers (widgets / Riverpod providers) manage their
 /// own loading flags.
@@ -17,9 +17,9 @@ import 'package:kuru_mobile/core/network/dio_client.dart' show mapDioError;
 /// ### Error extraction
 ///
 /// The [_extract] helper first checks whether the [DioException] already
-/// carries a typed [ApiException] attached by [_ErrorMappingInterceptor] (via
-/// `e.error`). If so it is returned as-is. Otherwise [mapDioError] is called
-/// as a fallback — this path is hit in tests that construct raw
+/// carries a typed [ApiException] attached by the error-mapping interceptor
+/// (via `e.error`). If so it is returned as-is. Otherwise [mapDioError] is
+/// called as a fallback — this path is hit in tests that construct raw
 /// [DioException]s without going through the interceptor stack.
 class CategoryRepository {
   CategoryRepository(this._api);
@@ -75,8 +75,8 @@ class CategoryRepository {
 
   /// Converts a [DioException] into a typed [ApiException].
   ///
-  /// Prefers any [ApiException] already attached to [e.error] by the
-  /// [_ErrorMappingInterceptor] — those carry exact status-code semantics.
+  /// Prefers any [ApiException] already attached to `e.error` by the
+  /// error-mapping interceptor — those carry exact status-code semantics.
   /// Falls back to [mapDioError] for raw exceptions (e.g. from unit tests).
   ApiException _extract(DioException e) {
     final attached = e.error;

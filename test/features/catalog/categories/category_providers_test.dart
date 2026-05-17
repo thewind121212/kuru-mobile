@@ -1,11 +1,43 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart';
+import 'package:kuru_mobile/features/catalog/categories/data/category_repository.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 
+// ---------------------------------------------------------------------------
+// Fake repo
+// ---------------------------------------------------------------------------
+
+class _FakeCategoryRepo implements CategoryRepository {
+  _FakeCategoryRepo({this.onGetOverview, this.onGetById});
+  final VoidCallback? onGetOverview;
+  final void Function(String id)? onGetById;
+
+  @override
+  Future<ApiResult<List<gen.CategoryResponse>>> getOverview({
+    int depth = 5,
+  }) async {
+    onGetOverview?.call();
+    return ApiResult.success(const []);
+  }
+
+  @override
+  Future<ApiResult<gen.CategoryResponse>> getById(String id) async {
+    onGetById?.call(id);
+    return ApiResult.success(gen.CategoryResponse((b) => b..categoryId = id));
+  }
+}
+
+final callCountsByid = <String, int>{};
+
 void main() {
+  tearDown(callCountsByid.clear);
+
   test('categoryApiClientProvider builds CategoryApi', () {
     final container = ProviderContainer(
       overrides: [
@@ -46,4 +78,47 @@ void main() {
       expect(api, isA<gen.CategoryApi>());
     },
   );
+
+  test(
+    'categoryOverviewProvider re-fires when currentOrgIdProvider changes',
+    () async {
+      var callCount = 0;
+      final fakeRepo = _FakeCategoryRepo(onGetOverview: () => callCount++);
+
+      final container = ProviderContainer(
+        overrides: [categoryRepositoryProvider.overrideWithValue(fakeRepo)],
+      );
+      addTearDown(container.dispose);
+
+      // First read with org A.
+      container.read(currentOrgIdProvider.notifier).orgId = 'org-a';
+      await container.read(categoryOverviewProvider.future);
+      expect(callCount, 1);
+
+      // Switch to org B — provider should refire on next read.
+      container.read(currentOrgIdProvider.notifier).orgId = 'org-b';
+      container.invalidate(categoryOverviewProvider);
+      await container.read(categoryOverviewProvider.future);
+      expect(callCount, 2);
+    },
+  );
+
+  test('categoryByIdProvider.family fetches by UUID string', () async {
+    final fakeRepo = _FakeCategoryRepo(
+      onGetById: (id) => callCountsByid[id] = (callCountsByid[id] ?? 0) + 1,
+    );
+
+    final container = ProviderContainer(
+      overrides: [categoryRepositoryProvider.overrideWithValue(fakeRepo)],
+    );
+    addTearDown(container.dispose);
+
+    container.read(currentOrgIdProvider.notifier).orgId = 'org-a';
+    await container.read(categoryByIdProvider('cat-1').future);
+    expect(callCountsByid['cat-1'], 1);
+
+    // Different family key — fresh fetch.
+    await container.read(categoryByIdProvider('cat-2').future);
+    expect(callCountsByid['cat-2'], 1);
+  });
 }

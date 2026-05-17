@@ -1,9 +1,12 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/supertokens_setup.dart';
 import 'package:kuru_mobile/core/env/env.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart';
+import 'package:kuru_mobile/features/catalog/categories/data/category_repository.dart';
 
 /// Generated Category API client wired with our configured Dio.
 ///
@@ -36,3 +39,29 @@ final categoryApiClientProvider = Provider<gen.CategoryApi>((ref) {
 
   return gen.KuruCategoryApi(dio: categoryDio).getCategoryApi();
 });
+
+/// Repository wired with the generated API client.
+final categoryRepositoryProvider = Provider<CategoryRepository>((ref) {
+  final api = ref.watch(categoryApiClientProvider);
+  return CategoryRepository(api);
+});
+
+/// Flat list of all categories for the current org. Watches
+/// [currentOrgIdProvider] so org switches auto-invalidate the cache.
+final categoryOverviewProvider = FutureProvider<List<gen.CategoryResponse>>((
+  ref,
+) async {
+  // watch — not read — so org changes refire this provider.
+  ref.watch(currentOrgIdProvider);
+  final repo = ref.watch(categoryRepositoryProvider);
+  return repo.getOverview().unwrap();
+});
+
+/// Single category by id. Family keyed by UUID string. Watches
+/// [currentOrgIdProvider] for the same reason as the overview provider.
+final categoryByIdProvider =
+    FutureProvider.family<gen.CategoryResponse, String>((ref, id) async {
+      ref.watch(currentOrgIdProvider);
+      final repo = ref.watch(categoryRepositoryProvider);
+      return repo.getById(id).unwrap();
+    });

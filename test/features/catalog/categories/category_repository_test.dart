@@ -21,7 +21,7 @@ gen.CategoryResponse _fakeCategoryResponse({String id = 'cat-1'}) =>
     );
 
 /// Wraps a list of [gen.CategoryResponse] in the full 200-wrapper the
-/// generated client returns from [getCategoryOverviewWithDepth].
+/// generated client returns from `getCategoryOverviewWithDepth`.
 Response<gen.GetCategoryOverview200Response> _overviewResponse(
   List<gen.CategoryResponse> items, {
   int statusCode = 200,
@@ -36,14 +36,14 @@ Response<gen.GetCategoryOverview200Response> _overviewResponse(
       ..timestamp = DateTime(2026),
   );
   return Response(
-    requestOptions: RequestOptions(path: ''),
+    requestOptions: RequestOptions(),
     statusCode: statusCode,
     data: outer,
   );
 }
 
 /// Wraps a single [gen.CategoryResponse] in the full 200-wrapper the
-/// generated client returns from [getCategoryById].
+/// generated client returns from `getCategoryById`.
 Response<gen.GetCategoryById200Response> _byIdResponse(
   gen.CategoryResponse category, {
   int statusCode = 200,
@@ -55,7 +55,7 @@ Response<gen.GetCategoryById200Response> _byIdResponse(
       ..timestamp = DateTime(2026),
   );
   return Response(
-    requestOptions: RequestOptions(path: ''),
+    requestOptions: RequestOptions(),
     statusCode: statusCode,
     data: outer,
   );
@@ -81,7 +81,7 @@ void main() {
   // ---------------------------------------------------------------------------
   group('getOverview', () {
     test('returns ApiSuccess with list on 200', () async {
-      final cats = [_fakeCategoryResponse(id: 'cat-1')];
+      final cats = [_fakeCategoryResponse()];
       when(
         () => api.getCategoryOverviewWithDepth(depth: any(named: 'depth')),
       ).thenAnswer((_) async => _overviewResponse(cats));
@@ -116,10 +116,10 @@ void main() {
         () => api.getCategoryOverviewWithDepth(depth: any(named: 'depth')),
       ).thenThrow(
         DioException(
-          requestOptions: RequestOptions(path: ''),
+          requestOptions: RequestOptions(),
           type: DioExceptionType.badResponse,
           response: Response(
-            requestOptions: RequestOptions(path: ''),
+            requestOptions: RequestOptions(),
             statusCode: 403,
             data: <String, dynamic>{
               'success': false,
@@ -143,7 +143,7 @@ void main() {
         () => api.getCategoryOverviewWithDepth(depth: any(named: 'depth')),
       ).thenThrow(
         DioException(
-          requestOptions: RequestOptions(path: ''),
+          requestOptions: RequestOptions(),
           type: DioExceptionType.connectionError,
         ),
       );
@@ -186,10 +186,10 @@ void main() {
         ),
       ).thenThrow(
         DioException(
-          requestOptions: RequestOptions(path: ''),
+          requestOptions: RequestOptions(),
           type: DioExceptionType.badResponse,
           response: Response(
-            requestOptions: RequestOptions(path: ''),
+            requestOptions: RequestOptions(),
             statusCode: 403,
             data: <String, dynamic>{
               'success': false,
