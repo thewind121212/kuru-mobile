@@ -114,4 +114,48 @@ void main() {
     expect(find.text("Couldn't load categories"), findsOneWidget);
     expect(find.text('Retry'), findsOneWidget);
   });
+
+  testWidgets('shows All + distinct layer tabs from data', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const CategoriesListScreen(),
+        overrideOverview: categoryOverviewProvider.overrideWith(
+          (ref) async => [
+            _cat(id: '1', name: 'A'),
+            _cat(id: '2', name: 'B'),
+            _cat(id: '3', name: 'C', layer: '2'),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.text('All'), findsOneWidget);
+    expect(find.text('Main'), findsOneWidget);
+    expect(find.text('Sub'), findsOneWidget);
+  });
+
+  testWidgets('tapping a layer tab filters the list', (tester) async {
+    await tester.pumpWidget(
+      _wrap(
+        const CategoriesListScreen(),
+        overrideOverview: categoryOverviewProvider.overrideWith(
+          (ref) async => [
+            _cat(id: '1', name: 'Electronics'),
+            _cat(id: '2', name: 'Audio', layer: '2'),
+          ],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    // Both visible under "All"
+    expect(find.text('Electronics'), findsOneWidget);
+    expect(find.text('Audio'), findsOneWidget);
+    // Tap "Main" — should hide Audio (layer 2)
+    await tester.tap(find.text('Main'));
+    await tester.pump();
+    expect(find.text('Electronics'), findsOneWidget);
+    expect(find.text('Audio'), findsNothing);
+  });
 }

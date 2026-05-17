@@ -12,6 +12,7 @@ import 'package:kuru_mobile/design/core/feedback/k_empty_state.dart';
 import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
 import 'package:kuru_mobile/design/core/input/k_search_bar.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
+import 'package:kuru_mobile/design/core/input/k_tab_nav.dart';
 import 'package:kuru_mobile/design/core/layout/k_page_header.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 
@@ -26,6 +27,21 @@ class CategoriesListScreen extends ConsumerStatefulWidget {
 class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
   // TODO(task-18): wire _searchQuery into categoriesListProvider filter.
   String _searchQuery = ''; // ignore: unused_field
+  String _activeLayer = 'all';
+
+  String _layerLabel(BuildContext context, String layer) {
+    final l = AppLocalizations.of(context);
+    switch (layer) {
+      case '1':
+        return l.categoryLayerMain;
+      case '2':
+        return l.categoryLayerSub;
+      case '3':
+        return l.categoryLayerSubSub;
+      default:
+        return '${l.categoryLayerPrefix} $layer';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,24 +77,62 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                           },
                         );
                       }
-                      return ListView.separated(
-                        itemCount: categories.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (_, i) {
-                          final c = categories[i];
-                          final subtitle = _subtitleFor(c);
-                          return KListRow(
-                            leading: Icon(
-                              TablerIcons.layout_grid,
-                              color: Theme.of(context).colorScheme.primary,
+                      final layers =
+                          categories.map((c) => c.layer ?? '1').toSet().toList()
+                            ..sort(
+                              (a, b) => (int.tryParse(a) ?? 0).compareTo(
+                                int.tryParse(b) ?? 0,
+                              ),
+                            );
+                      final tabs = <KTabItem<String>>[
+                        KTabItem(id: 'all', label: l.categoryLayerAll),
+                        for (final layer in layers)
+                          KTabItem(
+                            id: layer,
+                            label: _layerLabel(context, layer),
+                          ),
+                      ];
+                      final visible = _activeLayer == 'all'
+                          ? categories
+                          : categories
+                                .where((c) => (c.layer ?? '1') == _activeLayer)
+                                .toList();
+                      return Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: KTabNav<String>(
+                              tabs: tabs,
+                              active: _activeLayer,
+                              onChange: (id) =>
+                                  setState(() => _activeLayer = id),
                             ),
-                            title: c.name ?? '',
-                            subtitle: subtitle.isEmpty ? null : subtitle,
-                            onTap: () => context.go(
-                              '/catalog/categories/${c.categoryId}',
+                          ),
+                          const SizedBox(height: 12),
+                          Expanded(
+                            child: ListView.separated(
+                              itemCount: visible.length,
+                              separatorBuilder: (_, __) =>
+                                  const Divider(height: 1),
+                              itemBuilder: (_, i) {
+                                final c = visible[i];
+                                return KListRow(
+                                  leading: Icon(
+                                    TablerIcons.layout_grid,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
+                                  ),
+                                  title: c.name ?? '',
+                                  subtitle: _subtitleFor(c),
+                                  onTap: () => context.go(
+                                    '/catalog/categories/${c.categoryId}',
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -141,7 +195,7 @@ class _CategoryErrorState extends StatelessWidget {
   }
 }
 
-String _subtitleFor(gen.CategoryResponse c) {
+String? _subtitleFor(gen.CategoryResponse c) {
   // i18n: Use AppLocalizations.of(context).categorySubCount / categoryItemCount
   // for plural forms once we wire this from the build method. For now we
   // need a context-free helper, so use a simple join. Task 16's tests don't
@@ -152,5 +206,6 @@ String _subtitleFor(gen.CategoryResponse c) {
   final subs = c.subCategoriesCount ?? 0;
   if (subs > 0) parts.add('$subs sub');
   if (c.itemCount > 0) parts.add('${c.itemCount} items');
+  if (parts.isEmpty) return null;
   return parts.join(' · ');
 }
