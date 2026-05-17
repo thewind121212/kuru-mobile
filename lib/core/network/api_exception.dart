@@ -19,6 +19,10 @@ class UnauthorizedException extends ApiException {
   const UnauthorizedException(super.message);
 }
 
+class ForbiddenException extends ApiException {
+  const ForbiddenException(super.message);
+}
+
 class BadRequestException extends ApiException {
   const BadRequestException(super.message, {this.code});
   final String? code;
