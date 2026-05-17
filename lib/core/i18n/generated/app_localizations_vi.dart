@@ -282,6 +282,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get navSettings => 'Cài đặt';
 
   @override
+  String get posOpenTooltip => 'Mở thu ngân';
+
+  @override
+  String get posComingSoon => 'Thu ngân sắp ra mắt';
+
+  @override
   String get settingsPlaceholder => 'Cài đặt sắp ra mắt';
 
   @override

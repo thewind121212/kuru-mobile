@@ -109,6 +109,8 @@
   "navHome": "Home",
   "navCatalog": "Catalog",
   "navSettings": "Settings",
+  "posOpenTooltip": "Open POS",
+  "posComingSoon": "POS coming soon",
 
   "settingsPlaceholder": "Settings coming soon",
 

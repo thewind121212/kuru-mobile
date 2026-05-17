@@ -602,6 +602,18 @@ abstract class AppLocalizations {
   /// **'Cài đặt'**
   String get navSettings;
 
+  /// No description provided for @posOpenTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở thu ngân'**
+  String get posOpenTooltip;
+
+  /// No description provided for @posComingSoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu ngân sắp ra mắt'**
+  String get posComingSoon;
+
   /// No description provided for @settingsPlaceholder.
   ///
   /// In vi, this message translates to:

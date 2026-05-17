@@ -286,6 +286,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navSettings => 'Settings';
 
   @override
+  String get posOpenTooltip => 'Open POS';
+
+  @override
+  String get posComingSoon => 'POS coming soon';
+
+  @override
   String get settingsPlaceholder => 'Settings coming soon';
 
   @override
