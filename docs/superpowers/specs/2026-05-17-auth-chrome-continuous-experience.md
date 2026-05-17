@@ -16,15 +16,17 @@ Goal: a continuous branded experience from icon tap to first interactive screen 
 
 ## Scope
 
-Five items. Items 1–4 ship together as `v0.2.1`. Item 5 is explicitly deferred.
+Five items, all in scope for `v0.2.1`.
 
 | # | Item | Status |
 |---|---|---|
 | 1 | App icon — `flutter_launcher_icons` | In scope |
 | 2 | Native splash — `flutter_native_splash` | In scope |
-| 3 | Flutter splash minimum display time | In scope |
+| 3 | Flutter splash polish — min display 800 ms + 200 ms fade-in + version label | In scope |
 | 4 | Password show/hide eye toggle on `KFormField` | In scope |
-| 5 | `AuthLogo` polish | **Deferred** — current widget meets the bar; touch only with a specific complaint |
+| 5 | `AuthLogo` "simple" variant for splash use (no sparkles, gentler glow) | In scope |
+
+The enterprise-feel goal (reference apps: Stripe Dashboard, Linear, Notion, Square): static centered logo on a solid background, restrained motion, small version label at the foot, fade-in rather than pop-in. We achieve this *only on the splash surface* — login/register/TOTP/create-org/org-picker keep the full expressive `AuthLogo` (with sparkles + full glow) that v0.2.0 shipped. Item 5 is a focused additive change (a `simple` flag), not a rewrite, so there's no regression risk on the already-shipped screens.
 
 ## Architecture
 
@@ -138,11 +140,15 @@ flutter_native_splash:
 
 **Removal hook (not used now, but documented):** `dart run flutter_native_splash:remove` reverts to the Flutter-default white splash. Useful if we ever migrate to a different solution.
 
-### 3. Flutter splash minimum display time
+### 3. Flutter splash polish (min display + fade-in + version label)
 
 **File:** `lib/features/splash/splash_screen.dart`
 
-**Change:** wrap the bootstrap watch so the splash route holds for at least 800 ms even after bootstrap resolves. Design sketch — final shape settles during TDD, but the shape is:
+Three coordinated changes that together transform the splash from "blink-and-gone" into a deliberate enterprise-feel launch moment.
+
+#### 3a. Minimum display time (800 ms floor)
+
+Wrap the bootstrap watch so the splash route holds for at least 800 ms even after bootstrap resolves. Design sketch — final shape settles during TDD, but the shape is:
 
 ```dart
 final _splashStartProvider = StateProvider<DateTime>(
@@ -161,11 +167,23 @@ final _splashGateProvider = FutureProvider<BootstrapResult>((ref) async {
 });
 ```
 
-The router redirect reads `_splashGateProvider` instead of `appBootstrapProvider`. If bootstrap takes >800 ms, no artificial delay. If it takes <800 ms (the common case), the splash holds until the floor.
+The router redirect reads `_splashGateProvider` instead of `appBootstrapProvider`. The `_BootstrapNotifier` in `lib/app/router.dart` also switches to listening to the gate. If bootstrap takes >800 ms, no artificial delay. If it takes <800 ms (the common case), the splash holds until the floor.
+
+#### 3b. Fade-in on mount (200 ms ease-in)
+
+The splash content (logo + spinner + tagline + version label) fades in over 200 ms when `SplashScreen` mounts. Implementation: wrap the centered `Column` in an `AnimatedOpacity` driven by a flag flipped in `initState` via `WidgetsBinding.instance.addPostFrameCallback`. Curve: `Curves.easeIn`. Reads as a deliberate "wake up" beat between the static native splash and the animated Flutter splash, rather than a pop-in.
+
+#### 3c. Version label at the foot
+
+Add a small muted text "Kuru · v0.2.1" (or whatever the live version is) positioned near the bottom edge of the screen, well below the spinner + tagline. Style: `fontSize: 11`, color `c.textMuted.withValues(alpha: 0.7)`, letter-spacing 0.4, font weight 400. Reads as a real product, not a demo.
+
+Version source: `package_info_plus` package. Add to dependencies. Read once in a `FutureProvider<PackageInfo>` so the splash doesn't block on it (show empty string until resolved — usually instant since it's a synchronous-ish platform call).
 
 **Edge case — bootstrap error:** today the redirect routes to `/login` on error. The gate provider must propagate the error (don't swallow), and the redirect's `error:` branch keeps working.
 
 **Edge case — hot restart:** the splash provider re-evaluates on hot restart (R). That's fine — same path as cold start.
+
+**Edge case — package_info not yet resolved by the time splash renders:** version label slot stays empty (collapse to zero height to avoid layout shift). Acceptable since the resolution is near-instant.
 
 ### 4. Password show/hide eye toggle on `KFormField`
 
@@ -183,9 +201,22 @@ The router redirect reads `_splashGateProvider` instead of `appBootstrapProvider
 - The button must not push the existing `errorText` slot down — the height should sit inside the existing 6 px vertical padding of the KGlass row.
 - Tap target must still be ≥ 32 px even though the icon is 18 px — `IconButton` defaults to 48; we'll override to 32 with `constraints: BoxConstraints.tightFor(width: 32, height: 32)` + `padding: EdgeInsets.zero`.
 
-### 5. AuthLogo polish — deferred
+### 5. AuthLogo "simple" variant for splash use
 
-Current `AuthLogo` (`lib/design/auth/auth_logo.dart`) implements: glow animation (3s cycle), dual ambient shadows, two sparkle accents, glass border. No specific complaint from the user. Touching this without a goal risks regression of the v0.2.0 visual that was already approved. Revisit only when there's a concrete request (e.g., "the glow is too aggressive at night," "the sparkles distract from the wordmark").
+**File:** `lib/design/auth/auth_logo.dart`
+
+Add a `final bool simple` field (default `false`). When `simple: true`:
+
+- The two `Positioned` sparkle icons (`Icons.auto_awesome` top-right and bottom-left) are not rendered.
+- The glow animation runs at a calmer profile:
+  - blur radius: `16 + 4 * t` (was `24 + 8 * t`)
+  - offset y: `6 + 4 * t` (was `8 + 6 * t`)
+  - the secondary `ambient2` flash highlight (the `if (t < 0.5)` BoxShadow) is dropped entirely.
+- Everything else (size, radius, glass border, the image) is unchanged.
+
+`SplashScreen` uses `AuthLogo(simple: true)`. All other call sites (Login, Register, TOTP, RecoveryCode, CreateOrg, OrgPicker) continue to pass nothing — they get the existing expressive default. Zero regression risk on those screens.
+
+The motivation is purely the launch moment: the static native splash is enterprise-feel by design (it has to be — it can't animate), and the Flutter splash should feel like a natural continuation rather than the consumer-y bouncier login look bursting in. Sparkles especially are a clear "demo app" signal we want absent on first launch.
 
 ## Data flow
 
@@ -233,16 +264,28 @@ The native LaunchScreen → Flutter splash transition is handled by Flutter Engi
   - Tap flips to `visibility_off_outlined`, second tap flips back
   - Underlying `TextField.obscureText` mirrors the toggle state
   - Tooltip / semanticsLabel localized correctly (test in vi locale)
-- `test/features/splash/splash_screen_test.dart` — new tests for the gate:
+- `test/design/auth/auth_logo_test.dart` — new test cases for the simple variant:
+  - Default (`simple: false`) renders both sparkle `Icons.auto_awesome` icons
+  - `simple: true` renders zero sparkle icons
+  - `simple: true` still renders the centered image (verifies we didn't break the core)
+  - Both modes dispose the AnimationController cleanly (no leaked tickers)
+- `test/features/splash/splash_screen_test.dart` — new tests for the gate + polish:
   - When bootstrap resolves in <800 ms, splash holds until 800 ms then redirects
   - When bootstrap resolves in >800 ms (fake via override), splash redirects immediately on resolution (no extra delay)
   - When bootstrap errors, error propagates after the floor
+  - Splash uses `AuthLogo(simple: true)` (verify by finder + property check, not by visual)
+  - Version label renders when `PackageInfo` provider is overridden with a known value
+  - Version label slot collapses to zero size when `PackageInfo` is still loading (no layout shift)
+
+Note on the pump pattern: per `mobile-design` skill, never use `pumpAndSettle()` in tests that include `KSpinner` or `KPrimaryBtn`. The splash has a `CircularProgressIndicator` (Material's, not `KSpinner`) which also animates continuously — same rule applies. Use `pump()` + `pump(Duration(milliseconds: N))` to step.
 
 ### Manual verification
 
-- iOS simulator cold launch (iPhone 16, debug + release): logo visible on indigo background from icon-tap through to login. No white flash.
+- iOS simulator cold launch (iPhone 16, debug + release): logo visible on indigo background from icon-tap through to login. No white flash. Splash content fades in over ~200 ms instead of popping in. Version label visible at the bottom edge.
 - Android emulator cold launch: same.
 - iOS dark mode: native splash uses dark background. Flutter splash matches.
+- Login screen logo still has sparkles + full glow (no regression from item 5).
+- Register / TOTP / CreateOrg screens — same, sparkles present.
 - Login screen password field: eye icon toggles correctly.
 - Register screen password field (and password-confirm): eye icon present on both.
 - Home screen icon (after install): kuru logo on home grid, not Flutter "F".
@@ -258,24 +301,43 @@ The native LaunchScreen → Flutter splash transition is handled by Flutter Engi
 
 Recommend this order in the implementation plan:
 
-1. **Eye toggle first** (smallest, most isolated, pure Dart, TDD-friendly).
-2. **Splash min display time** (still pure Dart, easy to test in isolation).
-3. **App icon generation** (run generator, commit output, manual verify on simulator).
-4. **Native splash generation** (same pattern, commit output, manual verify).
+1. **Eye toggle** (smallest, most isolated, pure Dart, TDD-friendly).
+2. **`AuthLogo` simple variant** (additive bool flag; doesn't touch the existing default code path).
+3. **Splash polish — gate + fade-in + version label** (depends on item 2 since splash will switch to `AuthLogo(simple: true)`). Adds `package_info_plus` dep.
+4. **App icon generation** (run generator, commit output, manual verify on simulator).
+5. **Native splash generation** (same pattern, commit output, manual verify).
 
-Reason: 1 and 2 are pure-Dart logic changes — they can land independently and be merged even if 3/4 reveal asset issues. 3 and 4 touch generated platform files, which is harder to revert cleanly.
+Reason: items 1–3 are pure-Dart logic changes — they can land independently and be merged even if 4/5 reveal asset issues. 4 and 5 touch generated platform files, which is harder to revert cleanly. Within 1–3, ordering matters: the simple variant lands before the splash polish that consumes it.
 
-**Native-plugin gotcha (from CLAUDE.md):** `flutter_native_splash` and `flutter_launcher_icons` are pure Dart code generators — no native plugin code. The standard `flutter clean && pod install` dance is NOT required. Hot-reload won't show the new native splash (it's a build-time artifact), so after running each generator, do a full `flutter run` cold restart from terminal, not `R` from inside the running session.
+**Pubspec dep additions:**
+
+```yaml
+dependencies:
+  package_info_plus: ^8.1.2   # version label on splash; latest at impl time
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.6
+```
+
+**Native-plugin gotcha (from CLAUDE.md):** `flutter_native_splash` and `flutter_launcher_icons` are pure Dart code generators — no native plugin code, no `flutter clean && pod install` dance required. **However, `package_info_plus` DOES include native code** (it reads platform-side bundle info), so adding it triggers the standard:
+
+```
+flutter clean && flutter pub get && cd ios && pod install && cd .. && flutter run
+```
+
+Hot-reload won't show the new native splash either (it's a build-time artifact), so after running each generator, do a full `flutter run` cold restart from terminal, not `R` from inside the running session.
 
 ## Out of scope (do not do)
 
-- AuthLogo polish — deferred, see Component 5.
-- Adding a flutter native splash animation (Android 12+ supports animated splash; we use static for now to match iOS parity).
+- Animating the native splash (Android 12+ supports animated splash; we use static for now to match iOS parity).
 - Replacing the source logo asset — `assets/logo.webp` stays as-is.
 - Theme palette changes — indigo is the default and stays default.
 - Web / desktop platform icons — neither is in the v1 scope (mobile only).
 - Pre-loading any data in the splash beyond bootstrap.
 - Configuring `flutter_native_splash`'s `branding` image (the Android 12 footer logo). Possible v0.3+ enhancement.
+- Reworking the full `AuthLogo` (a `simple` flag is the entire change; the default code path stays bit-for-bit identical so v0.2.0 visuals on login/register don't regress).
+- Toning down `AuthBackdrop` (considered, rejected; the orbs are restrained enough at current opacity to read as enterprise-ambient rather than consumer-loud).
 
 ## Acceptance criteria
 
@@ -283,8 +345,12 @@ Reason: 1 and 2 are pure-Dart logic changes — they can land independently and 
 
 - [ ] Cold-launching on iOS simulator shows the kuru logo on indigo background continuously from icon-tap to login (no white frame visible to the user).
 - [ ] Same on Android emulator.
+- [ ] Splash content fades in over ~200 ms on mount (no abrupt pop-in).
+- [ ] Version label visible at the foot of the Flutter splash, low-contrast, reads "Kuru · v0.2.1" (or whatever the live package version is).
+- [ ] Splash logo has no sparkles and a calmer glow (the simple variant is in use).
+- [ ] Login / Register / TOTP / CreateOrg / OrgPicker screens visually unchanged from v0.2.0 (sparkles + full glow still present).
 - [ ] Home screen on both platforms shows the kuru logo, not Flutter's blue "F".
 - [ ] Login + Register password fields have a working eye toggle, with correct vi/en labels.
 - [ ] `flutter analyze` exits 0.
-- [ ] `flutter test` passes (existing tests + new ones for the eye toggle and splash gate).
+- [ ] `flutter test` passes (existing 136 + new tests for eye toggle, simple variant, splash polish).
 - [ ] Manual smoke test passes on a real iPhone for icon + cold-launch experience.
