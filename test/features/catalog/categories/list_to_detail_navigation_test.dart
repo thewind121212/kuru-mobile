@@ -31,7 +31,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          // Override the splash gate so bootstrap resolves immediately to authed.
+          // Override splash gate so bootstrap resolves immediately to authed.
           splashGateProvider.overrideWith(
             (ref) async => const BootstrapAuthed(fakeUser),
           ),
@@ -43,7 +43,7 @@ void main() {
           }),
           // Onboarding already seen — no SharedPrefs needed.
           onboardingSeenProvider.overrideWith(_SeenNotifier.new),
-          // Provide test category data directly, bypassing the real HTTP client.
+          // Provide test category data, bypassing the real HTTP client.
           categoryOverviewProvider.overrideWith(
             (ref) async => [
               gen.CategoryResponse(
