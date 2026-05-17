@@ -620,7 +620,7 @@ Sources read (all 10):
 | `categoryId` | `string` (optional) | `string?` (optional) | `category.id` (always set) | none |
 | `name` | `string` (optional) | `string?` (optional) | `category.name` (always set) | none |
 | `parentId` | `string` (optional) | `string?` (optional) | `category.parentId ?? NIL_UUID` or `undefined` | none |
-| `parentName` | `string` (optional) | **absent** | returned by `GetCategoryById` only; not in `.d.ts` | mismatch: openapi has it, `.d.ts` missing it — openapi matches actual service output; `.d.ts` is incomplete |
+| `parentName` | `string` (optional) | `parentName?: string` (line 30) | returned by `GetCategoryById` only | none |
 | `layer` | `string` (optional) | `string?` (optional) | `category.layer` | none |
 | `status` | `string` (optional) | `string?` (optional, no enum) | `CategoryStatus` enum value | minor: no enum narrowing in openapi or `.d.ts` (both use `string`); Zod DTO enforces `ACTIVE/INACTIVE/ARCHIVED` at ingress |
 | `colorSettings` | `string` (optional) | `string?` (optional) | `category.colorSettings ?? undefined` | none |
@@ -650,7 +650,7 @@ Sources read (all 10):
 
 1. `CategoryResponse.totalValue` — openapi: `type: string, format: int64`; `.d.ts` + service: `number`. The service performs floating-point arithmetic and returns a JS number. The openapi proto-generation mapped it to int64 string encoding, which is wrong for the Dart client. **Patched.**
 
-2. `CategoryResponse.parentName` — openapi has it as optional string; `be/types/category.d.ts` is missing this field entirely. The service's `GetCategoryById` does populate it. The `.d.ts` is incomplete (proto generation omit). The openapi shape is correct here; the `.d.ts` needs a future fix in gen-barcode. **No patch needed** — openapi is authoritative for this field.
+2. *(initial finding revised on review)* `CategoryResponse.parentName` was first flagged as missing from `be/types/category.d.ts`. Re-check confirmed `parentName?: string;` IS present at `be/types/category.d.ts:30`. No divergence; no patch needed.
 
 3. `CreateCategoryRequest` required fields — openapi marks `colorSettings` and `icon` as required; Zod DTO (source of truth for validation) has both as `.optional()`. Mobile must not mark these as required. **Patched.**
 

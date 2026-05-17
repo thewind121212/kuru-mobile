@@ -274,8 +274,8 @@ touch tool/openapi-patches/.gitkeep
 
 Per spec §3.1 / §9.2: when `../gen-barcode/openapi/<module>.openapi.json`
 disagrees with the BE handler / `.d.ts` / service `resData`, copy the file
-here and edit only the divergent shapes. Point the `@Openapi` annotation
-in `lib/core/network/openapi_clients.dart` at the patched copy.
+here and edit only the divergent shapes. The `tool/codegen.sh` script
+auto-detects patched copies and uses them in place of upstream.
 
 **Source-of-truth ordering (per CLAUDE.md):**
 1. `be/core/dto/<module>/*.dto.ts` — request body validation
