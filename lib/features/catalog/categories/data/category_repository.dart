@@ -1,0 +1,86 @@
+import 'package:dio/dio.dart';
+import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/core/logging/log.dart';
+import 'package:kuru_mobile/core/network/api_exception.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/network/dio_client.dart' show mapDioError;
+
+/// Wraps the generated [gen.CategoryApi] with DioException → ApiException
+/// translation and [ApiResult]<T> returns.
+///
+/// Owns **no** UI state — callers (widgets / Riverpod providers) manage their
+/// own loading flags.
+///
+/// Only read methods are exposed in Plan 1. Mutation methods (create, update,
+/// remove) come in Plan 2.
+///
+/// ### Error extraction
+///
+/// The [_extract] helper first checks whether the [DioException] already
+/// carries a typed [ApiException] attached by [_ErrorMappingInterceptor] (via
+/// `e.error`). If so it is returned as-is. Otherwise [mapDioError] is called
+/// as a fallback — this path is hit in tests that construct raw
+/// [DioException]s without going through the interceptor stack.
+class CategoryRepository {
+  CategoryRepository(this._api);
+  final gen.CategoryApi _api;
+
+  /// Fetches the flat category overview list up to [depth] levels deep.
+  ///
+  /// Returns [ApiSuccess] containing a (possibly empty) [List] of
+  /// [gen.CategoryResponse], or [ApiFailure] with a typed [ApiException].
+  Future<ApiResult<List<gen.CategoryResponse>>> getOverview({
+    int depth = 5,
+  }) async {
+    try {
+      final res = await _api.getCategoryOverviewWithDepth(depth: depth);
+      final overviews = res.data?.data.categoryOverviews?.toList() ?? const [];
+      log.i(
+        'GetCategoryOverviewWithDepth ← ${res.statusCode} '
+        'count=${overviews.length}',
+      );
+      return ApiResult.success(overviews);
+    } on DioException catch (e) {
+      log.w('GetCategoryOverviewWithDepth failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  /// Fetches a single category by its [categoryId].
+  ///
+  /// Returns [ApiSuccess]<[gen.CategoryResponse]> on success, or
+  /// [ApiFailure] with a typed [ApiException]. Returns
+  /// [ApiFailure]([UnknownException]) if the response body is null (should
+  /// never happen against the real BE but guards deserialization failures).
+  Future<ApiResult<gen.CategoryResponse>> getById(String categoryId) async {
+    try {
+      final res = await _api.getCategoryById(
+        getCategoryByIdRequest: gen.GetCategoryByIdRequest(
+          (b) => b..categoryId = categoryId,
+        ),
+      );
+      final body = res.data?.data;
+      if (body == null) {
+        return ApiResult.failure(
+          const UnknownException('Empty body from GetCategoryById'),
+        );
+      }
+      log.i('GetCategoryById ← ${res.statusCode} id=${body.categoryId}');
+      return ApiResult.success(body);
+    } on DioException catch (e) {
+      log.w('GetCategoryById($categoryId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  /// Converts a [DioException] into a typed [ApiException].
+  ///
+  /// Prefers any [ApiException] already attached to [e.error] by the
+  /// [_ErrorMappingInterceptor] — those carry exact status-code semantics.
+  /// Falls back to [mapDioError] for raw exceptions (e.g. from unit tests).
+  ApiException _extract(DioException e) {
+    final attached = e.error;
+    if (attached is ApiException) return attached;
+    return mapDioError(e);
+  }
+}
