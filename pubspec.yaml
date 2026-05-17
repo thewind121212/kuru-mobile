@@ -45,6 +45,9 @@ dependencies:
   # Logging
   logger: ^2.5.0
 
+  # Version label on splash + future "about" / debug-info screens
+  package_info_plus: ^8.1.2
+
   # Icons — port of Tabler icon set, matches kuru-web's @tabler/icons-react
   flutter_tabler_icons: ^1.43.0
 
@@ -61,8 +64,42 @@ dev_dependencies:
   json_serializable: ^6.9.0
   riverpod_generator: ^2.6.3
 
+  # Build-time asset generators — no app-bundle impact, no native code.
+  # Run with `dart run flutter_launcher_icons` / `flutter_native_splash:create`
+  # after changing the configs below.
+  flutter_launcher_icons: ^0.14.1
+  flutter_native_splash: ^2.4.6
+
 flutter:
   uses-material-design: true
   generate: true     # turns on flutter_localizations codegen
   assets:
     - assets/
+
+# App icon generation — produces iOS AppIcon set + Android mipmaps + adaptive
+# icon. Source: assets/logo.webp (1280x1280). Re-run when the source changes:
+#   dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/logo.webp"
+  ios: true
+  android: true
+  remove_alpha_ios: true
+  adaptive_icon_background: "#080814"
+  adaptive_icon_foreground: "assets/logo.webp"
+
+# Native launch screen — replaces the white-flash default. Background matches
+# the auth pageBg tone (indigo light/dark). Re-run when configs change:
+#   dart run flutter_native_splash:create
+flutter_native_splash:
+  color: "#F3F6FF"
+  color_dark: "#080814"
+  image: "assets/logo.png"
+  image_dark: "assets/logo.png"
+  android_12:
+    color: "#F3F6FF"
+    color_dark: "#080814"
+    image: "assets/logo.png"
+    image_dark: "assets/logo.png"
+  ios: true
+  android: true
+  fullscreen: false

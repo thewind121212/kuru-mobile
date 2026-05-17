@@ -7,6 +7,8 @@
   "loginSubtitle": "Log in to kuru to keep managing your store.",
   "fieldEmail": "Email",
   "fieldPassword": "Password",
+  "fieldPasswordShow": "Show password",
+  "fieldPasswordHide": "Hide password",
   "loginRemember": "Remember me",
   "loginCta": "Log in",
   "loginFooterNoAccount": "No account yet?",

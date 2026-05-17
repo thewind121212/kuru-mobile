@@ -134,6 +134,18 @@ abstract class AppLocalizations {
   /// **'Mật khẩu'**
   String get fieldPassword;
 
+  /// No description provided for @fieldPasswordShow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện mật khẩu'**
+  String get fieldPasswordShow;
+
+  /// No description provided for @fieldPasswordHide.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ẩn mật khẩu'**
+  String get fieldPasswordHide;
+
   /// No description provided for @loginRemember.
   ///
   /// In vi, this message translates to:

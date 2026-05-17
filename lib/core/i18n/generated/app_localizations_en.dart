@@ -27,6 +27,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get fieldPassword => 'Password';
 
   @override
+  String get fieldPasswordShow => 'Show password';
+
+  @override
+  String get fieldPasswordHide => 'Hide password';
+
+  @override
   String get loginRemember => 'Remember me';
 
   @override

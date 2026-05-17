@@ -27,6 +27,12 @@ class AppLocalizationsVi extends AppLocalizations {
   String get fieldPassword => 'Mật khẩu';
 
   @override
+  String get fieldPasswordShow => 'Hiện mật khẩu';
+
+  @override
+  String get fieldPasswordHide => 'Ẩn mật khẩu';
+
+  @override
   String get loginRemember => 'Ghi nhớ đăng nhập';
 
   @override

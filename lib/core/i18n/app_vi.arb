@@ -7,6 +7,8 @@
   "loginSubtitle": "Đăng nhập kuru để tiếp tục quản lý cửa hàng.",
   "fieldEmail": "Email",
   "fieldPassword": "Mật khẩu",
+  "fieldPasswordShow": "Hiện mật khẩu",
+  "fieldPasswordHide": "Ẩn mật khẩu",
   "loginRemember": "Ghi nhớ đăng nhập",
   "loginCta": "Đăng nhập",
   "loginFooterNoAccount": "Chưa có tài khoản?",
