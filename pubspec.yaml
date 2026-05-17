@@ -58,6 +58,8 @@ dependencies:
   # Required by dart-dio generated clients (Categories v0.4.0+)
   built_value: ^8.9.2
   built_collection: ^5.1.1
+  kuru_category_api:
+    path: lib/api/category
 
 dev_dependencies:
   flutter_test:
