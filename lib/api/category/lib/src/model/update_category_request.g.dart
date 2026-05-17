@@ -12,17 +12,18 @@ class _$UpdateCategoryRequest extends UpdateCategoryRequest {
   @override
   final CreateCategoryRequest categoryUpdate;
 
-  factory _$UpdateCategoryRequest(
-          [void Function(UpdateCategoryRequestBuilder)? updates]) =>
-      (UpdateCategoryRequestBuilder()..update(updates))._build();
+  factory _$UpdateCategoryRequest([
+    void Function(UpdateCategoryRequestBuilder)? updates,
+  ]) => (UpdateCategoryRequestBuilder()..update(updates))._build();
 
-  _$UpdateCategoryRequest._(
-      {required this.categoryId, required this.categoryUpdate})
-      : super._();
+  _$UpdateCategoryRequest._({
+    required this.categoryId,
+    required this.categoryUpdate,
+  }) : super._();
   @override
   UpdateCategoryRequest rebuild(
-          void Function(UpdateCategoryRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(UpdateCategoryRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   UpdateCategoryRequestBuilder toBuilder() =>
@@ -98,10 +99,14 @@ class UpdateCategoryRequestBuilder
   _$UpdateCategoryRequest _build() {
     _$UpdateCategoryRequest _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$UpdateCategoryRequest._(
             categoryId: BuiltValueNullFieldError.checkNotNull(
-                categoryId, r'UpdateCategoryRequest', 'categoryId'),
+              categoryId,
+              r'UpdateCategoryRequest',
+              'categoryId',
+            ),
             categoryUpdate: categoryUpdate.build(),
           );
     } catch (_) {
@@ -111,7 +116,10 @@ class UpdateCategoryRequestBuilder
         categoryUpdate.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'UpdateCategoryRequest', _$failedField, e.toString());
+          r'UpdateCategoryRequest',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

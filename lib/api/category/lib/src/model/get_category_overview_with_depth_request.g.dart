@@ -11,16 +11,16 @@ class _$GetCategoryOverviewWithDepthRequest
   @override
   final int depth;
 
-  factory _$GetCategoryOverviewWithDepthRequest(
-          [void Function(GetCategoryOverviewWithDepthRequestBuilder)?
-              updates]) =>
+  factory _$GetCategoryOverviewWithDepthRequest([
+    void Function(GetCategoryOverviewWithDepthRequestBuilder)? updates,
+  ]) =>
       (GetCategoryOverviewWithDepthRequestBuilder()..update(updates))._build();
 
   _$GetCategoryOverviewWithDepthRequest._({required this.depth}) : super._();
   @override
   GetCategoryOverviewWithDepthRequest rebuild(
-          void Function(GetCategoryOverviewWithDepthRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetCategoryOverviewWithDepthRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetCategoryOverviewWithDepthRequestBuilder toBuilder() =>
@@ -42,16 +42,18 @@ class _$GetCategoryOverviewWithDepthRequest
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GetCategoryOverviewWithDepthRequest')
-          ..add('depth', depth))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'GetCategoryOverviewWithDepthRequest',
+    )..add('depth', depth)).toString();
   }
 }
 
 class GetCategoryOverviewWithDepthRequestBuilder
     implements
-        Builder<GetCategoryOverviewWithDepthRequest,
-            GetCategoryOverviewWithDepthRequestBuilder> {
+        Builder<
+          GetCategoryOverviewWithDepthRequest,
+          GetCategoryOverviewWithDepthRequestBuilder
+        > {
   _$GetCategoryOverviewWithDepthRequest? _$v;
 
   int? _depth;
@@ -78,7 +80,8 @@ class GetCategoryOverviewWithDepthRequestBuilder
 
   @override
   void update(
-      void Function(GetCategoryOverviewWithDepthRequestBuilder)? updates) {
+    void Function(GetCategoryOverviewWithDepthRequestBuilder)? updates,
+  ) {
     if (updates != null) updates(this);
   }
 
@@ -86,10 +89,14 @@ class GetCategoryOverviewWithDepthRequestBuilder
   GetCategoryOverviewWithDepthRequest build() => _build();
 
   _$GetCategoryOverviewWithDepthRequest _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$GetCategoryOverviewWithDepthRequest._(
           depth: BuiltValueNullFieldError.checkNotNull(
-              depth, r'GetCategoryOverviewWithDepthRequest', 'depth'),
+            depth,
+            r'GetCategoryOverviewWithDepthRequest',
+            'depth',
+          ),
         );
     replace(_$result);
     return _$result;

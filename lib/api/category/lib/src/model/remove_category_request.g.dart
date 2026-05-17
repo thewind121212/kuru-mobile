@@ -10,15 +10,15 @@ class _$RemoveCategoryRequest extends RemoveCategoryRequest {
   @override
   final BuiltList<String>? categoryIds;
 
-  factory _$RemoveCategoryRequest(
-          [void Function(RemoveCategoryRequestBuilder)? updates]) =>
-      (RemoveCategoryRequestBuilder()..update(updates))._build();
+  factory _$RemoveCategoryRequest([
+    void Function(RemoveCategoryRequestBuilder)? updates,
+  ]) => (RemoveCategoryRequestBuilder()..update(updates))._build();
 
   _$RemoveCategoryRequest._({this.categoryIds}) : super._();
   @override
   RemoveCategoryRequest rebuild(
-          void Function(RemoveCategoryRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(RemoveCategoryRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   RemoveCategoryRequestBuilder toBuilder() =>
@@ -40,9 +40,9 @@ class _$RemoveCategoryRequest extends RemoveCategoryRequest {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'RemoveCategoryRequest')
-          ..add('categoryIds', categoryIds))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'RemoveCategoryRequest',
+    )..add('categoryIds', categoryIds)).toString();
   }
 }
 
@@ -85,10 +85,8 @@ class RemoveCategoryRequestBuilder
   _$RemoveCategoryRequest _build() {
     _$RemoveCategoryRequest _$result;
     try {
-      _$result = _$v ??
-          _$RemoveCategoryRequest._(
-            categoryIds: _categoryIds?.build(),
-          );
+      _$result =
+          _$v ?? _$RemoveCategoryRequest._(categoryIds: _categoryIds?.build());
     } catch (_) {
       late String _$failedField;
       try {
@@ -96,7 +94,10 @@ class RemoveCategoryRequestBuilder
         _categoryIds?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'RemoveCategoryRequest', _$failedField, e.toString());
+          r'RemoveCategoryRequest',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

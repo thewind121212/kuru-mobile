@@ -10,15 +10,15 @@ class _$GetCategoryByIdRequest extends GetCategoryByIdRequest {
   @override
   final String categoryId;
 
-  factory _$GetCategoryByIdRequest(
-          [void Function(GetCategoryByIdRequestBuilder)? updates]) =>
-      (GetCategoryByIdRequestBuilder()..update(updates))._build();
+  factory _$GetCategoryByIdRequest([
+    void Function(GetCategoryByIdRequestBuilder)? updates,
+  ]) => (GetCategoryByIdRequestBuilder()..update(updates))._build();
 
   _$GetCategoryByIdRequest._({required this.categoryId}) : super._();
   @override
   GetCategoryByIdRequest rebuild(
-          void Function(GetCategoryByIdRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetCategoryByIdRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetCategoryByIdRequestBuilder toBuilder() =>
@@ -40,9 +40,9 @@ class _$GetCategoryByIdRequest extends GetCategoryByIdRequest {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GetCategoryByIdRequest')
-          ..add('categoryId', categoryId))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'GetCategoryByIdRequest',
+    )..add('categoryId', categoryId)).toString();
   }
 }
 
@@ -81,10 +81,14 @@ class GetCategoryByIdRequestBuilder
   GetCategoryByIdRequest build() => _build();
 
   _$GetCategoryByIdRequest _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$GetCategoryByIdRequest._(
           categoryId: BuiltValueNullFieldError.checkNotNull(
-              categoryId, r'GetCategoryByIdRequest', 'categoryId'),
+            categoryId,
+            r'GetCategoryByIdRequest',
+            'categoryId',
+          ),
         );
     replace(_$result);
     return _$result;

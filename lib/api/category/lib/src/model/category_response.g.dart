@@ -36,26 +36,26 @@ class _$CategoryResponse extends CategoryResponse {
   @override
   final int lowStockCount;
 
-  factory _$CategoryResponse(
-          [void Function(CategoryResponseBuilder)? updates]) =>
-      (CategoryResponseBuilder()..update(updates))._build();
+  factory _$CategoryResponse([
+    void Function(CategoryResponseBuilder)? updates,
+  ]) => (CategoryResponseBuilder()..update(updates))._build();
 
-  _$CategoryResponse._(
-      {this.categoryId,
-      this.name,
-      this.parentId,
-      this.parentName,
-      this.description,
-      this.colorSettings,
-      this.layer,
-      this.icon,
-      this.subCategoriesCount,
-      this.status,
-      required this.orgId,
-      required this.itemCount,
-      required this.totalValue,
-      required this.lowStockCount})
-      : super._();
+  _$CategoryResponse._({
+    this.categoryId,
+    this.name,
+    this.parentId,
+    this.parentName,
+    this.description,
+    this.colorSettings,
+    this.layer,
+    this.icon,
+    this.subCategoriesCount,
+    this.status,
+    required this.orgId,
+    required this.itemCount,
+    required this.totalValue,
+    required this.lowStockCount,
+  }) : super._();
   @override
   CategoryResponse rebuild(void Function(CategoryResponseBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -229,7 +229,8 @@ class CategoryResponseBuilder
   CategoryResponse build() => _build();
 
   _$CategoryResponse _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$CategoryResponse._(
           categoryId: categoryId,
           name: name,
@@ -242,13 +243,25 @@ class CategoryResponseBuilder
           subCategoriesCount: subCategoriesCount,
           status: status,
           orgId: BuiltValueNullFieldError.checkNotNull(
-              orgId, r'CategoryResponse', 'orgId'),
+            orgId,
+            r'CategoryResponse',
+            'orgId',
+          ),
           itemCount: BuiltValueNullFieldError.checkNotNull(
-              itemCount, r'CategoryResponse', 'itemCount'),
+            itemCount,
+            r'CategoryResponse',
+            'itemCount',
+          ),
           totalValue: BuiltValueNullFieldError.checkNotNull(
-              totalValue, r'CategoryResponse', 'totalValue'),
+            totalValue,
+            r'CategoryResponse',
+            'totalValue',
+          ),
           lowStockCount: BuiltValueNullFieldError.checkNotNull(
-              lowStockCount, r'CategoryResponse', 'lowStockCount'),
+            lowStockCount,
+            r'CategoryResponse',
+            'lowStockCount',
+          ),
         );
     replace(_$result);
     return _$result;

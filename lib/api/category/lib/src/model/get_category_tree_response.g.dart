@@ -10,15 +10,15 @@ class _$GetCategoryTreeResponse extends GetCategoryTreeResponse {
   @override
   final BuiltList<CategoryResponse>? categoryTree;
 
-  factory _$GetCategoryTreeResponse(
-          [void Function(GetCategoryTreeResponseBuilder)? updates]) =>
-      (GetCategoryTreeResponseBuilder()..update(updates))._build();
+  factory _$GetCategoryTreeResponse([
+    void Function(GetCategoryTreeResponseBuilder)? updates,
+  ]) => (GetCategoryTreeResponseBuilder()..update(updates))._build();
 
   _$GetCategoryTreeResponse._({this.categoryTree}) : super._();
   @override
   GetCategoryTreeResponse rebuild(
-          void Function(GetCategoryTreeResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetCategoryTreeResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetCategoryTreeResponseBuilder toBuilder() =>
@@ -41,9 +41,9 @@ class _$GetCategoryTreeResponse extends GetCategoryTreeResponse {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GetCategoryTreeResponse')
-          ..add('categoryTree', categoryTree))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'GetCategoryTreeResponse',
+    )..add('categoryTree', categoryTree)).toString();
   }
 }
 
@@ -87,10 +87,9 @@ class GetCategoryTreeResponseBuilder
   _$GetCategoryTreeResponse _build() {
     _$GetCategoryTreeResponse _$result;
     try {
-      _$result = _$v ??
-          _$GetCategoryTreeResponse._(
-            categoryTree: _categoryTree?.build(),
-          );
+      _$result =
+          _$v ??
+          _$GetCategoryTreeResponse._(categoryTree: _categoryTree?.build());
     } catch (_) {
       late String _$failedField;
       try {
@@ -98,7 +97,10 @@ class GetCategoryTreeResponseBuilder
         _categoryTree?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'GetCategoryTreeResponse', _$failedField, e.toString());
+          r'GetCategoryTreeResponse',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

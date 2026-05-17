@@ -10,15 +10,15 @@ class _$CreateCategoryResponse extends CreateCategoryResponse {
   @override
   final String? categoryId;
 
-  factory _$CreateCategoryResponse(
-          [void Function(CreateCategoryResponseBuilder)? updates]) =>
-      (CreateCategoryResponseBuilder()..update(updates))._build();
+  factory _$CreateCategoryResponse([
+    void Function(CreateCategoryResponseBuilder)? updates,
+  ]) => (CreateCategoryResponseBuilder()..update(updates))._build();
 
   _$CreateCategoryResponse._({this.categoryId}) : super._();
   @override
   CreateCategoryResponse rebuild(
-          void Function(CreateCategoryResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(CreateCategoryResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   CreateCategoryResponseBuilder toBuilder() =>
@@ -40,9 +40,9 @@ class _$CreateCategoryResponse extends CreateCategoryResponse {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'CreateCategoryResponse')
-          ..add('categoryId', categoryId))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'CreateCategoryResponse',
+    )..add('categoryId', categoryId)).toString();
   }
 }
 
@@ -81,10 +81,7 @@ class CreateCategoryResponseBuilder
   CreateCategoryResponse build() => _build();
 
   _$CreateCategoryResponse _build() {
-    final _$result = _$v ??
-        _$CreateCategoryResponse._(
-          categoryId: categoryId,
-        );
+    final _$result = _$v ?? _$CreateCategoryResponse._(categoryId: categoryId);
     replace(_$result);
     return _$result;
   }

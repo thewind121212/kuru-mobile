@@ -14,13 +14,15 @@ class _$ApiErrorResponse extends ApiErrorResponse {
   @override
   final DateTime timestamp;
 
-  factory _$ApiErrorResponse(
-          [void Function(ApiErrorResponseBuilder)? updates]) =>
-      (ApiErrorResponseBuilder()..update(updates))._build();
+  factory _$ApiErrorResponse([
+    void Function(ApiErrorResponseBuilder)? updates,
+  ]) => (ApiErrorResponseBuilder()..update(updates))._build();
 
-  _$ApiErrorResponse._(
-      {required this.success, required this.error, required this.timestamp})
-      : super._();
+  _$ApiErrorResponse._({
+    required this.success,
+    required this.error,
+    required this.timestamp,
+  }) : super._();
   @override
   ApiErrorResponse rebuild(void Function(ApiErrorResponseBuilder) updates) =>
       (toBuilder()..update(updates)).build();
@@ -106,13 +108,20 @@ class ApiErrorResponseBuilder
   _$ApiErrorResponse _build() {
     _$ApiErrorResponse _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$ApiErrorResponse._(
             success: BuiltValueNullFieldError.checkNotNull(
-                success, r'ApiErrorResponse', 'success'),
+              success,
+              r'ApiErrorResponse',
+              'success',
+            ),
             error: error.build(),
             timestamp: BuiltValueNullFieldError.checkNotNull(
-                timestamp, r'ApiErrorResponse', 'timestamp'),
+              timestamp,
+              r'ApiErrorResponse',
+              'timestamp',
+            ),
           );
     } catch (_) {
       late String _$failedField;
@@ -121,7 +130,10 @@ class ApiErrorResponseBuilder
         error.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'ApiErrorResponse', _$failedField, e.toString());
+          r'ApiErrorResponse',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

@@ -14,16 +14,16 @@ class _$ApiErrorResponseError extends ApiErrorResponseError {
   @override
   final BuiltMap<String, JsonObject?>? details;
 
-  factory _$ApiErrorResponseError(
-          [void Function(ApiErrorResponseErrorBuilder)? updates]) =>
-      (ApiErrorResponseErrorBuilder()..update(updates))._build();
+  factory _$ApiErrorResponseError([
+    void Function(ApiErrorResponseErrorBuilder)? updates,
+  ]) => (ApiErrorResponseErrorBuilder()..update(updates))._build();
 
   _$ApiErrorResponseError._({required this.message, this.code, this.details})
-      : super._();
+    : super._();
   @override
   ApiErrorResponseError rebuild(
-          void Function(ApiErrorResponseErrorBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(ApiErrorResponseErrorBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   ApiErrorResponseErrorBuilder toBuilder() =>
@@ -107,10 +107,14 @@ class ApiErrorResponseErrorBuilder
   _$ApiErrorResponseError _build() {
     _$ApiErrorResponseError _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$ApiErrorResponseError._(
             message: BuiltValueNullFieldError.checkNotNull(
-                message, r'ApiErrorResponseError', 'message'),
+              message,
+              r'ApiErrorResponseError',
+              'message',
+            ),
             code: code,
             details: _details?.build(),
           );
@@ -121,7 +125,10 @@ class ApiErrorResponseErrorBuilder
         _details?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'ApiErrorResponseError', _$failedField, e.toString());
+          r'ApiErrorResponseError',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

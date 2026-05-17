@@ -10,15 +10,15 @@ class _$UpdateCategoryResponse extends UpdateCategoryResponse {
   @override
   final String? categoryId;
 
-  factory _$UpdateCategoryResponse(
-          [void Function(UpdateCategoryResponseBuilder)? updates]) =>
-      (UpdateCategoryResponseBuilder()..update(updates))._build();
+  factory _$UpdateCategoryResponse([
+    void Function(UpdateCategoryResponseBuilder)? updates,
+  ]) => (UpdateCategoryResponseBuilder()..update(updates))._build();
 
   _$UpdateCategoryResponse._({this.categoryId}) : super._();
   @override
   UpdateCategoryResponse rebuild(
-          void Function(UpdateCategoryResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(UpdateCategoryResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   UpdateCategoryResponseBuilder toBuilder() =>
@@ -40,9 +40,9 @@ class _$UpdateCategoryResponse extends UpdateCategoryResponse {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'UpdateCategoryResponse')
-          ..add('categoryId', categoryId))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'UpdateCategoryResponse',
+    )..add('categoryId', categoryId)).toString();
   }
 }
 
@@ -81,10 +81,7 @@ class UpdateCategoryResponseBuilder
   UpdateCategoryResponse build() => _build();
 
   _$UpdateCategoryResponse _build() {
-    final _$result = _$v ??
-        _$UpdateCategoryResponse._(
-          categoryId: categoryId,
-        );
+    final _$result = _$v ?? _$UpdateCategoryResponse._(categoryId: categoryId);
     replace(_$result);
     return _$result;
   }

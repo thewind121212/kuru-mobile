@@ -14,17 +14,19 @@ class _$GetCategoryById200Response extends GetCategoryById200Response {
   @override
   final DateTime timestamp;
 
-  factory _$GetCategoryById200Response(
-          [void Function(GetCategoryById200ResponseBuilder)? updates]) =>
-      (GetCategoryById200ResponseBuilder()..update(updates))._build();
+  factory _$GetCategoryById200Response([
+    void Function(GetCategoryById200ResponseBuilder)? updates,
+  ]) => (GetCategoryById200ResponseBuilder()..update(updates))._build();
 
-  _$GetCategoryById200Response._(
-      {required this.success, required this.data, required this.timestamp})
-      : super._();
+  _$GetCategoryById200Response._({
+    required this.success,
+    required this.data,
+    required this.timestamp,
+  }) : super._();
   @override
   GetCategoryById200Response rebuild(
-          void Function(GetCategoryById200ResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetCategoryById200ResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetCategoryById200ResponseBuilder toBuilder() =>
@@ -108,13 +110,20 @@ class GetCategoryById200ResponseBuilder
   _$GetCategoryById200Response _build() {
     _$GetCategoryById200Response _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$GetCategoryById200Response._(
             success: BuiltValueNullFieldError.checkNotNull(
-                success, r'GetCategoryById200Response', 'success'),
+              success,
+              r'GetCategoryById200Response',
+              'success',
+            ),
             data: data.build(),
             timestamp: BuiltValueNullFieldError.checkNotNull(
-                timestamp, r'GetCategoryById200Response', 'timestamp'),
+              timestamp,
+              r'GetCategoryById200Response',
+              'timestamp',
+            ),
           );
     } catch (_) {
       late String _$failedField;
@@ -123,7 +132,10 @@ class GetCategoryById200ResponseBuilder
         data.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'GetCategoryById200Response', _$failedField, e.toString());
+          r'GetCategoryById200Response',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

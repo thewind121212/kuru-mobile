@@ -66,10 +66,12 @@ generate() {
     --additional-properties=pubName=kuru_${module}_api,pubAuthor=kuru,pubVersion=0.4.0
 
   # openapi-generator emits sdk '>=2.15.0 <4.0.0' which doesn't match the
-  # host app's Dart 3 constraint — causes a "language version override" CFE
-  # error at iOS build time. Patch to Dart 3 before pub get / build_runner.
-  # sed -i syntax: BSD (macOS) requires "''", GNU sed accepts "".
-  sed -i.bak "s|sdk: '>=2.15.0 <4.0.0'|sdk: '>=3.0.0 <4.0.0'|" "lib/api/${module}/pubspec.yaml"
+  # host app's Dart 3.11 lower bound. The mismatch causes a "language
+  # version override" CFE error at iOS build time when the parent .dart
+  # file and its .g.dart part get different effective language versions.
+  # Bumping to >=3.11.0 to match the host eliminates the boundary entirely.
+  # sed -i: BSD (macOS) requires the backup suffix.
+  sed -i.bak "s|sdk: '>=2.15.0 <4.0.0'|sdk: '>=3.11.0 <4.0.0'|" "lib/api/${module}/pubspec.yaml"
   rm -f "lib/api/${module}/pubspec.yaml.bak"
 
   # dart-dio output uses built_value, which requires a build_runner pass

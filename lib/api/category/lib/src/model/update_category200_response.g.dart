@@ -14,17 +14,19 @@ class _$UpdateCategory200Response extends UpdateCategory200Response {
   @override
   final DateTime timestamp;
 
-  factory _$UpdateCategory200Response(
-          [void Function(UpdateCategory200ResponseBuilder)? updates]) =>
-      (UpdateCategory200ResponseBuilder()..update(updates))._build();
+  factory _$UpdateCategory200Response([
+    void Function(UpdateCategory200ResponseBuilder)? updates,
+  ]) => (UpdateCategory200ResponseBuilder()..update(updates))._build();
 
-  _$UpdateCategory200Response._(
-      {required this.success, required this.data, required this.timestamp})
-      : super._();
+  _$UpdateCategory200Response._({
+    required this.success,
+    required this.data,
+    required this.timestamp,
+  }) : super._();
   @override
   UpdateCategory200Response rebuild(
-          void Function(UpdateCategory200ResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(UpdateCategory200ResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   UpdateCategory200ResponseBuilder toBuilder() =>
@@ -108,13 +110,20 @@ class UpdateCategory200ResponseBuilder
   _$UpdateCategory200Response _build() {
     _$UpdateCategory200Response _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$UpdateCategory200Response._(
             success: BuiltValueNullFieldError.checkNotNull(
-                success, r'UpdateCategory200Response', 'success'),
+              success,
+              r'UpdateCategory200Response',
+              'success',
+            ),
             data: data.build(),
             timestamp: BuiltValueNullFieldError.checkNotNull(
-                timestamp, r'UpdateCategory200Response', 'timestamp'),
+              timestamp,
+              r'UpdateCategory200Response',
+              'timestamp',
+            ),
           );
     } catch (_) {
       late String _$failedField;
@@ -123,7 +132,10 @@ class UpdateCategory200ResponseBuilder
         data.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'UpdateCategory200Response', _$failedField, e.toString());
+          r'UpdateCategory200Response',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

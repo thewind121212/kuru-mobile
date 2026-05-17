@@ -14,17 +14,19 @@ class _$CreateCategory200Response extends CreateCategory200Response {
   @override
   final DateTime timestamp;
 
-  factory _$CreateCategory200Response(
-          [void Function(CreateCategory200ResponseBuilder)? updates]) =>
-      (CreateCategory200ResponseBuilder()..update(updates))._build();
+  factory _$CreateCategory200Response([
+    void Function(CreateCategory200ResponseBuilder)? updates,
+  ]) => (CreateCategory200ResponseBuilder()..update(updates))._build();
 
-  _$CreateCategory200Response._(
-      {required this.success, required this.data, required this.timestamp})
-      : super._();
+  _$CreateCategory200Response._({
+    required this.success,
+    required this.data,
+    required this.timestamp,
+  }) : super._();
   @override
   CreateCategory200Response rebuild(
-          void Function(CreateCategory200ResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(CreateCategory200ResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   CreateCategory200ResponseBuilder toBuilder() =>
@@ -108,13 +110,20 @@ class CreateCategory200ResponseBuilder
   _$CreateCategory200Response _build() {
     _$CreateCategory200Response _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$CreateCategory200Response._(
             success: BuiltValueNullFieldError.checkNotNull(
-                success, r'CreateCategory200Response', 'success'),
+              success,
+              r'CreateCategory200Response',
+              'success',
+            ),
             data: data.build(),
             timestamp: BuiltValueNullFieldError.checkNotNull(
-                timestamp, r'CreateCategory200Response', 'timestamp'),
+              timestamp,
+              r'CreateCategory200Response',
+              'timestamp',
+            ),
           );
     } catch (_) {
       late String _$failedField;
@@ -123,7 +132,10 @@ class CreateCategory200ResponseBuilder
         data.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'CreateCategory200Response', _$failedField, e.toString());
+          r'CreateCategory200Response',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

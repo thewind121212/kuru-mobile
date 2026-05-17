@@ -10,15 +10,15 @@ class _$RemoveCategoryResponse extends RemoveCategoryResponse {
   @override
   final int removedCount;
 
-  factory _$RemoveCategoryResponse(
-          [void Function(RemoveCategoryResponseBuilder)? updates]) =>
-      (RemoveCategoryResponseBuilder()..update(updates))._build();
+  factory _$RemoveCategoryResponse([
+    void Function(RemoveCategoryResponseBuilder)? updates,
+  ]) => (RemoveCategoryResponseBuilder()..update(updates))._build();
 
   _$RemoveCategoryResponse._({required this.removedCount}) : super._();
   @override
   RemoveCategoryResponse rebuild(
-          void Function(RemoveCategoryResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(RemoveCategoryResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   RemoveCategoryResponseBuilder toBuilder() =>
@@ -41,9 +41,9 @@ class _$RemoveCategoryResponse extends RemoveCategoryResponse {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'RemoveCategoryResponse')
-          ..add('removedCount', removedCount))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'RemoveCategoryResponse',
+    )..add('removedCount', removedCount)).toString();
   }
 }
 
@@ -82,10 +82,14 @@ class RemoveCategoryResponseBuilder
   RemoveCategoryResponse build() => _build();
 
   _$RemoveCategoryResponse _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$RemoveCategoryResponse._(
           removedCount: BuiltValueNullFieldError.checkNotNull(
-              removedCount, r'RemoveCategoryResponse', 'removedCount'),
+            removedCount,
+            r'RemoveCategoryResponse',
+            'removedCount',
+          ),
         );
     replace(_$result);
     return _$result;

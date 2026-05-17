@@ -10,15 +10,15 @@ class _$GetCategoryOverviewResponse extends GetCategoryOverviewResponse {
   @override
   final BuiltList<CategoryResponse>? categoryOverviews;
 
-  factory _$GetCategoryOverviewResponse(
-          [void Function(GetCategoryOverviewResponseBuilder)? updates]) =>
-      (GetCategoryOverviewResponseBuilder()..update(updates))._build();
+  factory _$GetCategoryOverviewResponse([
+    void Function(GetCategoryOverviewResponseBuilder)? updates,
+  ]) => (GetCategoryOverviewResponseBuilder()..update(updates))._build();
 
   _$GetCategoryOverviewResponse._({this.categoryOverviews}) : super._();
   @override
   GetCategoryOverviewResponse rebuild(
-          void Function(GetCategoryOverviewResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetCategoryOverviewResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetCategoryOverviewResponseBuilder toBuilder() =>
@@ -41,16 +41,18 @@ class _$GetCategoryOverviewResponse extends GetCategoryOverviewResponse {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GetCategoryOverviewResponse')
-          ..add('categoryOverviews', categoryOverviews))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'GetCategoryOverviewResponse',
+    )..add('categoryOverviews', categoryOverviews)).toString();
   }
 }
 
 class GetCategoryOverviewResponseBuilder
     implements
-        Builder<GetCategoryOverviewResponse,
-            GetCategoryOverviewResponseBuilder> {
+        Builder<
+          GetCategoryOverviewResponse,
+          GetCategoryOverviewResponseBuilder
+        > {
   _$GetCategoryOverviewResponse? _$v;
 
   ListBuilder<CategoryResponse>? _categoryOverviews;
@@ -88,7 +90,8 @@ class GetCategoryOverviewResponseBuilder
   _$GetCategoryOverviewResponse _build() {
     _$GetCategoryOverviewResponse _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$GetCategoryOverviewResponse._(
             categoryOverviews: _categoryOverviews?.build(),
           );
@@ -99,7 +102,10 @@ class GetCategoryOverviewResponseBuilder
         _categoryOverviews?.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'GetCategoryOverviewResponse', _$failedField, e.toString());
+          r'GetCategoryOverviewResponse',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

@@ -10,15 +10,15 @@ class _$GetCategoryTreeRequest extends GetCategoryTreeRequest {
   @override
   final String categoryId;
 
-  factory _$GetCategoryTreeRequest(
-          [void Function(GetCategoryTreeRequestBuilder)? updates]) =>
-      (GetCategoryTreeRequestBuilder()..update(updates))._build();
+  factory _$GetCategoryTreeRequest([
+    void Function(GetCategoryTreeRequestBuilder)? updates,
+  ]) => (GetCategoryTreeRequestBuilder()..update(updates))._build();
 
   _$GetCategoryTreeRequest._({required this.categoryId}) : super._();
   @override
   GetCategoryTreeRequest rebuild(
-          void Function(GetCategoryTreeRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetCategoryTreeRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetCategoryTreeRequestBuilder toBuilder() =>
@@ -40,9 +40,9 @@ class _$GetCategoryTreeRequest extends GetCategoryTreeRequest {
 
   @override
   String toString() {
-    return (newBuiltValueToStringHelper(r'GetCategoryTreeRequest')
-          ..add('categoryId', categoryId))
-        .toString();
+    return (newBuiltValueToStringHelper(
+      r'GetCategoryTreeRequest',
+    )..add('categoryId', categoryId)).toString();
   }
 }
 
@@ -81,10 +81,14 @@ class GetCategoryTreeRequestBuilder
   GetCategoryTreeRequest build() => _build();
 
   _$GetCategoryTreeRequest _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$GetCategoryTreeRequest._(
           categoryId: BuiltValueNullFieldError.checkNotNull(
-              categoryId, r'GetCategoryTreeRequest', 'categoryId'),
+            categoryId,
+            r'GetCategoryTreeRequest',
+            'categoryId',
+          ),
         );
     replace(_$result);
     return _$result;

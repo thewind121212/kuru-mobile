@@ -14,17 +14,19 @@ class _$GetCategoryOverview200Response extends GetCategoryOverview200Response {
   @override
   final DateTime timestamp;
 
-  factory _$GetCategoryOverview200Response(
-          [void Function(GetCategoryOverview200ResponseBuilder)? updates]) =>
-      (GetCategoryOverview200ResponseBuilder()..update(updates))._build();
+  factory _$GetCategoryOverview200Response([
+    void Function(GetCategoryOverview200ResponseBuilder)? updates,
+  ]) => (GetCategoryOverview200ResponseBuilder()..update(updates))._build();
 
-  _$GetCategoryOverview200Response._(
-      {required this.success, required this.data, required this.timestamp})
-      : super._();
+  _$GetCategoryOverview200Response._({
+    required this.success,
+    required this.data,
+    required this.timestamp,
+  }) : super._();
   @override
   GetCategoryOverview200Response rebuild(
-          void Function(GetCategoryOverview200ResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(GetCategoryOverview200ResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   GetCategoryOverview200ResponseBuilder toBuilder() =>
@@ -61,8 +63,10 @@ class _$GetCategoryOverview200Response extends GetCategoryOverview200Response {
 
 class GetCategoryOverview200ResponseBuilder
     implements
-        Builder<GetCategoryOverview200Response,
-            GetCategoryOverview200ResponseBuilder> {
+        Builder<
+          GetCategoryOverview200Response,
+          GetCategoryOverview200ResponseBuilder
+        > {
   _$GetCategoryOverview200Response? _$v;
 
   bool? _success;
@@ -109,13 +113,20 @@ class GetCategoryOverview200ResponseBuilder
   _$GetCategoryOverview200Response _build() {
     _$GetCategoryOverview200Response _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$GetCategoryOverview200Response._(
             success: BuiltValueNullFieldError.checkNotNull(
-                success, r'GetCategoryOverview200Response', 'success'),
+              success,
+              r'GetCategoryOverview200Response',
+              'success',
+            ),
             data: data.build(),
             timestamp: BuiltValueNullFieldError.checkNotNull(
-                timestamp, r'GetCategoryOverview200Response', 'timestamp'),
+              timestamp,
+              r'GetCategoryOverview200Response',
+              'timestamp',
+            ),
           );
     } catch (_) {
       late String _$failedField;
@@ -124,7 +135,10 @@ class GetCategoryOverview200ResponseBuilder
         data.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'GetCategoryOverview200Response', _$failedField, e.toString());
+          r'GetCategoryOverview200Response',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

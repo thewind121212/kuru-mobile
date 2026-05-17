@@ -14,17 +14,19 @@ class _$RemoveCategory200Response extends RemoveCategory200Response {
   @override
   final DateTime timestamp;
 
-  factory _$RemoveCategory200Response(
-          [void Function(RemoveCategory200ResponseBuilder)? updates]) =>
-      (RemoveCategory200ResponseBuilder()..update(updates))._build();
+  factory _$RemoveCategory200Response([
+    void Function(RemoveCategory200ResponseBuilder)? updates,
+  ]) => (RemoveCategory200ResponseBuilder()..update(updates))._build();
 
-  _$RemoveCategory200Response._(
-      {required this.success, required this.data, required this.timestamp})
-      : super._();
+  _$RemoveCategory200Response._({
+    required this.success,
+    required this.data,
+    required this.timestamp,
+  }) : super._();
   @override
   RemoveCategory200Response rebuild(
-          void Function(RemoveCategory200ResponseBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(RemoveCategory200ResponseBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   RemoveCategory200ResponseBuilder toBuilder() =>
@@ -108,13 +110,20 @@ class RemoveCategory200ResponseBuilder
   _$RemoveCategory200Response _build() {
     _$RemoveCategory200Response _$result;
     try {
-      _$result = _$v ??
+      _$result =
+          _$v ??
           _$RemoveCategory200Response._(
             success: BuiltValueNullFieldError.checkNotNull(
-                success, r'RemoveCategory200Response', 'success'),
+              success,
+              r'RemoveCategory200Response',
+              'success',
+            ),
             data: data.build(),
             timestamp: BuiltValueNullFieldError.checkNotNull(
-                timestamp, r'RemoveCategory200Response', 'timestamp'),
+              timestamp,
+              r'RemoveCategory200Response',
+              'timestamp',
+            ),
           );
     } catch (_) {
       late String _$failedField;
@@ -123,7 +132,10 @@ class RemoveCategory200ResponseBuilder
         data.build();
       } catch (e) {
         throw BuiltValueNestedFieldError(
-            r'RemoveCategory200Response', _$failedField, e.toString());
+          r'RemoveCategory200Response',
+          _$failedField,
+          e.toString(),
+        );
       }
       rethrow;
     }

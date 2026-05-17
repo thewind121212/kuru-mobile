@@ -22,23 +22,23 @@ class _$CreateCategoryRequest extends CreateCategoryRequest {
   @override
   final String? icon;
 
-  factory _$CreateCategoryRequest(
-          [void Function(CreateCategoryRequestBuilder)? updates]) =>
-      (CreateCategoryRequestBuilder()..update(updates))._build();
+  factory _$CreateCategoryRequest([
+    void Function(CreateCategoryRequestBuilder)? updates,
+  ]) => (CreateCategoryRequestBuilder()..update(updates))._build();
 
-  _$CreateCategoryRequest._(
-      {required this.name,
-      this.parentId,
-      this.colorSettings,
-      required this.layer,
-      this.description,
-      required this.status,
-      this.icon})
-      : super._();
+  _$CreateCategoryRequest._({
+    required this.name,
+    this.parentId,
+    this.colorSettings,
+    required this.layer,
+    this.description,
+    required this.status,
+    this.icon,
+  }) : super._();
   @override
   CreateCategoryRequest rebuild(
-          void Function(CreateCategoryRequestBuilder) updates) =>
-      (toBuilder()..update(updates)).build();
+    void Function(CreateCategoryRequestBuilder) updates,
+  ) => (toBuilder()..update(updates)).build();
 
   @override
   CreateCategoryRequestBuilder toBuilder() =>
@@ -151,17 +151,27 @@ class CreateCategoryRequestBuilder
   CreateCategoryRequest build() => _build();
 
   _$CreateCategoryRequest _build() {
-    final _$result = _$v ??
+    final _$result =
+        _$v ??
         _$CreateCategoryRequest._(
           name: BuiltValueNullFieldError.checkNotNull(
-              name, r'CreateCategoryRequest', 'name'),
+            name,
+            r'CreateCategoryRequest',
+            'name',
+          ),
           parentId: parentId,
           colorSettings: colorSettings,
           layer: BuiltValueNullFieldError.checkNotNull(
-              layer, r'CreateCategoryRequest', 'layer'),
+            layer,
+            r'CreateCategoryRequest',
+            'layer',
+          ),
           description: description,
           status: BuiltValueNullFieldError.checkNotNull(
-              status, r'CreateCategoryRequest', 'status'),
+            status,
+            r'CreateCategoryRequest',
+            'status',
+          ),
           icon: icon,
         );
     replace(_$result);
