@@ -55,6 +55,10 @@ dependencies:
   # alongside KActionSheet for bottom-sheet-vs-popup choice per use case
   super_context_menu: ^0.9.1
 
+  # Required by dart-dio generated clients (Categories v0.4.0+)
+  built_value: ^8.9.2
+  built_collection: ^5.1.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -69,6 +73,8 @@ dev_dependencies:
   # after changing the configs below.
   flutter_launcher_icons: ^0.14.1
   flutter_native_splash: ^2.4.6
+  openapi_generator_cli: ^6.1.0
+  built_value_generator: ^8.10.1
 
 flutter:
   uses-material-design: true

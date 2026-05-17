@@ -191,7 +191,9 @@ Required by the Catalog v0.4.0 error matrix."
 
 ## Task 2: Add openapi codegen dependencies
 
-Add the four packages required by `dart-dio` codegen. No code changes — just pubspec + a successful `flutter pub get`.
+Add the three packages required by `dart-dio` codegen. No code changes — just pubspec + a successful pub get.
+
+**Revision note (2026-05-17 mid-execution):** original plan included `openapi_generator: ^5.x` (the annotation-host package) to drive codegen via `build_runner`. That package caps `analyzer <7.0.0` and the project's existing `riverpod_generator ^2.6.3` requires `analyzer ^6.7.0`. The narrow overlap window triggers a `macros` SDK chain not present in Dart 3.11 — version solving fails. Pivot: drop the annotation package, keep only the `openapi_generator_cli` JAR wrapper (which has no analyzer constraint), and invoke it directly from a shell script in Task 4. The generated output and downstream Riverpod / Repository wiring are unaffected.
 
 **Files:**
 - Modify: `pubspec.yaml`
@@ -209,9 +211,10 @@ Under `dependencies:`, after `flutter_tabler_icons: ^1.43.0`, add:
 Under `dev_dependencies:`, after `riverpod_generator: ^2.6.3`, add:
 
 ```yaml
-  # OpenAPI client codegen (see lib/core/network/openapi_clients.dart)
-  openapi_generator: ^5.0.3
-  openapi_generator_cli: ^5.0.3
+  # OpenAPI client codegen — invoked directly from tool/codegen.sh
+  # (annotation-host openapi_generator package would conflict with
+  # riverpod_generator on the analyzer constraint).
+  openapi_generator_cli: ^5.0.2
   built_value_generator: ^8.9.2
 ```
 
@@ -352,10 +355,10 @@ Sets up tool/openapi-patches/ for future drift handling."
 
 ## Task 4: Generate the category dart-dio client
 
-Create the annotation host file, run build_runner, verify output, commit generated code. The annotation should point at either `../gen-barcode/openapi/category.openapi.json` (if Task 3 found no divergence) or `tool/openapi-patches/category.openapi.json` (if it did).
+Pivot from build_runner-driven annotation to standalone CLI invocation (see Task 2 revision note). Create a `tool/codegen.sh` script that invokes `openapi_generator_cli` directly, run it, verify output, commit the generated package.
 
 **Files:**
-- Create: `lib/core/network/openapi_clients.dart`
+- Create: `tool/codegen.sh`
 - Generated: `lib/api/category/**` (committed)
 - Modify: `.gitignore` (ensure `lib/api/` is NOT ignored)
 
@@ -367,52 +370,85 @@ grep -E "^lib/api|^/lib/api" .gitignore
 
 Expected: no output. If a line matches, delete it.
 
-- [ ] **Step 2: Create `lib/core/network/openapi_clients.dart`**
+- [ ] **Step 2: Create `tool/codegen.sh`**
 
-```dart
-// Annotation host file for openapi_generator. The class itself is never
-// instantiated — its annotation drives codegen via build_runner.
-//
-// Run codegen with:
-//   dart run build_runner build --delete-conflicting-outputs
-//
-// Generated output lives under lib/api/<module>/ and is committed to git
-// (see spec §9.1).
+```bash
+#!/usr/bin/env bash
+# Regenerate Dart API clients from the BE's openapi specs.
+#
+# Run after any openapi spec change in ../gen-barcode/openapi/.
+# Generated output is committed to git (see spec §9.1).
+#
+# Usage:
+#   ./tool/codegen.sh           # regenerate all configured modules
+#   ./tool/codegen.sh category  # regenerate only one module
 
-import 'package:openapi_generator_annotations/openapi_generator_annotations.dart';
+set -euo pipefail
 
-@Openapi(
-  // If Task 3 found no divergence, point at upstream:
-  inputSpec: InputSpec(
-    path: '../gen-barcode/openapi/category.openapi.json',
-  ),
-  // If Task 3 found divergence, switch to:
-  //   path: 'tool/openapi-patches/category.openapi.json',
-  generatorName: Generator.dio,
-  outputDirectory: 'lib/api/category',
-  alwaysRun: false,
-  cleanSubOutputDirectory: ['lib/api/category'],
-  additionalProperties: DioProperties(
-    pubName: 'kuru_category_api',
-    pubAuthor: 'kuru',
-    pubVersion: '0.4.0',
-  ),
+DART="${HOME}/flutter/bin/dart"
+GEN="dart run openapi_generator_cli:openapi_generator_cli"
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+# Default spec source per module. Override with tool/openapi-patches/<module>.openapi.json
+# if Task 3 / future sanity checks revealed divergence (see spec §3.1).
+declare -A SPEC_SOURCES=(
+  [category]="../gen-barcode/openapi/category.openapi.json"
 )
-class CategoryClientConfig {}
+
+generate() {
+  local module="$1"
+  local input="${SPEC_SOURCES[$module]:-}"
+  local patched="tool/openapi-patches/${module}.openapi.json"
+
+  if [ -f "$patched" ]; then
+    input="$patched"
+    echo "▶ ${module}: using patched spec at $patched"
+  elif [ -z "$input" ]; then
+    echo "✗ ${module}: no spec source configured" >&2
+    return 1
+  else
+    echo "▶ ${module}: using upstream spec at $input"
+  fi
+
+  rm -rf "lib/api/${module}"
+  $DART $GEN generate \
+    -i "$input" \
+    -g dart-dio \
+    -o "lib/api/${module}" \
+    --additional-properties=pubName=kuru_${module}_api,pubAuthor=kuru,pubVersion=0.4.0
+}
+
+if [ $# -gt 0 ]; then
+  generate "$1"
+else
+  for module in "${!SPEC_SOURCES[@]}"; do
+    generate "$module"
+  done
+fi
+
+echo "✓ codegen complete"
+```
+
+Make it executable:
+
+```bash
+chmod +x tool/codegen.sh
 ```
 
 - [ ] **Step 3: Run codegen**
 
 ```bash
-dart run build_runner build --delete-conflicting-outputs
+./tool/codegen.sh category
 ```
 
-Expected: takes 30s-2min; downloads the openapi-generator JAR on first run; outputs many `[INFO] Generating: lib/api/category/...` lines. Final line is `[INFO] Succeeded`.
+Expected: takes 30s-2min; on first run, `openapi_generator_cli` downloads the openapi-generator JAR. Output includes many `Writing file: lib/api/category/...` lines. Exit 0.
 
 If it fails:
-- "Java not found" → fix P3
-- "Schema parse error" → openapi spec has issues; copy to `tool/openapi-patches/`, edit, update annotation path, re-run.
-- "Output dir not writable" → check filesystem perms.
+- "Java not found" → fix P3 (Java 17 already verified in previous session)
+- "Schema parse error" → openapi spec has issues; copy to `tool/openapi-patches/category.openapi.json`, edit, re-run.
+- "Cannot remove lib/api/category" → check filesystem perms.
 
 - [ ] **Step 4: Verify expected files exist**
 
