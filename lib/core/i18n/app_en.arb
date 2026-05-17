@@ -140,5 +140,9 @@
   "categoryLowStockBadge": "{count, plural, one{{count} low stock} other{{count} low stock}}",
   "@categoryLowStockBadge": {
     "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryTotalCount": "{count, plural, one{{count} category} other{{count} categories}}",
+  "@categoryTotalCount": {
+    "placeholders": {"count": {"type": "num"}}
   }
 }

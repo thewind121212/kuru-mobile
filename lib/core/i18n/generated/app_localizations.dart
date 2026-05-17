@@ -727,6 +727,12 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{count, plural, other{{count} sắp hết}}'**
   String categoryLowStockBadge(num count);
+
+  /// No description provided for @categoryTotalCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} danh mục}}'**
+  String categoryTotalCount(num count);
 }
 
 class _AppLocalizationsDelegate

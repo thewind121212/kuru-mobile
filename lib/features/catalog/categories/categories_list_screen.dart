@@ -17,7 +17,6 @@ import 'package:kuru_mobile/design/core/input/k_icon_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_search_bar.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_tab_nav.dart';
-import 'package:kuru_mobile/design/core/layout/k_page_header.dart';
 import 'package:kuru_mobile/design/core/modal/color_options.dart';
 import 'package:kuru_mobile/design/core/modal/icon_mapping.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
@@ -51,12 +50,17 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final overview = ref.watch(categoryOverviewProvider);
+    final totalCount = overview.maybeWhen(
+      data: (cats) => cats.length,
+      orElse: () => null,
+    );
     return Scaffold(
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            KPageHeader(title: l.categoryTitle, subtitle: l.categorySubtitle),
+            _CategoriesHeader(title: l.categoryTitle, totalCount: totalCount),
             const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -148,6 +152,48 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Centered header for the Catalog tab — title + optional total-count line.
+///
+/// Deliberately does NOT use `KPageHeader` because Categories wants a
+/// transparent, centred treatment with no description and the total count
+/// surfaced under the title (kuru-web parity).
+class _CategoriesHeader extends StatelessWidget {
+  const _CategoriesHeader({required this.title, this.totalCount});
+
+  final String title;
+  final int? totalCount;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = Theme.of(context).textTheme;
+    final l = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Column(
+        children: [
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: c.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
+          if (totalCount != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              l.categoryTotalCount(totalCount!),
+              textAlign: TextAlign.center,
+              style: c.bodySmall?.copyWith(
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withValues(alpha: 0.65),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

@@ -137,5 +137,6 @@
   "categoryStatSubCategories": "Phụ",
   "categoryStatItems": "Sản phẩm",
   "categoryStatValue": "Giá trị",
-  "categoryLowStockBadge": "{count, plural, other{{count} sắp hết}}"
+  "categoryLowStockBadge": "{count, plural, other{{count} sắp hết}}",
+  "categoryTotalCount": "{count, plural, other{{count} danh mục}}"
 }
