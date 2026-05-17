@@ -352,4 +352,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDetailPlaceholder => 'Detail view coming soon';
+
+  @override
+  String get categoryStatSubCategories => 'Sub';
+
+  @override
+  String get categoryStatItems => 'Items';
+
+  @override
+  String get categoryStatValue => 'Value';
+
+  @override
+  String categoryLowStockBadge(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count low stock',
+      one: '$count low stock',
+    );
+    return '$_temp0';
+  }
 }

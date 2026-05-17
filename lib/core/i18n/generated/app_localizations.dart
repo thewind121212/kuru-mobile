@@ -703,6 +703,30 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Chi tiết sắp ra mắt'**
   String get categoryDetailPlaceholder;
+
+  /// No description provided for @categoryStatSubCategories.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ'**
+  String get categoryStatSubCategories;
+
+  /// No description provided for @categoryStatItems.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sản phẩm'**
+  String get categoryStatItems;
+
+  /// No description provided for @categoryStatValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá trị'**
+  String get categoryStatValue;
+
+  /// No description provided for @categoryLowStockBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} sắp hết}}'**
+  String categoryLowStockBadge(num count);
 }
 
 class _AppLocalizationsDelegate

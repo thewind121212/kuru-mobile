@@ -133,5 +133,12 @@
   },
   "categoryLoadError": "Couldn't load categories",
   "categoryLoadRetry": "Retry",
-  "categoryDetailPlaceholder": "Detail view coming soon"
+  "categoryDetailPlaceholder": "Detail view coming soon",
+  "categoryStatSubCategories": "Sub",
+  "categoryStatItems": "Items",
+  "categoryStatValue": "Value",
+  "categoryLowStockBadge": "{count, plural, one{{count} low stock} other{{count} low stock}}",
+  "@categoryLowStockBadge": {
+    "placeholders": {"count": {"type": "num"}}
+  }
 }

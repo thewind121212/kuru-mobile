@@ -133,5 +133,9 @@
   "categoryItemCount": "{count, plural, other{{count} sản phẩm}}",
   "categoryLoadError": "Không tải được danh mục",
   "categoryLoadRetry": "Thử lại",
-  "categoryDetailPlaceholder": "Chi tiết sắp ra mắt"
+  "categoryDetailPlaceholder": "Chi tiết sắp ra mắt",
+  "categoryStatSubCategories": "Phụ",
+  "categoryStatItems": "Sản phẩm",
+  "categoryStatValue": "Giá trị",
+  "categoryLowStockBadge": "{count, plural, other{{count} sắp hết}}"
 }

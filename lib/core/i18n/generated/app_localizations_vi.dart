@@ -345,4 +345,23 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get categoryDetailPlaceholder => 'Chi tiết sắp ra mắt';
+
+  @override
+  String get categoryStatSubCategories => 'Phụ';
+
+  @override
+  String get categoryStatItems => 'Sản phẩm';
+
+  @override
+  String get categoryStatValue => 'Giá trị';
+
+  @override
+  String categoryLowStockBadge(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sắp hết',
+    );
+    return '$_temp0';
+  }
 }

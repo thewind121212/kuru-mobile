@@ -5,15 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/text/search_normalize.dart';
-import 'package:kuru_mobile/design/core/catalog/k_list_row.dart';
+import 'package:kuru_mobile/design/core/catalog/k_category_card.dart';
+import 'package:kuru_mobile/design/core/feedback/k_badge.dart';
 import 'package:kuru_mobile/design/core/feedback/k_empty_state.dart';
 import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
+import 'package:kuru_mobile/design/core/input/k_icon_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_search_bar.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_tab_nav.dart';
 import 'package:kuru_mobile/design/core/layout/k_page_header.dart';
+import 'package:kuru_mobile/design/core/modal/color_options.dart';
+import 'package:kuru_mobile/design/core/modal/icon_mapping.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 
 class CategoriesListScreen extends ConsumerStatefulWidget {
@@ -120,39 +126,21 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                           const SizedBox(height: 12),
                           Expanded(
                             child: ListView.separated(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                              ),
                               itemCount: filtered.length,
                               separatorBuilder: (_, __) =>
-                                  const Divider(height: 1),
-                              itemBuilder: (ctx, i) {
-                                final c = filtered[i];
-                                final l2 = AppLocalizations.of(ctx);
-                                final parts = <String>[];
-                                final subs = c.subCategoriesCount ?? 0;
-                                if (subs > 0) {
-                                  parts.add(l2.categorySubCount(subs));
-                                }
-                                if (c.itemCount > 0) {
-                                  parts.add(l2.categoryItemCount(c.itemCount));
-                                }
-                                final subtitle = parts.isEmpty
-                                    ? null
-                                    : parts.join(' · ');
-                                return KListRow(
-                                  leading: Icon(
-                                    TablerIcons.layout_grid,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.primary,
-                                  ),
-                                  title: c.name ?? '',
-                                  subtitle: subtitle,
-                                  onTap: () => context.go(
-                                    '/catalog/categories/${c.categoryId}',
-                                  ),
-                                );
-                              },
+                                  const SizedBox(height: 12),
+                              itemBuilder: (ctx, i) => _CategoryCardItem(
+                                category: filtered[i],
+                                onTap: () => context.go(
+                                  '/catalog/categories/${filtered[i].categoryId}',
+                                ),
+                              ),
                             ),
                           ),
+                          const SizedBox(height: 12),
                         ],
                       );
                     },
@@ -165,15 +153,95 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
   }
 }
 
+/// Wraps one [gen.CategoryResponse] into the design-system [KCategoryCard].
+///
+/// Maps BE persistence fields to design tokens:
+/// - `icon` (kebab-case name)   → [resolveIconName] → [IconData], fallback
+///   to [TablerIcons.layout_grid] when the BE stored an icon outside our
+///   curated set (per spec §5.4 / showKIconPicker contract).
+/// - `colorSettings` (tailwind id like `slate-400`) → [kAllColors] swatch,
+///   fallback to slate-400 when the BE stored an unknown id.
+/// - `subCategoriesCount` + `itemCount` → two [KCategoryCardStat] entries.
+/// - `lowStockCount > 0` → danger [KBadge] in the footer.
+class _CategoryCardItem extends StatelessWidget {
+  const _CategoryCardItem({required this.category, required this.onTap});
+
+  final gen.CategoryResponse category;
+  final VoidCallback onTap;
+
+  static final _vndCompact = NumberFormat.compactCurrency(
+    locale: 'vi_VN',
+    symbol: '₫',
+    decimalDigits: 1,
+  );
+
+  IconData _resolveIcon() {
+    final name = category.icon;
+    if (name == null || name.isEmpty) return TablerIcons.layout_grid;
+    return resolveIconName(name) ?? TablerIcons.layout_grid;
+  }
+
+  Color _resolveColor() {
+    final id = category.colorSettings;
+    if (id == null || id.isEmpty) return kAllColors.first.swatch;
+    return kAllColors
+        .firstWhere((co) => co.id == id, orElse: () => kAllColors.first)
+        .swatch;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final stats = <KCategoryCardStat>[
+      KCategoryCardStat(
+        label: l.categoryStatSubCategories,
+        value: '${category.subCategoriesCount ?? 0}',
+      ),
+      KCategoryCardStat(
+        label: l.categoryStatItems,
+        value: '${category.itemCount}',
+      ),
+      if (category.totalValue > 0)
+        KCategoryCardStat(
+          label: l.categoryStatValue,
+          value: _vndCompact.format(category.totalValue),
+        ),
+    ];
+    final lowStock = category.lowStockCount;
+    return KCategoryCard(
+      icon: _resolveIcon(),
+      iconBg: _resolveColor(),
+      name: category.name ?? '',
+      stats: stats,
+      lowStockBadge: lowStock > 0
+          ? KBadge(
+              label: l.categoryLowStockBadge(lowStock),
+              tone: KBadgeTone.danger,
+              leadingIcon: TablerIcons.alert_triangle,
+            )
+          : null,
+      menu: KIconBtn(
+        icon: const Icon(TablerIcons.dots_vertical),
+        size: 32,
+        onPressed: () {
+          // Plan 2 wires the action menu (Edit / Delete / Add subcategory).
+        },
+      ),
+      onTap: onTap,
+    );
+  }
+}
+
 class _CategorySkeletonList extends StatelessWidget {
   const _CategorySkeletonList();
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      itemCount: 5,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      itemCount: 4,
       itemBuilder: (_, __) => const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: KSkeleton(height: 56),
+        padding: EdgeInsets.symmetric(vertical: 6),
+        child: KSkeleton(height: 120),
       ),
     );
   }
