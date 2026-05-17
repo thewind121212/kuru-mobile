@@ -107,7 +107,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             child: Center(
               child: pkg.maybeWhen(
                 data: (info) => Text(
-                  'Kuru · v${info.version}',
+                  'Simplestore · v${info.version}',
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w400,
