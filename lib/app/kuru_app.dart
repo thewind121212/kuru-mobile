@@ -14,7 +14,7 @@ class KuruApp extends ConsumerWidget {
     final router = ref.watch(routerProvider);
     return ToastificationWrapper(
       child: MaterialApp.router(
-        title: 'Kuru',
+        title: 'Simplestore',
         debugShowCheckedModeBanner: false,
         theme: buildKuruTheme(palette, Brightness.light),
         darkTheme: buildKuruTheme(palette, Brightness.dark),

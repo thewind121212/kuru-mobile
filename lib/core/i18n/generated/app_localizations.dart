@@ -119,7 +119,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginSubtitle.
   ///
   /// In vi, this message translates to:
-  /// **'Đăng nhập kuru để tiếp tục quản lý cửa hàng.'**
+  /// **'Đăng nhập Simplestore để tiếp tục quản lý cửa hàng.'**
   String get loginSubtitle;
 
   /// No description provided for @fieldEmail.
@@ -377,7 +377,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingStep4Body.
   ///
   /// In vi, this message translates to:
-  /// **'Tiền mặt, chuyển khoản, hay quét QR — bạn nhận, kuru ghi nhận tức thì.'**
+  /// **'Tiền mặt, chuyển khoản, hay quét QR — bạn nhận, Simplestore ghi nhận tức thì.'**
   String get onboardingStep4Body;
 
   /// No description provided for @onboardingStep5Title.
@@ -413,7 +413,7 @@ abstract class AppLocalizations {
   /// No description provided for @registerSubtitle.
   ///
   /// In vi, this message translates to:
-  /// **'Bắt đầu với kuru chỉ trong 30 giây.'**
+  /// **'Bắt đầu với Simplestore chỉ trong 30 giây.'**
   String get registerSubtitle;
 
   /// No description provided for @fieldFullName.
