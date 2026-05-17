@@ -50,7 +50,13 @@ final routerProvider = Provider<GoRouter>((ref) {
               ref.read(currentOrgIdProvider) == null) {
             return loc == '/org-picker' ? null : '/org-picker';
           }
-          return loc == '/home' ? null : '/home';
+          // Authed shell branches — bottom-nav routes (and their sub-paths)
+          // are all valid destinations for a fully-authed user. Without this
+          // safelist, a deep link / push notification / restored URL hitting
+          // /catalog or /settings would bounce back to /home.
+          const authedShellPrefixes = ['/home', '/catalog', '/settings'];
+          final isAuthedShellRoute = authedShellPrefixes.any(loc.startsWith);
+          return isAuthedShellRoute ? null : '/home';
         },
       );
     },

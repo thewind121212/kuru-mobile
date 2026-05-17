@@ -123,7 +123,7 @@
   "categoryLayerSub": "Sub",
   "categoryLayerSubSub": "Sub Sub",
   "categoryLayerPrefix": "Layer",
-  "categorySubCount": "{count, plural, one{{count} sub} other{{count} sub}}",
+  "categorySubCount": "{count, plural, one{{count} subcategory} other{{count} subcategories}}",
   "@categorySubCount": {
     "placeholders": {"count": {"type": "num"}}
   },

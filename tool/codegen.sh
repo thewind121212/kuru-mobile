@@ -10,7 +10,21 @@
 
 set -euo pipefail
 
-DART="${HOME}/flutter/bin/dart"
+# Resolve a usable `dart` binary.
+# Priority: $FLUTTER_ROOT/bin/dart → ~/flutter/bin/dart → first `dart` on PATH.
+# Fails loudly if none work, instead of producing a cryptic "No such file"
+# from the first `$DART` call deep in the script.
+if [ -n "${FLUTTER_ROOT:-}" ] && [ -x "${FLUTTER_ROOT}/bin/dart" ]; then
+  DART="${FLUTTER_ROOT}/bin/dart"
+elif [ -x "${HOME}/flutter/bin/dart" ]; then
+  DART="${HOME}/flutter/bin/dart"
+elif command -v dart >/dev/null 2>&1; then
+  DART="$(command -v dart)"
+else
+  echo "✗ codegen.sh: cannot find a 'dart' executable." >&2
+  echo "  Set FLUTTER_ROOT, install Flutter at ~/flutter, or put dart on PATH." >&2
+  exit 1
+fi
 GEN="run openapi_generator_cli:main"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
