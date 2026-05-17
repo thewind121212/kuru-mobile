@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/design/widgets/k_glass.dart';
 
-class KFormField extends StatelessWidget {
+class KFormField extends StatefulWidget {
   const KFormField({
     required this.label,
     required this.controller,
@@ -19,6 +20,11 @@ class KFormField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final Widget? icon;
+
+  /// When true, a show/hide eye toggle is rendered on the right and the
+  /// field starts obscured. Callers don't manage the reveal state — it lives
+  /// privately inside this widget. The semantics of [obscureText] itself
+  /// (initial = obscured) are unchanged from the v0.2.0 API.
   final bool obscureText;
   final TextInputType? keyboardType;
   final Iterable<String>? autofillHints;
@@ -34,9 +40,26 @@ class KFormField extends StatelessWidget {
   final String? errorText;
 
   @override
+  State<KFormField> createState() => _KFormFieldState();
+}
+
+class _KFormFieldState extends State<KFormField> {
+  late bool _revealed;
+
+  @override
+  void initState() {
+    super.initState();
+    _revealed = false;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final hasError = errorText != null;
+    final hasError = widget.errorText != null;
+    final showEye = widget.obscureText;
+    final effectivelyObscured = widget.obscureText && !_revealed;
+    final l = showEye ? AppLocalizations.of(context) : null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -48,13 +71,13 @@ class KFormField extends StatelessWidget {
           borderWidth: hasError ? 1.5 : null,
           child: Row(
             children: [
-              if (icon != null) ...[
+              if (widget.icon != null) ...[
                 IconTheme(
                   data: IconThemeData(
                     color: hasError ? c.danger : c.textMuted,
                     size: 18,
                   ),
-                  child: icon!,
+                  child: widget.icon!,
                 ),
                 const SizedBox(width: 10),
               ],
@@ -64,7 +87,7 @@ class KFormField extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      label,
+                      widget.label,
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
@@ -73,12 +96,12 @@ class KFormField extends StatelessWidget {
                       ),
                     ),
                     TextField(
-                      controller: controller,
-                      obscureText: obscureText,
-                      keyboardType: keyboardType,
-                      autofillHints: autofillHints,
-                      textInputAction: textInputAction,
-                      onSubmitted: onSubmitted,
+                      controller: widget.controller,
+                      obscureText: effectivelyObscured,
+                      keyboardType: widget.keyboardType,
+                      autofillHints: widget.autofillHints,
+                      textInputAction: widget.textInputAction,
+                      onSubmitted: widget.onSubmitted,
                       style: TextStyle(
                         fontSize: 14,
                         color: c.textPrimary,
@@ -93,6 +116,28 @@ class KFormField extends StatelessWidget {
                   ],
                 ),
               ),
+              if (showEye) ...[
+                const SizedBox(width: 6),
+                IconButton(
+                  tooltip: _revealed
+                      ? l!.fieldPasswordHide
+                      : l!.fieldPasswordShow,
+                  onPressed: () => setState(() => _revealed = !_revealed),
+                  icon: Icon(
+                    _revealed
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 18,
+                    color: c.textMuted,
+                  ),
+                  padding: EdgeInsets.zero,
+                  visualDensity: VisualDensity.compact,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 32,
+                    height: 32,
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -115,7 +160,7 @@ class KFormField extends StatelessWidget {
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(
-                          errorText!,
+                          widget.errorText!,
                           style: TextStyle(
                             fontSize: 11,
                             color: c.danger,

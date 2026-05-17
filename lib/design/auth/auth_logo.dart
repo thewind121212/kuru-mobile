@@ -2,8 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 
 class AuthLogo extends StatefulWidget {
-  const AuthLogo({super.key, this.small = false});
+  const AuthLogo({super.key, this.small = false, this.simple = false});
+
   final bool small;
+
+  /// Enterprise-feel variant used on the Splash route: hides the two sparkle
+  /// accents and runs the glow at a calmer profile (smaller blur, no flash
+  /// highlight). Keeps the centered image + glass border. All other call
+  /// sites (Login, Register, TOTP, CreateOrg, OrgPicker) leave this false
+  /// to preserve the v0.2.0 visual.
+  final bool simple;
 
   @override
   State<AuthLogo> createState() => _AuthLogoState();
@@ -33,6 +41,7 @@ class _AuthLogoState extends State<AuthLogo>
     final c = kuruColors(context);
     final size = widget.small ? 56.0 : 68.0;
     final radius = widget.small ? 16.0 : 20.0;
+    final calm = widget.simple;
     return AnimatedBuilder(
       animation: _glow,
       builder: (context, _) {
@@ -51,10 +60,10 @@ class _AuthLogoState extends State<AuthLogo>
                   boxShadow: [
                     BoxShadow(
                       color: c.ambient1,
-                      blurRadius: 24 + 8 * t,
-                      offset: Offset(0, 8 + 6 * t),
+                      blurRadius: calm ? 16 + 4 * t : 24 + 8 * t,
+                      offset: Offset(0, calm ? 6 + 4 * t : 8 + 6 * t),
                     ),
-                    if (t < 0.5)
+                    if (!calm && t < 0.5)
                       BoxShadow(
                         color: c.ambient2.withValues(alpha: 1 - t * 2),
                         spreadRadius: 14 * t,
@@ -68,24 +77,26 @@ class _AuthLogoState extends State<AuthLogo>
                 clipBehavior: Clip.antiAlias,
                 child: Image.asset('assets/logo.webp', fit: BoxFit.cover),
               ),
-              Positioned(
-                top: 0,
-                right: 0,
-                child: Icon(
-                  Icons.auto_awesome,
-                  size: 14,
-                  color: c.accent500.withValues(alpha: 0.6 + 0.4 * t),
+              if (!calm) ...[
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Icon(
+                    Icons.auto_awesome,
+                    size: 14,
+                    color: c.accent500.withValues(alpha: 0.6 + 0.4 * t),
+                  ),
                 ),
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                child: Icon(
-                  Icons.auto_awesome,
-                  size: 10,
-                  color: c.secondary.withValues(alpha: 0.4 + 0.6 * (1 - t)),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: Icon(
+                    Icons.auto_awesome,
+                    size: 10,
+                    color: c.secondary.withValues(alpha: 0.4 + 0.6 * (1 - t)),
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         );

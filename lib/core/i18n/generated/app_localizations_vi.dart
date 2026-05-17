@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get appTitle => 'Kuru';
+  String get appTitle => 'Simplestore';
 
   @override
   String get splashTagline => 'Đang kết nối...';
@@ -25,6 +25,12 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get fieldPassword => 'Mật khẩu';
+
+  @override
+  String get fieldPasswordShow => 'Hiện mật khẩu';
+
+  @override
+  String get fieldPasswordHide => 'Ẩn mật khẩu';
 
   @override
   String get loginRemember => 'Ghi nhớ đăng nhập';

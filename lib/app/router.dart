@@ -9,7 +9,8 @@ import 'package:kuru_mobile/features/login/login_screen.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
 import 'package:kuru_mobile/features/org_picker/org_picker_screen.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
-import 'package:kuru_mobile/features/splash/splash_screen.dart';
+import 'package:kuru_mobile/features/splash/splash_screen.dart'
+    show SplashScreen, splashGateProvider;
 import 'package:kuru_mobile/features/totp/recovery_code_screen.dart';
 import 'package:kuru_mobile/features/totp/totp_verification_screen.dart';
 
@@ -17,7 +18,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) {
-      final boot = ref.read(appBootstrapProvider);
+      final boot = ref.read(splashGateProvider);
       final seenOnboarding = ref.read(onboardingSeenProvider);
       final loc = state.matchedLocation;
       return boot.when(
@@ -73,7 +74,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
 class _BootstrapNotifier extends ChangeNotifier {
   _BootstrapNotifier(this._ref) {
-    _sub = _ref.listen(appBootstrapProvider, (_, __) => notifyListeners());
+    _sub = _ref.listen(splashGateProvider, (_, __) => notifyListeners());
     _onboardingSub =
         _ref.listen(onboardingSeenProvider, (_, __) => notifyListeners());
     _orgIdSub =

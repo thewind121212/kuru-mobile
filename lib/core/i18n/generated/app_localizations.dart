@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// No description provided for @appTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Kuru'**
+  /// **'Simplestore'**
   String get appTitle;
 
   /// No description provided for @splashTagline.
@@ -133,6 +133,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Mật khẩu'**
   String get fieldPassword;
+
+  /// No description provided for @fieldPasswordShow.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hiện mật khẩu'**
+  String get fieldPasswordShow;
+
+  /// No description provided for @fieldPasswordHide.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ẩn mật khẩu'**
+  String get fieldPasswordHide;
 
   /// No description provided for @loginRemember.
   ///

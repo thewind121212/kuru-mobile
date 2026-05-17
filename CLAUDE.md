@@ -107,18 +107,59 @@ lib/
 │   └── validators/     — isValidEmail (TDD, WHATWG HTML5 regex)
 ├── design/
 │   ├── auth/           — AuthBackdrop (3 drifting orbs), AuthLogo (glow + sparkles)
-│   └── widgets/        — KGlass, KPrimaryBtn (with shine), KFormField (errorText slot),
-│                         KCheckbox, KStepDots (tappable), KOtpInput (6 boxes)
+│   ├── widgets/        — GLASS aesthetic (auth/onboarding): KGlass, KPrimaryBtn (shine),
+│   │                     KFormField (errorText slot), KCheckbox, KStepDots, KOtpInput
+│   └── core/           — FLAT aesthetic (Catalog/Settings/Home/all content screens) —
+│                         see lib/design/core/ subtree below
 └── features/
     ├── splash/         — SplashScreen, triggers appBootstrapProvider
     ├── onboarding/     — 6-step PageView; back/tap-to-jump dots; illustrations under illustrations/
-    ├── login/          — LoginScreen (long-press logo in debug to replay onboarding)
+    ├── login/          — LoginScreen (long-press logo = replay onboarding; double-tap logo = open
+    │                     CoreDesignDemoScreen — both kDebugMode-guarded)
     ├── register/       — RegisterScreen + password strength meter (TDD)
     ├── totp/           — TotpVerificationScreen + RecoveryCodeScreen
     ├── create_org/     — CreateOrgScreen + animated StoreIllustration (cascading boxes)
     ├── org_picker/     — OrgPickerScreen + OrgCard
+    ├── demo/           — CoreDesignDemoScreen (debug-only sandbox; tree-shakes out of release)
     └── home/           — HomeStubScreen (placeholder until Catalog v1)
 ```
+
+### Flat design system (`lib/design/core/`)
+
+Shipped 2026-05-17, tag candidate `v0.3.0-core-design`. 20 reusable widgets for content screens, ported from `../gen-barcode/fe/src/core-design/` with mobile-native adaptations (bottom sheets instead of centered modals, action sheets instead of popup menus, scrollable pill tabs, etc.).
+
+```
+lib/design/core/
+├── layout/     → k_page_header.dart                                    (1)
+├── input/      → k_search_bar / k_text_field / k_textarea / k_select / (8)
+│                  k_secondary_btn / k_danger_btn / k_icon_btn / k_tab_nav
+├── feedback/   → k_spinner / k_skeleton / k_empty_state / k_badge     (4)
+├── modal/      → k_modal_sheet / k_confirm_dialog / k_action_sheet /  (7)
+│                  k_popup_menu (native context via super_context_menu) /
+│                  k_color_picker / k_icon_picker /
+│                  color_options.dart + icon_mapping.dart (data files, +2)
+└── catalog/    → k_list_row / k_category_card                         (2)
+```
+
+**When to use which aesthetic:** auth/onboarding screens use the GLASS widgets in `lib/design/widgets/`. Every other screen (Catalog, Settings, future Home overview, POS, …) uses FLAT widgets in `lib/design/core/`. Don't mix on one screen.
+
+**Modal helpers** — pick by use case:
+- `showKModalSheet<T>(...)` — create/edit forms, pickers. Params: `disableConfirm`, `showCancel`, `loadingBody`, `enableDrag`.
+- `showKConfirmDialog(...)` — centered AlertDialog for delete/sign-out confirms. Pass `onConfirm: () async {...}` and the dialog stays open with a spinner during await.
+- `showKActionSheet<T>(...)` — bottom action list (Material 3 idiom). Items can be `enabled: false` for permission gating.
+- `KPopupMenu<T>(...)` — wraps a child in a native iOS/Android context menu (long-press to open). Reuses `KActionItem<T>` so same model works for both this and `KActionSheet`. Requires iOS 13+ (already set in `ios/Podfile`).
+- `showKColorPicker(...)` — 26-color grid.
+- `showKIconPicker(...)` — curated icon grid with search. **Caller must fallback** to `TablerIcons.layout_grid` when `resolveIconName(name) == null` — if the BE stored an icon outside the mobile curated set, `resolveIconName` returns null and the consumer must handle it.
+
+**Demo screen safety:** `CoreDesignDemoScreen` is double-tap-logo on Login (`kDebugMode` guard). `kDebugMode` is a compile-time `const bool` — in release builds the branch becomes dead code and the tree-shaker drops the import + class. Verify with `flutter build ios --release --analyze-size` and confirm `core_design_demo_screen.dart` is absent from the size report. If it ever shows up, switch to a stub-on-release pattern.
+
+**Before doing any UI work in this repo:** read `.claude/skills/mobile-design/SKILL.md` — it documents naming conventions, analyzer trip-wires (the ones implementer subagents kept hitting), test patterns (when not to use `pumpAndSettle`), and theme tokens. The Claude `Skill` tool can be invoked with `mobile-design` to load it on demand.
+
+**Native plugins after `pubspec` changes** — adding any plugin with native code (e.g. `super_context_menu`'s Rust binary) requires:
+```bash
+flutter clean && flutter pub get && cd ios && pod install && cd .. && flutter run
+```
+Hot-reload and hot-restart don't register new native plugins.
 
 ## Run
 
@@ -140,11 +181,12 @@ To force a fresh start (wipes onboarding-seen flag + session): `xcrun simctl uni
 ## Tests
 
 ```bash
-flutter test          # ~49 tests (theme + ApiResult + email validator + auth-repo + smoke tests)
-flutter analyze --fatal-warnings   # CI runs this — info-level lints fail the build, keep it clean.
+flutter test          # 136 tests (49 identity + 87 core-design widget tests)
+flutter analyze       # exit code MUST be 0 — info-level lints fail CI. The --fatal-warnings flag
+                      # is redundant; plain `flutter analyze` already exits non-zero on info lints.
 ```
 
-Widget tests that include `KPrimaryBtn` **cannot use `pumpAndSettle()`** — the shine animation never settles. Use `pump()` × 2 instead.
+Widget tests that include `KPrimaryBtn`, `KSpinner`, or `KSkeleton` **cannot use `pumpAndSettle()`** — their animations never settle (shine repeats / spinner spins / skeleton pulses). Use `pump()` then `pump(Duration(milliseconds: 50))` to step through microtasks instead. Same applies inside `KModalSheet` / `KConfirmDialog` confirm flows where a brief spinner state appears during the awaited `onConfirm` — see existing tests in `test/design/core/modal/` for the pattern.
 
 For widget tests of authed screens, override `appBootstrapProvider`:
 
@@ -162,6 +204,7 @@ ProviderScope(
 - `docs/superpowers/specs/2026-05-15-identity-v1-design.md` — full identity design
 - `docs/superpowers/plans/2026-05-15-identity-mvp-login.md` — Plan 1 (Splash + Login + HomeStub) — tag `v0.1.0-identity-mvp`
 - `docs/superpowers/plans/2026-05-16-identity-full.md` — Plan 2 (Onboarding + Register + CreateOrg + OrgPicker) — tag `v0.2.0-identity-full`
+- `docs/superpowers/specs/2026-05-16-catalog-core-design.md` + `docs/superpowers/plans/2026-05-16-catalog-core-design.md` — Plan 3: flat content-screen design system (20 widgets under `lib/design/core/` + KPopupMenu via super_context_menu) — tag candidate `v0.3.0-core-design`
 
 After `v0.2.0-identity-full` (no separate plan docs, single-commit fixes / polish):
 - **Indigo default theme** + 3 more onboarding steps (Payment / Multi-store / Customer) + clickable dots + back button + dropped Remember-me

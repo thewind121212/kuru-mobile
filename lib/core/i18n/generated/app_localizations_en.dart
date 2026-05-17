@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Kuru';
+  String get appTitle => 'Simplestore';
 
   @override
   String get splashTagline => 'Connecting...';
@@ -25,6 +25,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fieldPassword => 'Password';
+
+  @override
+  String get fieldPasswordShow => 'Show password';
+
+  @override
+  String get fieldPasswordHide => 'Hide password';
 
   @override
   String get loginRemember => 'Remember me';
