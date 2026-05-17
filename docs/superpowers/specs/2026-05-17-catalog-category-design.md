@@ -299,11 +299,12 @@ Composed entirely from existing flat widgets — no new design primitives.
 
 - **Trailing `+`** → opens create modal at root (`parentId = NIL_UUID`, `layer = "1"`).
 - **Search:** Vietnamese-normalized — port `normalizeForSearch` from web FE (`NFD` decomposition + `đ→d` + lowercase). Filter is client-side over the cached overview list.
-- **Layer tabs:** derived from data. "All" + each distinct `layer` present, sorted numerically. Labels come from ARB (port from web FE's `category.json` namespace which already has these keys):
+- **Layer tabs:** derived from data. "All" + each distinct `layer` present, sorted numerically. Labels come from ARB — verified against `../gen-barcode/fe/src/locales/en/category.json` which has these exact keys (port them, do not invent new ones):
   - `"1"` → `l10n.categoryLayerMain` ("Main" / "Cấp chính")
   - `"2"` → `l10n.categoryLayerSub` ("Sub" / "Cấp phụ")
   - `"3"` → `l10n.categoryLayerSubSub` ("Sub Sub" / "Cấp phụ phụ")
-  - `"4"` / `"5"` → `l10n.categoryLayerN(int n)` ("Layer 4" / "Cấp 4")
+  - `"4"` / `"5"` → `'${l10n.categoryLayerPrefix} $n'` ("Layer 4" / "Cấp 4") — matches web FE's `${layerPrefix} ${layer}` concatenation. No parameterized ICU plural; the prefix + number is assembled in Dart.
+  - Plus `l10n.categoryLayerAll` ("All" / "Tất cả") for the All tab.
   - Count badge per tab. Default = "All". Layer filter held in widget state (not URL).
   - Edge case: when category list is empty, no layer tabs render at all (only the empty state shows).
 - **Search ↔ layer-tab interaction:** search filters within the **active** layer (matches web FE behavior). Count badges reflect total per layer (not search-filtered count) so users see how much they're hiding by typing.
@@ -376,7 +377,7 @@ One widget — `CreateEditCategorySheet` — with three modes:
 └─────────────────────────────────────┘
 ```
 
-**Widgets used:** `showKModalSheet` (existing) with body composed of `KTextField` (name), `KSelect` (status), `KTextarea` (description), two `KSelect`-styled buttons opening `showKIconPicker` / `showKColorPicker`. Parent display = plain text row.
+**Widgets used:** `showKModalSheet` (existing) with body composed of `KTextField` (name), `KSelect` (status — `KSelect` is the right widget here since status has 3 static options), `KTextarea` (description), and **two small custom tappable preview tiles** for Icon and Color. Each tile shows a leading swatch/icon, a label, and a chevron; tap opens `showKIconPicker` / `showKColorPicker` respectively. They are *not* `KSelect` instances — `KSelect` per its widget docstring opens `showKActionSheet` with a static option list, which would not work for these pickers. Implementer should build the tile as a small composite widget (essentially a `Material.InkWell` over `KListRow`-style internals) or extend `KSelect` with an `onTap` override — pick whichever is more idiomatic when implementing. Parent display = plain text row.
 
 **Parent name resolution.** In `createNested` mode, the parent name is **passed in by the caller** (the CategoryDetailScreen has the parent category in its `categoryByIdProvider(parentId)` snapshot already). In `edit` mode, use `categoryResponse.parentName` (response-only field, see §4.1). The sheet does not look up parent via the overview list — that creates an unnecessary dependency.
 
@@ -490,6 +491,7 @@ Existing dio logging interceptor handles the request/response lines. The reposit
   - `categoryByIdProvider` provider test: success path; family caches per-id
   - `CategoriesListScreen` widget tests: renders rows, skeleton on load, empty state, search filter (including Vietnamese normalization: "dien" matches "Điện tử"), layer tab switching, search-within-active-layer behavior
   - `MainShell` widget test: three tabs visible, tapping Catalog mounts list, per-tab nav stack preserved
+  - List → placeholder detail navigation test: tapping a row pushes `/catalog/categories/:id` and the placeholder body renders
 
 **Row tap in Plan 1:** pushes a placeholder `CategoryDetailScreen` whose body is just a "Coming soon" `KEmptyState`. The route + navigation contract are wired in Plan 1; Plan 2 replaces the body with the real header card + children list. This way Plan 2 changes one widget, not routing.
 
