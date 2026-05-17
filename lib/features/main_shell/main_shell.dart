@@ -3,17 +3,17 @@
 // ignore_for_file: non_constant_identifier_names
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/features/main_shell/kuru_bottom_nav.dart';
 
-/// Presentation-only shell with a bottom NavigationBar plus a POS FAB.
-/// Routing-owned — the parent (router's StatefulShellRoute builder) supplies
-/// currentIndex + onTabChanged + the active tab body.
+/// Presentation-only shell with the custom [KuruBottomNav]. Routing-owned —
+/// the parent (router's StatefulShellRoute builder) supplies currentIndex
+/// + onTabChanged + the active tab body.
 ///
-/// The trailing FAB is a global Point-of-Sale entry point (visible on every
-/// tab). Plan 1 has no POS screen yet; tapping shows a placeholder snackbar.
-/// Replace [_onPosPressed] with a `context.push('/pos')` when the POS feature
-/// lands.
+/// The trailing `+` action on the bottom nav is the global Point-of-Sale
+/// entry (visible on every tab). Plan 1 has no POS screen yet; tapping
+/// shows a placeholder snackbar. Replace [_onPosPressed] with a
+/// `context.push('/pos')` when the POS feature lands.
 class MainShell extends StatelessWidget {
   const MainShell({
     required this.currentIndex,
@@ -39,35 +39,19 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final c = kuruColors(context);
     return Scaffold(
       body: body,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _onPosPressed(context),
-        backgroundColor: c.accent600,
-        foregroundColor: Colors.white,
-        elevation: 4,
-        tooltip: l.posOpenTooltip,
-        child: const Icon(TablerIcons.plus, size: 28),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: onTabChanged,
-        destinations: [
-          NavigationDestination(
-            icon: const Icon(TablerIcons.home),
-            label: l.navHome,
-          ),
-          NavigationDestination(
-            icon: const Icon(TablerIcons.layout_grid),
-            label: l.navCatalog,
-          ),
-          NavigationDestination(
-            icon: const Icon(TablerIcons.settings),
-            label: l.navSettings,
-          ),
+      bottomNavigationBar: KuruBottomNav(
+        currentIndex: currentIndex,
+        onTabChanged: onTabChanged,
+        tabs: [
+          KuruBottomNavItem(icon: TablerIcons.home, label: l.navHome),
+          KuruBottomNavItem(icon: TablerIcons.layout_grid, label: l.navCatalog),
+          KuruBottomNavItem(icon: TablerIcons.settings, label: l.navSettings),
         ],
+        actionIcon: TablerIcons.plus,
+        actionTooltip: l.posOpenTooltip,
+        onActionPressed: () => _onPosPressed(context),
       ),
     );
   }
