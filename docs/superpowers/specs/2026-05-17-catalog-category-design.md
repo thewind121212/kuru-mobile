@@ -56,20 +56,32 @@ The following are explicitly **not** part of this spec — they will land in lat
 **Packages (add to `pubspec.yaml`):**
 
 ```yaml
+dependencies:
+  built_value: ^8.x          # runtime dep required by dart-dio output
+  built_collection: ^5.x     # runtime dep required by dart-dio output
+
 dev_dependencies:
-  openapi_generator: ^5.x        # annotation host
+  openapi_generator: ^5.x        # @Openapi annotation host
   openapi_generator_cli: ^5.x    # CLI invoked by build_runner
+  built_value_generator: ^8.x    # builds @BuiltValue classes from generated sources
 ```
 
 **Generator template:** `dart-dio` (uses `dio` + `built_value`). Mature, well-supported, integrates with our existing dio.
 
-**Annotation host file:** new file `lib/core/network/openapi_clients.dart` containing one stub class with `@Openapi` annotations for **all 16 specs** in `../gen-barcode/openapi/*.openapi.json`. Generating all up front avoids re-running the generator each time a new module is added.
+**Scope of generation for v0.4.0: category only.** The annotation host file (`lib/core/network/openapi_clients.dart`) declares **one stub class per spec being generated**, each with its own `@Openapi(...)` annotation (the generator emits one client per annotated class — they cannot share a class). v0.4.0 has exactly one annotated class targeting `category.openapi.json`. Future modules (Brand, Product, ...) add one stub class each in their own spec/plan — not bundled into v0.4.0. This is a deliberate revision from an earlier "generate all 16 up front" idea: per CLAUDE.md the openapi files are unreliable, and pre-generating modules we won't use until v0.5+ would commit thousands of lines of code that might be wrong anyway.
 
-**Output path:** `lib/api/<module>/` — one directory per spec. Generated code is **committed** to git (see Section 9 decision #1).
+**Output path:** `lib/api/category/` for v0.4.0. Future modules: `lib/api/<module>/`. Generated code is **committed** to git (see Section 9 decision #1) — at one-module scale the diff impact is acceptable.
 
-**Workflow:** `dart run build_runner build --delete-conflicting-outputs` after any openapi spec change. CI gates: stale generated code = CI failure (run codegen, check `git diff --exit-code`).
+**Workflow:** `dart run build_runner build --delete-conflicting-outputs` after the openapi spec changes. CI does not have a stale-codegen gate today (no `.github/workflows/` in repo); spec does not require adding one. Treat "regenerate before commit" as developer discipline.
 
-**Failure contingency:** if a spec fails to generate cleanly (Section 9 decision #2), patch a copy in `tool/openapi-patches/<module>.openapi.json` and point that module's `@Openapi` annotation at the patched copy. Do not modify files in `../gen-barcode/openapi/` from this repo.
+**Pre-generation sanity check (mandatory per CLAUDE.md "Source-of-truth ordering").** Before accepting any generated client into Plan 1, verify it against the BE source-of-truth files in this order:
+
+1. `../gen-barcode/be/core/dto/category/*.dto.ts` — request body validation rules
+2. `../gen-barcode/be/core/domains/catalog/api/category.route.ts` — actual handler shape
+3. `../gen-barcode/be/types/category.d.ts` — generated TS response types
+4. `../gen-barcode/be/core/domains/catalog/services/category.service.ts` — what `resData` actually contains
+
+If the generated Dart model disagrees with `category.d.ts` or the service `resData`, patch a copy of `category.openapi.json` in `tool/openapi-patches/category.openapi.json` and point the `@Openapi` annotation at the patched copy. The handler / service / `.d.ts` win — never the openapi file. Do not modify files in `../gen-barcode/openapi/` from this repo.
 
 ### 3.2 dio integration
 
@@ -81,6 +93,13 @@ The generated client constructor accepts a `Dio` instance. We pass the existing 
 - Error-mapping interceptor (DioException → typed `ApiException`)
 
 The generated client's own default Dio config is **not** used.
+
+**Base path handling (load-bearing).** Our `dioProvider` keeps `baseUrl = Env.apiBaseUrl` (host root) because `AuthRepository` calls `/auth/*` at host root and `/api/v1/profile/*` with the prefix hand-written into each call. The openapi specs for `/api/v1/*` modules have their `servers[0].url` set to `${host}/api/v1` (verify per spec). Two viable approaches:
+
+- **(a) Pass `basePathOverride` when constructing the generated client** — `categoryApiClientProvider` does `CategoryApi(dio: dio, basePathOverride: '${apiBaseUrl}/api/v1')`. Each module sets its own override.
+- **(b) Patch the openapi `servers[0].url` to a relative `/api/v1`** in `tool/openapi-patches/category.openapi.json`. Dio's `baseUrl` (host root) plus the relative server URL plus the operation path resolves to `${host}/api/v1/category/CreateCategory`.
+
+**Decision:** **(a) — `basePathOverride`**. It keeps the openapi files untouched when they're already correct, and makes the wiring explicit at the Riverpod-provider level (one obvious place to look). The patch directory is reserved for cases where the openapi shape itself is wrong (per §3.1).
 
 ### 3.3 Routing
 
@@ -110,18 +129,32 @@ authProvider (existing)            currentOrgIdProvider (existing)
                             │
                             ▼
               categoryApiClientProvider (new)
-                  wraps generated CategoryApi(dio: dio)
+                  wraps generated CategoryApi(dio, basePathOverride: ...)
                             │
         ┌───────────────────┼──────────────────────┐
         ▼                   ▼                      ▼
-categoryOverviewProvider   categoryByIdProvider.family   categoryMutationsController
-   (FutureProvider)           (FutureProvider<UUID>)        (AsyncNotifier)
-        │                       │                              │
-        └───────────────────────┴────── ref.invalidate ◄───────┘
-                                          after mutation success
+categoryOverviewProvider   categoryByIdProvider.family   CategoryRepository
+   (FutureProvider          (FutureProvider                (plain class,
+    watching                 .family<String>)               not a provider)
+    currentOrgIdProvider)
 ```
 
-`categoryOverviewProvider` is the single source of truth for the category list. `CategoryDetailScreen` reuses it (client-side filter on `parentId`) rather than calling `GetCategoryTree`. This means **one network round-trip** per Catalog tab visit, not one-per-screen.
+**`categoryOverviewProvider`** is the single source of truth for the category list. `CategoryDetailScreen` reuses it (client-side filter on `parentId`) rather than calling `GetCategoryTree`. This means **one network round-trip** per Catalog tab visit, not one-per-screen.
+
+The provider body **must** `ref.watch(currentOrgIdProvider)` so that switching org (OrgPicker re-entry) auto-invalidates the cached list. The dio interceptor alone won't trigger re-fetch — Riverpod's dependency graph does.
+
+**`categoryByIdProvider.family<String>`** (key is the UUID as a string). The provider body calls `repo.getCategoryById(GetCategoryByIdDto(categoryId: key))` — the generated client expects a DTO object in the POST body, not a path/query param. Also `ref.watch(currentOrgIdProvider)`.
+
+**Mutations are not a separate provider.** Instead, `CategoryRepository` exposes `create / update / remove` methods that return `ApiResult<T>` and own no UI state. The widget invoking them (modal sheet, confirm dialog) controls its own `isSubmitting` flag via local state (or `KModalSheet.loadingBody`). This avoids the "concurrent delete-then-create races wipe each other's error" problem of a shared `AsyncNotifier`.
+
+**Invalidation on mutation success (the widget that triggered it does this — repository does not touch `ref`):**
+
+| Mutation | What to invalidate |
+|---|---|
+| `create(root)` | `categoryOverviewProvider` |
+| `create(nested)` | `categoryOverviewProvider`, `categoryByIdProvider(parentId)` (parent's `subCategoriesCount` changed) |
+| `update(id)` | `categoryOverviewProvider`, `categoryByIdProvider(id)` |
+| `remove([id])` | `categoryOverviewProvider`, `categoryByIdProvider(id)` (force refetch → 404 → AsyncError; CategoryDetailScreen pops to list on error). If category had a `parentId`, also `categoryByIdProvider(parentId)`. |
 
 ### 3.5 Repository layer
 
@@ -129,9 +162,10 @@ New file: `lib/features/catalog/categories/data/category_repository.dart`.
 
 Responsibilities:
 - Wrap each generated client method (`CreateCategory`, `GetCategoryById`, `UpdateCategory`, `RemoveCategory`, `GetCategoryOverviewWithDepth`).
-- Translate `DioException` → `ApiException` (reuse existing extractor in `lib/core/network/api_exception.dart`).
-- Return `ApiResult<T>` (existing sealed class) for the mutations controller to switch on.
+- Translate `DioException` → `ApiException` (reuse existing extractor in `lib/core/network/api_exception.dart`, after Plan 1 splits 401/403 — see §6.2).
+- Return `ApiResult<T>` (existing sealed class) so callers `switch` on success/failure without try/catch.
 - Use generated `CategoryResponse` model directly — no parallel freezed layer.
+- Own no UI/notifier state. Callers (widgets) manage their own loading flags.
 
 `GetCategoryTree` and `GetCategoryOverview` (no-depth) are **not** wrapped — mobile only consumes `GetCategoryOverviewWithDepth`, which returns the full flat list with `layer` baked in.
 
@@ -139,13 +173,11 @@ Responsibilities:
 
 ```
 lib/
-├── api/                              ← all generated; committed
-│   ├── category/
-│   ├── brand/
-│   ├── product/
-│   └── … (16 directories total)
+├── api/
+│   └── category/                     ← generated; committed (v0.4.0 only ships this one)
 ├── core/network/
-│   └── openapi_clients.dart          ← @Openapi annotation host
+│   ├── openapi_clients.dart          ← @Openapi annotation host (one stub class for v0.4.0)
+│   └── api_exception.dart            ← extend with ForbiddenException (see §6.2)
 └── features/
     ├── main_shell/
     │   └── main_shell.dart           ← StatefulShellRoute + NavigationBar
@@ -161,6 +193,9 @@ lib/
     │           └── category_providers.dart
     └── settings/
         └── settings_stub_screen.dart
+
+tool/
+└── openapi-patches/                  ← created empty; populated only if a spec needs patching
 ```
 
 ---
@@ -168,6 +203,8 @@ lib/
 ## 4. BE contract reference
 
 ### 4.1 Category model fields
+
+#### Request fields (Create / Update body)
 
 Source of truth: `../gen-barcode/be/core/domains/catalog/dto/category/*.dto.ts`.
 
@@ -180,6 +217,21 @@ Source of truth: `../gen-barcode/be/core/domains/catalog/dto/category/*.dto.ts`.
 | `description` | string | optional | `""` | Trim |
 | `status` | enum | yes | `"ACTIVE"` | `ACTIVE` / `INACTIVE` / `ARCHIVED` |
 | `icon` | string | optional | `"layout-grid"` (web default) | Name from curated icon set |
+
+#### Response-only fields (returned by `GetCategoryById` and `GetCategoryOverviewWithDepth`)
+
+Source of truth: `../gen-barcode/be/types/category.d.ts` + `../gen-barcode/be/core/domains/catalog/services/category.service.ts` (`resData` shape).
+
+| Field | Type | Notes |
+|---|---|---|
+| `categoryId` | UUID | Primary key. Required on every response. |
+| `subCategoriesCount` | number | Direct children count. Used in list subtitle "N sub". |
+| `itemCount` | number | Products in this category. Used in list subtitle "N items". |
+| `totalValue` | number | Sum of `price × quantity`. Not displayed in v0.4.0. |
+| `lowStockCount` | number | Count of products at/below min stock. Not displayed in v0.4.0. |
+| `parentName` | string \| null | Parent's display name. Used in Create/Edit sheet's "Parent: …" line. |
+
+The generated `CategoryResponse` model includes all of these; widgets pick only the ones they need.
 
 ### 4.2 Endpoints (mounted under `/api/v1/category`)
 
@@ -247,12 +299,14 @@ Composed entirely from existing flat widgets — no new design primitives.
 
 - **Trailing `+`** → opens create modal at root (`parentId = NIL_UUID`, `layer = "1"`).
 - **Search:** Vietnamese-normalized — port `normalizeForSearch` from web FE (`NFD` decomposition + `đ→d` + lowercase). Filter is client-side over the cached overview list.
-- **Layer tabs:** derived from data. "All" + each distinct `layer` present, sorted numerically. Labels:
-  - `"1"` → "Main"
-  - `"2"` → "Sub"
-  - `"3"` → "Sub Sub"
-  - `"4"` / `"5"` → "Layer 4" / "Layer 5"
+- **Layer tabs:** derived from data. "All" + each distinct `layer` present, sorted numerically. Labels come from ARB (port from web FE's `category.json` namespace which already has these keys):
+  - `"1"` → `l10n.categoryLayerMain` ("Main" / "Cấp chính")
+  - `"2"` → `l10n.categoryLayerSub` ("Sub" / "Cấp phụ")
+  - `"3"` → `l10n.categoryLayerSubSub` ("Sub Sub" / "Cấp phụ phụ")
+  - `"4"` / `"5"` → `l10n.categoryLayerN(int n)` ("Layer 4" / "Cấp 4")
   - Count badge per tab. Default = "All". Layer filter held in widget state (not URL).
+  - Edge case: when category list is empty, no layer tabs render at all (only the empty state shows).
+- **Search ↔ layer-tab interaction:** search filters within the **active** layer (matches web FE behavior). Count badges reflect total per layer (not search-filtered count) so users see how much they're hiding by typing.
 - **Rows:** `KListRow` with `leading` = icon container colored by `colorSettings`, `title` = name, `subtitle` = stats joined by " · ". Subtitle composition:
   - If BE returns `subCategoriesCount > 0`: include `"N sub"`.
   - If BE returns `itemCount > 0`: include `"N items"`.
@@ -324,6 +378,10 @@ One widget — `CreateEditCategorySheet` — with three modes:
 
 **Widgets used:** `showKModalSheet` (existing) with body composed of `KTextField` (name), `KSelect` (status), `KTextarea` (description), two `KSelect`-styled buttons opening `showKIconPicker` / `showKColorPicker`. Parent display = plain text row.
 
+**Parent name resolution.** In `createNested` mode, the parent name is **passed in by the caller** (the CategoryDetailScreen has the parent category in its `categoryByIdProvider(parentId)` snapshot already). In `edit` mode, use `categoryResponse.parentName` (response-only field, see §4.1). The sheet does not look up parent via the overview list — that creates an unnecessary dependency.
+
+**Defensive guard for stale state.** Sheet refuses to open in `createNested` mode if `parent.layer == "5"` (silently — the caller is expected to disable the entry button per §5.3). If somehow opened anyway, sheet shows `KEmptyState` with "Max nesting depth reached" instead of the form.
+
 **Defaults (mirror web FE):** `status = ACTIVE`, `color = "slate-400"`, `icon = "layout-grid"`.
 
 **Validation:**
@@ -332,7 +390,7 @@ One widget — `CreateEditCategorySheet` — with three modes:
 
 **Submit flow:**
 1. `KModalSheet.loadingBody` shows during the awaited mutation.
-2. Repository call via `categoryMutationsController.create / .update`.
+2. Repository call via `CategoryRepository.create(...)` or `.update(...)` — returns `ApiResult<T>`.
 3. On success → close sheet → `KNotify.success("Category created" / "Category updated")` → `ref.invalidate(categoryOverviewProvider)`.
 4. On error → sheet stays open; surface per error matrix in Section 6.
 
@@ -346,7 +404,7 @@ Long-press row → `KPopupMenu` → tap "Delete":
 - Cancel + Delete (danger).
 - `onConfirm: () async { ... }` — dialog stays open with spinner during await.
 
-→ `categoryMutationsController.remove(categoryIds: [id])` — BE expects array even for single delete.
+→ `CategoryRepository.remove(categoryIds: [id])` — BE expects array even for single delete.
 
 → On success → close dialog → `KNotify.success("Category deleted")` → invalidate overview.
 
@@ -364,23 +422,31 @@ Long-press row → `KPopupMenu` → tap "Delete":
 ### 6.1 Mutation flow
 
 1. User submits / confirms.
-2. Controller sets `state = AsyncLoading()`. UI shows spinner state (KModalSheet `loadingBody` / KConfirmDialog inline spinner).
-3. Repository calls generated client.
-4. On success → `ref.invalidate(categoryOverviewProvider)` → close sheet/dialog → `KNotify.success`.
-5. On error → sheet/dialog stays open → error surfaced per matrix below.
+2. The widget that triggered the mutation sets its own `isSubmitting = true` local state. UI shows spinner state (KModalSheet `loadingBody` / KConfirmDialog inline spinner during awaited `onConfirm`).
+3. Repository method called; returns `ApiResult<T>` (no exceptions escape).
+4. On `ApiResult.success` → `ref.invalidate(...)` per §3.4 invalidation table → close sheet/dialog → `KNotify.success`.
+5. On `ApiResult.failure(ApiException)` → sheet/dialog stays open → widget switches on the exception type and surfaces per matrix below.
 
 ### 6.2 Error matrix
 
-| BE response | UX |
-|---|---|
-| HTTP 400 + `error.message` mapping to a field | `KFormField.errorText` on that field — message verbatim |
-| HTTP 400 + non-field message | Inline error banner inside the sheet |
-| HTTP 401 | `KNotify.error` toast → `signOut()` → router → `/login` |
-| HTTP 500 with body containing `"Session does not exist"` | Same as 401 (BE bug; mitigation pattern from `AuthRepository`) |
-| HTTP 403 | `KNotify.warning("You don't have permission to do that.")`; sheet stays open |
-| HTTP 429 + `code: RATE_LIMITED` | `KNotify.warning("Slow down — try again in a moment.")` |
-| Other HTTP 5xx | `KNotify.networkError(..., onRetry: _submit)` — bottom SnackBar with Retry |
-| `DioException` (connectionError / timeout) | Same as 5xx — `networkError` with Retry |
+**Pre-requisite work in Plan 1 (load-bearing):** the existing `_ErrorMappingInterceptor` in `lib/core/network/dio_client.dart` currently maps **both 401 and 403** to a single `UnauthorizedException`. The matrix below requires distinguishing them at the repository layer. Plan 1 must:
+
+1. Add `ForbiddenException` to `lib/core/network/api_exception.dart` (sibling of `UnauthorizedException`).
+2. Update `_ErrorMappingInterceptor` so that `response.statusCode == 403` → `ForbiddenException`, `401` → `UnauthorizedException` (existing behavior preserved).
+3. Audit `AuthRepository` for any code that currently catches `UnauthorizedException` and intends 403 too — none expected, but verify.
+
+Once that's done:
+
+| BE response | Mapped to | UX |
+|---|---|---|
+| HTTP 400 + `error.message` mapping to a field | `ValidationException` | `KFormField.errorText` on that field — message verbatim |
+| HTTP 400 + non-field message | `ValidationException` | Inline error banner inside the sheet |
+| HTTP 401 | `UnauthorizedException` | `KNotify.error` toast → `signOut()` → router → `/login` |
+| HTTP 500 with body containing `"Session does not exist"` | `UnauthorizedException` (interceptor remaps; existing pattern from `AuthRepository`) | Same as 401 |
+| HTTP 403 | `ForbiddenException` (**new in Plan 1**) | `KNotify.warning("You don't have permission to do that.")`; sheet stays open |
+| HTTP 429 + `code: RATE_LIMITED` | `RateLimitedException` | `KNotify.warning("Slow down — try again in a moment.")` |
+| Other HTTP 5xx | `ServerException` | `KNotify.networkError(..., onRetry: _submit)` — SnackBar with Retry |
+| `DioException` (connectionError / timeout) | `NetworkException` | Same as 5xx — `networkError` with Retry |
 
 For the list screen itself (load failures, not mutations): the list provider exposes `AsyncError`; render `KEmptyState` with an error message + "Retry" action that calls `ref.invalidate(categoryOverviewProvider)`.
 
@@ -405,24 +471,29 @@ Existing dio logging interceptor handles the request/response lines. The reposit
 **Tag candidate:** `v0.4.0-catalog-scaffold`
 
 **Scope:**
-- Add `openapi_generator` + `openapi_generator_cli` to `pubspec.yaml` dev_dependencies
-- Create `lib/core/network/openapi_clients.dart` with `@Openapi` annotations for all 16 specs
-- Run codegen; commit `lib/api/` output
-- Add `tool/openapi-patches/` directory (empty initially; populated only if a spec fails to generate)
-- Wire `categoryApiClientProvider` and `categoryOverviewProvider`
+- Add `openapi_generator` + `openapi_generator_cli` to dev_dependencies, plus `built_value` + `built_collection` (runtime) + `built_value_generator` (dev)
+- **Split `UnauthorizedException` into `UnauthorizedException` (401) and `ForbiddenException` (403)** — see §6.2. Update `_ErrorMappingInterceptor` in `lib/core/network/dio_client.dart`. Audit `AuthRepository` for affected callers.
+- Create `lib/core/network/openapi_clients.dart` with **one** `@Openapi`-annotated stub class for `category.openapi.json` only
+- Run codegen; commit `lib/api/category/` output
+- Add empty `tool/openapi-patches/` directory; populate `tool/openapi-patches/category.openapi.json` only if the sanity check in §3.1 reveals openapi-vs-handler mismatch
+- Verify the generated `CategoryResponse` shape against `../gen-barcode/be/types/category.d.ts` and `category.service.ts` `resData` per §3.1 pre-generation sanity check
+- Wire `categoryApiClientProvider` with `basePathOverride: '${Env.apiBaseUrl}/api/v1'` (see §3.2)
+- Wire `categoryOverviewProvider` (watches `currentOrgIdProvider`) and `categoryByIdProvider.family<String>` (also watches)
+- Build `CategoryRepository` (returns `ApiResult<T>`; no notifier state)
 - Refactor `lib/app/router.dart` to `StatefulShellRoute.indexedStack` for authenticated routes
 - Build `MainShell`, `HomeTabScreen` (re-export of existing stub), `SettingsStubScreen`
-- Build `CategoriesListScreen` — read-only: page header (no `+` button yet), search, layer tabs, list rows, skeleton, empty state, error retry
-- Add `category_*` strings to `app_en.arb` / `app_vi.arb`
+- Build `CategoriesListScreen` — read-only: page header (no `+` button yet), search (Vietnamese-normalized), layer tabs (ARB-localized labels), list rows, skeleton, empty state, error retry
+- Add `category_*` strings to `app_en.arb` / `app_vi.arb` — including the layer-label keys from §5.2
 - Tests:
-  - `CategoryRepository` unit: DioException → ApiException mapping (400/401/403/429/5xx/network)
-  - `categoryOverviewProvider` provider test: success + error paths
-  - `CategoriesListScreen` widget tests: renders rows, skeleton on load, empty state, search filter (including Vietnamese normalization), layer tab switching
+  - `CategoryRepository` unit: DioException → ApiException mapping (400 / 401 / **403 distinct from 401** / 429 / 5xx / network)
+  - `categoryOverviewProvider` provider test: success + error paths; **re-fires when `currentOrgIdProvider` changes**
+  - `categoryByIdProvider` provider test: success path; family caches per-id
+  - `CategoriesListScreen` widget tests: renders rows, skeleton on load, empty state, search filter (including Vietnamese normalization: "dien" matches "Điện tử"), layer tab switching, search-within-active-layer behavior
   - `MainShell` widget test: three tabs visible, tapping Catalog mounts list, per-tab nav stack preserved
 
 **Row tap in Plan 1:** pushes a placeholder `CategoryDetailScreen` whose body is just a "Coming soon" `KEmptyState`. The route + navigation contract are wired in Plan 1; Plan 2 replaces the body with the real header card + children list. This way Plan 2 changes one widget, not routing.
 
-**Acceptance:** an authed user with attached org lands on `/home`, taps Catalog, sees their categories with search + layer filtering working. Tapping a row pushes the placeholder detail screen successfully.
+**Acceptance (given seeded BE data):** with `task fullstack` running in `../gen-barcode` and at least 3 categories spanning 2+ layers seeded into the dev org, an authed user lands on `/home`, taps Catalog, sees the categories with search + layer filtering working. Tapping a row pushes the placeholder detail screen successfully. If the BE has no fixture script, document the manual creation steps in the Plan 1 PR description.
 
 ### Plan 2 — Categories CRUD + detail
 
@@ -430,18 +501,20 @@ Existing dio logging interceptor handles the request/response lines. The reposit
 
 **Scope:**
 - Add `+` to `CategoriesListScreen` header → opens create modal at root
-- Build `CreateEditCategorySheet` (one widget, three modes)
-- Build `CategoryDetailScreen` (header card with Edit + Add-subcategory buttons, children list)
+- Add `create` / `update` / `remove` methods on `CategoryRepository` (return `ApiResult<T>`; no notifier)
+- Build `CreateEditCategorySheet` (one widget, three modes; owns its own `isSubmitting` state)
+- Build `CategoryDetailScreen` (header card with Edit + Add-subcategory buttons, children list filtered from `categoryOverviewProvider`)
 - Long-press list row → `KPopupMenu` with Edit / Delete
-- Delete confirm via `showKConfirmDialog`
-- `categoryMutationsController` (AsyncNotifier with `create` / `update` / `remove`)
-- Error surfacing per Section 6 matrix
+- Delete confirm via `showKConfirmDialog` with awaited `onConfirm`
+- Invalidation on mutation success per §3.4 table — done by the widget that invoked the mutation
+- Error surfacing per §6.2 matrix (relies on 401/403 split shipped in Plan 1)
 - Extend ARB with form labels, status enum labels, error text
 - Tests:
-  - `categoryMutationsController` provider tests: create/update/remove happy paths + invalidation
-  - `CreateEditCategorySheet` widget tests: empty-name validation, defaults match web, color/icon pickers return value, three modes pre-fill correctly
-  - `CategoryDetailScreen` widget tests: renders header + children, Add-subcategory disabled at layer 5, nested drill-down
-  - Delete confirm widget test: confirm calls remove with `[id]`, cancel closes without calling
+  - `CategoryRepository.create / update / remove` unit tests: happy path + each ApiException variant
+  - `CreateEditCategorySheet` widget tests: empty-name validation, defaults match web (`color = slate-400`, `icon = layout-grid`, `status = ACTIVE`), color/icon pickers return value, three modes pre-fill correctly (parent name comes from caller in createNested)
+  - `CategoryDetailScreen` widget tests: renders header + children, Add-subcategory disabled at layer 5, nested drill-down stacks correctly
+  - Delete confirm widget test: confirm calls `remove(categoryIds: [id])` (array wrapper), cancel closes without calling
+  - Mutation invalidation tests: after `create`/`update`/`remove`, the relevant providers are invalidated per §3.4 table
 
 **Acceptance:** full CRUD + drill-down works end-to-end against a running BE (`task fullstack` in `../gen-barcode`). User can create a root category, nest 4 sub-levels, edit each, delete any.
 
@@ -471,7 +544,9 @@ main
 
 **Decision:** **commit**.
 
-Rationale: `flutter analyze` / CI / `flutter pub get` workflows are simpler; PR diffs make spec changes visible; eliminates "did you regenerate?" debugging. The cost (bigger repo, diff noise on regeneration) is acceptable for a small portfolio repo.
+Rationale: `flutter analyze` / `flutter pub get` workflows are simpler; PR diffs make spec changes visible; eliminates "did you regenerate?" debugging. The cost (bigger repo, diff noise on regeneration) is acceptable now that v0.4.0 generates **only one module** (per §3.1 revised scope). The diff bloat argument that would apply at 16-module scale doesn't apply here.
+
+Re-evaluate this decision whenever the codegen scope expands beyond ~3 modules.
 
 ### 9.2 Fallback when openapi spec fails to generate
 
@@ -491,14 +566,28 @@ Revisit when ARB exceeds ~500 entries or when more than 3 modules share string-c
 
 ### 10.1 Source files consulted
 
-- `../gen-barcode/be/core/domains/catalog/dto/category/*.dto.ts`
-- `../gen-barcode/be/core/domains/catalog/api/category.route.ts`
-- `../gen-barcode/be/core/domains/catalog/services/category.service.ts`
+**BE (source-of-truth ordering per CLAUDE.md):**
+
+1. `../gen-barcode/be/core/domains/catalog/dto/category/*.dto.ts` — request body validation
+2. `../gen-barcode/be/core/domains/catalog/api/category.route.ts` — actual handler
+3. `../gen-barcode/be/types/category.d.ts` — generated TS response types (load-bearing for §3.1 sanity check)
+4. `../gen-barcode/be/core/domains/catalog/services/category.service.ts` — what `resData` actually contains
+5. `../gen-barcode/openapi/category.openapi.json` — cross-check only; do not trust alone
+
+**Mobile (existing code referenced):**
+
+- `lib/core/network/dio_client.dart` — `_ErrorMappingInterceptor` (Plan 1 splits 401/403 here)
+- `lib/core/network/api_exception.dart` — Plan 1 adds `ForbiddenException`
+- `lib/core/auth/auth_repository.dart` — pattern for `ApiResult<T>` + logging
+- `lib/app/router.dart` — Plan 1 refactors to `StatefulShellRoute.indexedStack`
+
+**Web FE (UX port reference):**
+
 - `../gen-barcode/fe/src/page/Category.tsx`
 - `../gen-barcode/fe/src/page/CategoryDetail.tsx`
 - `../gen-barcode/fe/src/components/category-module/CreateCategoryDialog.tsx`
-- `../gen-barcode/fe/src/components/category-module/MainCategory.tsx`
-- `../gen-barcode/openapi/category.openapi.json`
+- `../gen-barcode/fe/src/components/category-module/MainCategory.tsx` (incl. `normalizeForSearch` at lines 43-51 — port verbatim)
+- `../gen-barcode/fe/src/locales/{vi,en}/category.json` — ARB key names to port
 
 ### 10.2 Existing widgets reused (no new design primitives)
 
