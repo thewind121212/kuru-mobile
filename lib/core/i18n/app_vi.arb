@@ -110,5 +110,28 @@
     }
   },
   "orgPickerCreateNew": "Tạo tổ chức mới",
-  "orgPickerNote": "Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt."
+  "orgPickerNote": "Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt.",
+
+  "navHome": "Trang chủ",
+  "navCatalog": "Danh mục",
+  "navSettings": "Cài đặt",
+
+  "settingsPlaceholder": "Cài đặt sắp ra mắt",
+
+  "categoryTitle": "Danh mục",
+  "categorySubtitle": "Quản lý phân loại sản phẩm",
+  "categorySearchHint": "Tìm danh mục...",
+  "categoryEmptyTitle": "Chưa có danh mục",
+  "categoryEmptyBody": "Tạo danh mục đầu tiên để sắp xếp sản phẩm.",
+  "categoryEmptyAction": "Tạo danh mục đầu tiên",
+  "categoryLayerAll": "Tất cả",
+  "categoryLayerMain": "Cấp chính",
+  "categoryLayerSub": "Cấp phụ",
+  "categoryLayerSubSub": "Cấp phụ phụ",
+  "categoryLayerPrefix": "Cấp",
+  "categorySubCount": "{count, plural, other{{count} danh mục con}}",
+  "categoryItemCount": "{count, plural, other{{count} sản phẩm}}",
+  "categoryLoadError": "Không tải được danh mục",
+  "categoryLoadRetry": "Thử lại",
+  "categoryDetailPlaceholder": "Chi tiết sắp ra mắt"
 }

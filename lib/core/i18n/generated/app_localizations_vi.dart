@@ -271,4 +271,78 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get orgPickerNote =>
       'Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt.';
+
+  @override
+  String get navHome => 'Trang chủ';
+
+  @override
+  String get navCatalog => 'Danh mục';
+
+  @override
+  String get navSettings => 'Cài đặt';
+
+  @override
+  String get settingsPlaceholder => 'Cài đặt sắp ra mắt';
+
+  @override
+  String get categoryTitle => 'Danh mục';
+
+  @override
+  String get categorySubtitle => 'Quản lý phân loại sản phẩm';
+
+  @override
+  String get categorySearchHint => 'Tìm danh mục...';
+
+  @override
+  String get categoryEmptyTitle => 'Chưa có danh mục';
+
+  @override
+  String get categoryEmptyBody => 'Tạo danh mục đầu tiên để sắp xếp sản phẩm.';
+
+  @override
+  String get categoryEmptyAction => 'Tạo danh mục đầu tiên';
+
+  @override
+  String get categoryLayerAll => 'Tất cả';
+
+  @override
+  String get categoryLayerMain => 'Cấp chính';
+
+  @override
+  String get categoryLayerSub => 'Cấp phụ';
+
+  @override
+  String get categoryLayerSubSub => 'Cấp phụ phụ';
+
+  @override
+  String get categoryLayerPrefix => 'Cấp';
+
+  @override
+  String categorySubCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count danh mục con',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String categoryItemCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sản phẩm',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryLoadError => 'Không tải được danh mục';
+
+  @override
+  String get categoryLoadRetry => 'Thử lại';
+
+  @override
+  String get categoryDetailPlaceholder => 'Chi tiết sắp ra mắt';
 }

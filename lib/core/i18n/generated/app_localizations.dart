@@ -583,6 +583,126 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt.'**
   String get orgPickerNote;
+
+  /// No description provided for @navHome.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trang chủ'**
+  String get navHome;
+
+  /// No description provided for @navCatalog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục'**
+  String get navCatalog;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt'**
+  String get navSettings;
+
+  /// No description provided for @settingsPlaceholder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt sắp ra mắt'**
+  String get settingsPlaceholder;
+
+  /// No description provided for @categoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục'**
+  String get categoryTitle;
+
+  /// No description provided for @categorySubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý phân loại sản phẩm'**
+  String get categorySubtitle;
+
+  /// No description provided for @categorySearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm danh mục...'**
+  String get categorySearchHint;
+
+  /// No description provided for @categoryEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có danh mục'**
+  String get categoryEmptyTitle;
+
+  /// No description provided for @categoryEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo danh mục đầu tiên để sắp xếp sản phẩm.'**
+  String get categoryEmptyBody;
+
+  /// No description provided for @categoryEmptyAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo danh mục đầu tiên'**
+  String get categoryEmptyAction;
+
+  /// No description provided for @categoryLayerAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get categoryLayerAll;
+
+  /// No description provided for @categoryLayerMain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp chính'**
+  String get categoryLayerMain;
+
+  /// No description provided for @categoryLayerSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp phụ'**
+  String get categoryLayerSub;
+
+  /// No description provided for @categoryLayerSubSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp phụ phụ'**
+  String get categoryLayerSubSub;
+
+  /// No description provided for @categoryLayerPrefix.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cấp'**
+  String get categoryLayerPrefix;
+
+  /// No description provided for @categorySubCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} danh mục con}}'**
+  String categorySubCount(num count);
+
+  /// No description provided for @categoryItemCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} sản phẩm}}'**
+  String categoryItemCount(num count);
+
+  /// No description provided for @categoryLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh mục'**
+  String get categoryLoadError;
+
+  /// No description provided for @categoryLoadRetry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử lại'**
+  String get categoryLoadRetry;
+
+  /// No description provided for @categoryDetailPlaceholder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết sắp ra mắt'**
+  String get categoryDetailPlaceholder;
 }
 
 class _AppLocalizationsDelegate

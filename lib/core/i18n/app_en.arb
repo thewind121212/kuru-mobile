@@ -104,5 +104,34 @@
     }
   },
   "orgPickerCreateNew": "Create new organization",
-  "orgPickerNote": "Each organization is an isolated data space. You can switch any time from Settings."
+  "orgPickerNote": "Each organization is an isolated data space. You can switch any time from Settings.",
+
+  "navHome": "Home",
+  "navCatalog": "Catalog",
+  "navSettings": "Settings",
+
+  "settingsPlaceholder": "Settings coming soon",
+
+  "categoryTitle": "Categories",
+  "categorySubtitle": "Manage product classifications",
+  "categorySearchHint": "Search categories...",
+  "categoryEmptyTitle": "No categories yet",
+  "categoryEmptyBody": "Create your first category to organize products.",
+  "categoryEmptyAction": "Create first category",
+  "categoryLayerAll": "All",
+  "categoryLayerMain": "Main",
+  "categoryLayerSub": "Sub",
+  "categoryLayerSubSub": "Sub Sub",
+  "categoryLayerPrefix": "Layer",
+  "categorySubCount": "{count, plural, one{{count} sub} other{{count} sub}}",
+  "@categorySubCount": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryItemCount": "{count, plural, one{{count} item} other{{count} items}}",
+  "@categoryItemCount": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryLoadError": "Couldn't load categories",
+  "categoryLoadRetry": "Retry",
+  "categoryDetailPlaceholder": "Detail view coming soon"
 }

@@ -275,4 +275,81 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get orgPickerNote =>
       'Each organization is an isolated data space. You can switch any time from Settings.';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navCatalog => 'Catalog';
+
+  @override
+  String get navSettings => 'Settings';
+
+  @override
+  String get settingsPlaceholder => 'Settings coming soon';
+
+  @override
+  String get categoryTitle => 'Categories';
+
+  @override
+  String get categorySubtitle => 'Manage product classifications';
+
+  @override
+  String get categorySearchHint => 'Search categories...';
+
+  @override
+  String get categoryEmptyTitle => 'No categories yet';
+
+  @override
+  String get categoryEmptyBody =>
+      'Create your first category to organize products.';
+
+  @override
+  String get categoryEmptyAction => 'Create first category';
+
+  @override
+  String get categoryLayerAll => 'All';
+
+  @override
+  String get categoryLayerMain => 'Main';
+
+  @override
+  String get categoryLayerSub => 'Sub';
+
+  @override
+  String get categoryLayerSubSub => 'Sub Sub';
+
+  @override
+  String get categoryLayerPrefix => 'Layer';
+
+  @override
+  String categorySubCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sub',
+      one: '$count sub',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String categoryItemCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '$count item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryLoadError => 'Couldn\'t load categories';
+
+  @override
+  String get categoryLoadRetry => 'Retry';
+
+  @override
+  String get categoryDetailPlaceholder => 'Detail view coming soon';
 }
