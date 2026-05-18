@@ -69,6 +69,14 @@ void main() {
     registerFallbackValue(
       gen.GetCategoryByIdRequest((b) => b..categoryId = ''),
     );
+    registerFallbackValue(
+      gen.CreateCategoryRequest(
+        (b) => b
+          ..name = ''
+          ..layer = '1'
+          ..status = 'ACTIVE',
+      ),
+    );
   });
 
   setUp(() {
@@ -356,6 +364,86 @@ void main() {
       final err = (result as ApiFailure<gen.CategoryResponse>).err;
       expect(err, isA<ServerException>());
       expect((err as ServerException).statusCode, 500);
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // create
+  // ---------------------------------------------------------------------------
+  group('create', () {
+    test('returns ApiSuccess with the new category on 201', () async {
+      final newCat = gen.CreateCategoryResponse(
+        (b) => b..categoryId = 'new-id',
+      );
+      when(
+        () => api.createCategory(
+          createCategoryRequest: any(named: 'createCategoryRequest'),
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(),
+          statusCode: 201,
+          data: gen.CreateCategory200Response(
+            (b) => b
+              ..success = true
+              ..data.replace(newCat)
+              ..timestamp = DateTime(2026),
+          ),
+        ),
+      );
+
+      final result = await repo.create(
+        gen.CreateCategoryRequest(
+          (b) => b
+            ..name = 'Electronics'
+            ..layer = '1'
+            ..status = 'ACTIVE',
+        ),
+      );
+
+      expect(result, isA<ApiSuccess<gen.CreateCategoryResponse>>());
+      expect(
+        (result as ApiSuccess<gen.CreateCategoryResponse>).data.categoryId,
+        'new-id',
+      );
+    });
+
+    test('returns ApiFailure(BadRequestException) on 400', () async {
+      when(
+        () => api.createCategory(
+          createCategoryRequest: any(named: 'createCategoryRequest'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(),
+            statusCode: 400,
+            data: <String, dynamic>{
+              'success': false,
+              'error': <String, dynamic>{
+                'message': 'name is required',
+                'code': 'VALIDATION',
+              },
+            },
+          ),
+        ),
+      );
+
+      final result = await repo.create(
+        gen.CreateCategoryRequest(
+          (b) => b
+            ..name = ''
+            ..layer = '1'
+            ..status = 'ACTIVE',
+        ),
+      );
+
+      expect(result, isA<ApiFailure<gen.CreateCategoryResponse>>());
+      final err = (result as ApiFailure<gen.CreateCategoryResponse>).err;
+      expect(err, isA<BadRequestException>());
+      expect(err.message, 'name is required');
     });
   });
 }

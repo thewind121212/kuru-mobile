@@ -73,6 +73,33 @@ class CategoryRepository {
     }
   }
 
+  /// Creates a new category. The [request] must already have `name`,
+  /// `layer`, and `status` set; mobile derives `layer` from context
+  /// (root vs nested) — never lets the user pick it.
+  ///
+  /// Returns [ApiSuccess] with the newly-created category's ID (the BE
+  /// echoes the generated UUID in [gen.CreateCategoryResponse]). On HTTP 400
+  /// the `error.message` is surfaced verbatim through [BadRequestException]
+  /// (per spec §6.2 — the BE writes user-readable validation messages).
+  Future<ApiResult<gen.CreateCategoryResponse>> create(
+    gen.CreateCategoryRequest request,
+  ) async {
+    try {
+      final res = await _api.createCategory(createCategoryRequest: request);
+      final body = res.data?.data;
+      if (body == null) {
+        return ApiResult.failure(
+          const UnknownException('Empty body from CreateCategory'),
+        );
+      }
+      log.i('CreateCategory ← ${res.statusCode} id=${body.categoryId}');
+      return ApiResult.success(body);
+    } on DioException catch (e) {
+      log.w('CreateCategory failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
   /// Converts a [DioException] into a typed [ApiException].
   ///
   /// Prefers any [ApiException] already attached to `e.error` by the
