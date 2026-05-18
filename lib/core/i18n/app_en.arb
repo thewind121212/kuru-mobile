@@ -146,5 +146,42 @@
   "categoryTotalCount": "{count, plural, one{{count} category} other{{count} categories}}",
   "@categoryTotalCount": {
     "placeholders": {"count": {"type": "num"}}
-  }
+  },
+  "categoryCreateTitle": "New category",
+  "categoryCreateSubcategoryTitle": "New subcategory",
+  "categoryEditTitle": "Edit category",
+  "categoryFieldName": "Name",
+  "categoryFieldNameHint": "e.g. Electronics",
+  "categoryFieldDescription": "Description",
+  "categoryFieldDescriptionHint": "Short notes (optional)",
+  "categoryFieldStatus": "Status",
+  "categoryFieldIcon": "Icon",
+  "categoryFieldColor": "Color",
+  "categoryFieldParent": "Parent",
+  "categoryStatusActive": "Active",
+  "categoryStatusInactive": "Inactive",
+  "categoryStatusArchived": "Archived",
+  "categorySaveCta": "Save",
+  "categorySavingCta": "Saving…",
+  "categoryActionEdit": "Edit",
+  "categoryActionDelete": "Delete",
+  "categoryActionAddSubcategory": "Add subcategory",
+  "categoryDeleteConfirmTitle": "Delete category?",
+  "categoryDeleteConfirmBody": "{name} will be removed. This cannot be undone.",
+  "@categoryDeleteConfirmBody": {
+    "placeholders": {"name": {"type": "Object"}}
+  },
+  "categoryDeleteConfirmCta": "Delete",
+  "categoryNotifySaved": "Category saved",
+  "categoryNotifyDeleted": "Category deleted",
+  "categoryNotifyNetwork": "Couldn't reach the server. Try again.",
+  "categoryNotifyServer": "Something went wrong. Try again later.",
+  "categoryNotifyForbidden": "You don't have permission to do that.",
+  "categoryNotifyRateLimited": "Slow down — try again in a moment.",
+  "categoryMaxLayerReached": "Max nesting depth reached",
+  "categoryDetailSubcategoriesHeader": "{count, plural, one{Subcategory ({count})} other{Subcategories ({count})}}",
+  "@categoryDetailSubcategoriesHeader": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryDetailNoSubcategories": "No subcategories yet"
 }

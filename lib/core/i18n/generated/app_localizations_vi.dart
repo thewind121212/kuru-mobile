@@ -380,4 +380,108 @@ class AppLocalizationsVi extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get categoryCreateTitle => 'Danh mục mới';
+
+  @override
+  String get categoryCreateSubcategoryTitle => 'Danh mục con mới';
+
+  @override
+  String get categoryEditTitle => 'Sửa danh mục';
+
+  @override
+  String get categoryFieldName => 'Tên';
+
+  @override
+  String get categoryFieldNameHint => 'VD: Điện tử';
+
+  @override
+  String get categoryFieldDescription => 'Mô tả';
+
+  @override
+  String get categoryFieldDescriptionHint => 'Ghi chú ngắn (tuỳ chọn)';
+
+  @override
+  String get categoryFieldStatus => 'Trạng thái';
+
+  @override
+  String get categoryFieldIcon => 'Biểu tượng';
+
+  @override
+  String get categoryFieldColor => 'Màu';
+
+  @override
+  String get categoryFieldParent => 'Danh mục cha';
+
+  @override
+  String get categoryStatusActive => 'Đang hoạt động';
+
+  @override
+  String get categoryStatusInactive => 'Ngừng';
+
+  @override
+  String get categoryStatusArchived => 'Lưu trữ';
+
+  @override
+  String get categorySaveCta => 'Lưu';
+
+  @override
+  String get categorySavingCta => 'Đang lưu…';
+
+  @override
+  String get categoryActionEdit => 'Sửa';
+
+  @override
+  String get categoryActionDelete => 'Xoá';
+
+  @override
+  String get categoryActionAddSubcategory => 'Thêm danh mục con';
+
+  @override
+  String get categoryDeleteConfirmTitle => 'Xoá danh mục?';
+
+  @override
+  String categoryDeleteConfirmBody(Object name) {
+    return '$name sẽ bị xoá. Không thể hoàn tác.';
+  }
+
+  @override
+  String get categoryDeleteConfirmCta => 'Xoá';
+
+  @override
+  String get categoryNotifySaved => 'Đã lưu danh mục';
+
+  @override
+  String get categoryNotifyDeleted => 'Đã xoá danh mục';
+
+  @override
+  String get categoryNotifyNetwork => 'Không kết nối được máy chủ. Thử lại.';
+
+  @override
+  String get categoryNotifyServer => 'Đã có lỗi xảy ra. Thử lại sau.';
+
+  @override
+  String get categoryNotifyForbidden =>
+      'Bạn không có quyền thực hiện thao tác này.';
+
+  @override
+  String get categoryNotifyRateLimited =>
+      'Chậm lại nhé — thử lại sau giây lát.';
+
+  @override
+  String get categoryMaxLayerReached => 'Đã đạt độ sâu tối đa';
+
+  @override
+  String categoryDetailSubcategoriesHeader(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Danh mục con ($count)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryDetailNoSubcategories => 'Chưa có danh mục con';
 }

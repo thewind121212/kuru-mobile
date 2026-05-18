@@ -389,4 +389,108 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get categoryCreateTitle => 'New category';
+
+  @override
+  String get categoryCreateSubcategoryTitle => 'New subcategory';
+
+  @override
+  String get categoryEditTitle => 'Edit category';
+
+  @override
+  String get categoryFieldName => 'Name';
+
+  @override
+  String get categoryFieldNameHint => 'e.g. Electronics';
+
+  @override
+  String get categoryFieldDescription => 'Description';
+
+  @override
+  String get categoryFieldDescriptionHint => 'Short notes (optional)';
+
+  @override
+  String get categoryFieldStatus => 'Status';
+
+  @override
+  String get categoryFieldIcon => 'Icon';
+
+  @override
+  String get categoryFieldColor => 'Color';
+
+  @override
+  String get categoryFieldParent => 'Parent';
+
+  @override
+  String get categoryStatusActive => 'Active';
+
+  @override
+  String get categoryStatusInactive => 'Inactive';
+
+  @override
+  String get categoryStatusArchived => 'Archived';
+
+  @override
+  String get categorySaveCta => 'Save';
+
+  @override
+  String get categorySavingCta => 'Saving…';
+
+  @override
+  String get categoryActionEdit => 'Edit';
+
+  @override
+  String get categoryActionDelete => 'Delete';
+
+  @override
+  String get categoryActionAddSubcategory => 'Add subcategory';
+
+  @override
+  String get categoryDeleteConfirmTitle => 'Delete category?';
+
+  @override
+  String categoryDeleteConfirmBody(Object name) {
+    return '$name will be removed. This cannot be undone.';
+  }
+
+  @override
+  String get categoryDeleteConfirmCta => 'Delete';
+
+  @override
+  String get categoryNotifySaved => 'Category saved';
+
+  @override
+  String get categoryNotifyDeleted => 'Category deleted';
+
+  @override
+  String get categoryNotifyNetwork => 'Couldn\'t reach the server. Try again.';
+
+  @override
+  String get categoryNotifyServer => 'Something went wrong. Try again later.';
+
+  @override
+  String get categoryNotifyForbidden =>
+      'You don\'t have permission to do that.';
+
+  @override
+  String get categoryNotifyRateLimited => 'Slow down — try again in a moment.';
+
+  @override
+  String get categoryMaxLayerReached => 'Max nesting depth reached';
+
+  @override
+  String categoryDetailSubcategoriesHeader(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Subcategories ($count)',
+      one: 'Subcategory ($count)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryDetailNoSubcategories => 'No subcategories yet';
 }
