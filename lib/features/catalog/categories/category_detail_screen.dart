@@ -3,17 +3,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
-import 'package:go_router/go_router.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
-import 'package:kuru_mobile/design/core/catalog/k_list_row.dart';
 import 'package:kuru_mobile/design/core/feedback/k_empty_state.dart';
 import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
 import 'package:kuru_mobile/design/core/modal/color_options.dart';
 import 'package:kuru_mobile/design/core/modal/icon_mapping.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:kuru_mobile/features/catalog/categories/widgets/category_tree.dart';
 import 'package:kuru_mobile/features/catalog/categories/widgets/create_edit_category_sheet.dart';
 
 class CategoryDetailScreen extends ConsumerWidget {
@@ -167,15 +166,14 @@ class _DetailBody extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 8),
-        for (final child in children) ...[
-          KListRow(
-            leading: const Icon(TablerIcons.layout_grid),
-            title: child.name ?? '',
-            trailing: const Icon(TablerIcons.chevron_right),
-            onTap: () => context.go('/catalog/categories/${child.categoryId}'),
-          ),
-          const SizedBox(height: 8),
-        ],
+        // Nested tree of descendants. The header card above already shows
+        // the focused root, so the tree skips rendering the root and just
+        // shows the children at level 0 (recursive subtree below each).
+        CategoryTree(
+          rootId: root.categoryId!,
+          allCategories: allCategories,
+          includeRoot: false,
+        ),
       ],
     );
   }
