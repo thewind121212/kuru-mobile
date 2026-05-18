@@ -278,110 +278,126 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
           ]
         : <BoxShadow>[];
 
-    final card = Container(
-      margin: EdgeInsets.only(left: widget.level * _indentPerLevel),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: BoxDecoration(
-        color: cardBg,
-        border: Border.all(color: cardBorder),
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: boxShadow,
-      ),
-      child: Row(
-        children: [
-          // Chevron (or placeholder spacer for leaf nodes).
-          if (hasChildren)
-            GestureDetector(
-              onTap: _toggle,
-              child: RotationTransition(
-                turns: Tween<double>(
-                  begin: 0,
-                  end: 0.25,
-                ).animate(_chevronController),
-                child: Icon(
-                  TablerIcons.chevron_right,
-                  size: 18,
-                  color: c.textMuted,
+    // Tappable card: whole row toggles expand/collapse when the node has
+    // children. The kebab is its own InkWell (Material InkWell stops the
+    // outer tap before it reaches the row), so it doesn't double-fire.
+    final card = Material(
+      color: cardBg,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        margin: EdgeInsets.only(left: widget.level * _indentPerLevel),
+        decoration: BoxDecoration(
+          border: Border.all(color: cardBorder),
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: boxShadow,
+        ),
+        child: InkWell(
+          onTap: hasChildren ? _toggle : null,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Row(
+              children: [
+                // Chevron animates regardless; non-tappable on its own (the
+                // whole row carries the gesture now).
+                if (hasChildren)
+                  RotationTransition(
+                    turns: Tween<double>(
+                      begin: 0,
+                      end: 0.25,
+                    ).animate(_chevronController),
+                    child: Icon(
+                      TablerIcons.chevron_right,
+                      size: 18,
+                      color: c.textMuted,
+                    ),
+                  )
+                else
+                  const SizedBox(width: 18),
+                const SizedBox(width: 8),
+                // Layer badge — small colored chip with the layer number.
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: _bg(c),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    widget.node.layer ?? '?',
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-              ),
-            )
-          else
-            const SizedBox(width: 18),
-          const SizedBox(width: 8),
-          // Layer badge — small colored chip with the layer number.
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-            decoration: BoxDecoration(
-              color: _bg(c),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Text(
-              widget.node.layer ?? '?',
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          // Name — tap toggles expand if has children.
-          Expanded(
-            child: GestureDetector(
-              onTap: hasChildren ? _toggle : null,
-              behavior: HitTestBehavior.opaque,
-              child: Text(
-                widget.node.name ?? '',
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: isFocused ? FontWeight.w700 : FontWeight.w500,
-                  color: isFocused ? c.accent700 : c.textPrimary,
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    widget.node.name ?? '',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: isFocused ? FontWeight.w700 : FontWeight.w500,
+                      color: isFocused ? c.accent700 : c.textPrimary,
+                    ),
+                  ),
                 ),
-              ),
+                // Kebab — its own InkWell blocks the row tap so we don't
+                // toggle expand when the user actually wanted the menu.
+                KIconBtn(
+                  icon: const Icon(TablerIcons.dots_vertical),
+                  size: 32,
+                  onPressed: _onMenu,
+                ),
+              ],
             ),
           ),
-          // Kebab.
-          KIconBtn(
-            icon: const Icon(TablerIcons.dots_vertical),
-            size: 32,
-            onPressed: _onMenu,
-          ),
-        ],
+        ),
       ),
     );
 
+    // Children always rendered (no destroy/recreate on toggle — keeps
+    // their _TreeNodeState alive). ClipRect + AnimatedAlign animates the
+    // visible height between 0 and full — smoother than the prior
+    // AnimatedSize-with-ternary which flashed because the child widget
+    // tree itself was being replaced.
+    final childrenColumn = hasChildren
+        ? ClipRect(
+            child: AnimatedAlign(
+              alignment: Alignment.topCenter,
+              heightFactor: _expanded ? 1.0 : 0.0,
+              duration: _animDuration,
+              curve: Curves.easeOut,
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final child in children) ...[
+                      _TreeNode(
+                        node: child,
+                        allCategories: widget.allCategories,
+                        level: widget.level + 1,
+                        focusedId: widget.focusedId,
+                        ancestorIds: widget.ancestorIds,
+                      ),
+                      const SizedBox(height: 6),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          )
+        : const SizedBox.shrink();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        card,
-        if (hasChildren)
-          AnimatedSize(
-            duration: _animDuration,
-            curve: Curves.easeOut,
-            child: _expanded
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (final child in children) ...[
-                          _TreeNode(
-                            node: child,
-                            allCategories: widget.allCategories,
-                            level: widget.level + 1,
-                            focusedId: widget.focusedId,
-                            ancestorIds: widget.ancestorIds,
-                          ),
-                          const SizedBox(height: 6),
-                        ],
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-      ],
+      children: [card, childrenColumn],
     );
   }
 }
