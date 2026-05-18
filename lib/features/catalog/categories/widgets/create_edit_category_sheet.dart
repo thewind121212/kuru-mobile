@@ -70,7 +70,7 @@ Future<bool?> showCreateEditCategorySheet({
 }
 
 class _CreateEditBody extends ConsumerStatefulWidget {
-  const _CreateEditBody({super.key, required this.mode});
+  const _CreateEditBody({required this.mode, super.key});
   final CreateEditMode mode;
 
   @override

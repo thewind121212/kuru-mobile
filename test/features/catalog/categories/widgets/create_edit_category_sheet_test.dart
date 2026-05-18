@@ -9,39 +9,38 @@ import 'package:kuru_mobile/features/catalog/categories/providers/category_provi
 import 'package:kuru_mobile/features/catalog/categories/widgets/create_edit_category_sheet.dart';
 
 void main() {
-  testWidgets(
-    'createRoot mode renders the "New category" title + Active default + Save CTA',
-    (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Builder(
-              builder: (context) {
-                return Scaffold(
-                  body: ElevatedButton(
-                    onPressed: () => showCreateEditCategorySheet(
-                      context: context,
-                      mode: const CreateRoot(),
-                    ),
-                    child: const Text('Open'),
+  testWidgets('createRoot mode renders title + Active default + Save CTA', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: ElevatedButton(
+                  onPressed: () => showCreateEditCategorySheet(
+                    context: context,
+                    mode: const CreateRoot(),
                   ),
-                );
-              },
-            ),
+                  child: const Text('Open'),
+                ),
+              );
+            },
           ),
         ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.text('New category'), findsOneWidget); // sheet title
-      expect(find.text('Active'), findsOneWidget); // default status
-      expect(find.text('Save'), findsOneWidget); // confirm CTA
-    },
-  );
+    expect(find.text('New category'), findsOneWidget); // sheet title
+    expect(find.text('Active'), findsOneWidget); // default status
+    expect(find.text('Save'), findsOneWidget); // confirm CTA
+  });
 
   testWidgets('empty name shows the error and keeps the sheet open', (
     tester,

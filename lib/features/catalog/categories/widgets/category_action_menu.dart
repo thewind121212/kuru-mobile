@@ -12,7 +12,7 @@ enum CategoryAction { edit, delete, addSubcategory }
 /// Opens the Edit / Add-subcategory / Delete action sheet for the given
 /// [category]. Returns the picked action, or null on dismiss.
 ///
-/// Plan 1 stubbed [KPopupMenu] (super_context_menu crashes on iOS 26);
+/// Plan 1 stubbed `KPopupMenu` (super_context_menu crashes on iOS 26);
 /// this helper is the bottom-sheet fallback that Plan 2 uses for both
 /// the kebab tap and the long-press handler on category cards.
 ///

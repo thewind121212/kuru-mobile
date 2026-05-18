@@ -206,4 +206,32 @@ void main() {
     expect(find.text('Electron beam'), findsOneWidget);
     expect(find.text('Electronics'), findsNothing);
   });
+
+  testWidgets('tapping the + header button opens the create sheet at root', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _wrap(
+        const CategoriesListScreen(),
+        overrideOverview: categoryOverviewProvider.overrideWith(
+          (ref) async => [],
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    // The header "+" KIconBtn renders with a tooltip — find via tooltip
+    // OR find by icon (TablerIcons.plus) if there's only one in the header.
+    // The empty state also has a "Create first category" KSecondaryBtn,
+    // but that's different. Use findsAtLeast 1 because both produce a +
+    // affordance in the empty case.
+    expect(find.byTooltip('New category'), findsOneWidget);
+    await tester.tap(find.byTooltip('New category'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    // Sheet's title "New category" appears.
+    expect(find.text('New category'), findsAtLeastNWidgets(1));
+  });
 }
