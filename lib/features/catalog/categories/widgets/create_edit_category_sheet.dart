@@ -4,10 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/core/network/api_exception.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/design/core/input/k_select.dart';
 import 'package:kuru_mobile/design/core/input/k_text_field.dart';
 import 'package:kuru_mobile/design/core/input/k_textarea.dart';
 import 'package:kuru_mobile/design/core/modal/k_modal_sheet.dart';
+import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/categories/widgets/color_picker_tile.dart';
 import 'package:kuru_mobile/features/catalog/categories/widgets/icon_picker_tile.dart';
 
@@ -41,9 +44,7 @@ class EditCategory extends CreateEditMode {
 }
 
 /// Shows the Create/Edit category sheet. Returns `true` after a
-/// successful save, `null` on cancel / dismiss. Task 6 (this task)
-/// ships the form structure with a no-op onConfirm; Task 7 wires the
-/// actual save.
+/// successful save, `null` on cancel / dismiss.
 Future<bool?> showCreateEditCategorySheet({
   required BuildContext context,
   required CreateEditMode mode,
@@ -54,21 +55,22 @@ Future<bool?> showCreateEditCategorySheet({
     CreateNested() => l.categoryCreateSubcategoryTitle,
     EditCategory() => l.categoryEditTitle,
   };
+  final formKey = GlobalKey<_CreateEditBodyState>();
   return showKModalSheet<bool>(
     context: context,
     title: title,
     confirmLabel: l.categorySaveCta,
     onConfirm: () async {
-      // Task 7 replaces this with the real submit. Returning false
-      // keeps the sheet open so this scaffold doesn't pretend to save.
-      return false;
+      final state = formKey.currentState;
+      if (state == null) return false;
+      return state._submit();
     },
-    builder: (ctx) => _CreateEditBody(mode: mode),
+    builder: (ctx) => _CreateEditBody(key: formKey, mode: mode),
   );
 }
 
 class _CreateEditBody extends ConsumerStatefulWidget {
-  const _CreateEditBody({required this.mode});
+  const _CreateEditBody({super.key, required this.mode});
   final CreateEditMode mode;
 
   @override
@@ -102,6 +104,105 @@ class _CreateEditBodyState extends ConsumerState<_CreateEditBody> {
     _nameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  /// Returns true on success (sheet closes), false on failure (stays open).
+  Future<bool> _submit() async {
+    setState(() => _nameError = null);
+    final name = _nameController.text.trim();
+    if (name.isEmpty) {
+      setState(
+        () => _nameError = AppLocalizations.of(context).validationNameRequired,
+      );
+      return false;
+    }
+    final m = widget.mode;
+    final repo = ref.read(categoryRepositoryProvider);
+
+    // Derive parentId + layer from mode.
+    const nilUuid = '00000000-0000-0000-0000-000000000000';
+    final (parentId, layer) = switch (m) {
+      CreateRoot() => (nilUuid, '1'),
+      CreateNested(:final parentId, :final parentLayer) => (
+        parentId,
+        (int.parse(parentLayer) + 1).toString(),
+      ),
+      EditCategory(:final category) => (
+        category.parentId ?? nilUuid,
+        category.layer ?? '1',
+      ),
+    };
+
+    final desc = _descriptionController.text.trim();
+    final req = gen.CreateCategoryRequest(
+      (b) => b
+        ..name = name
+        ..parentId = parentId
+        ..layer = layer
+        ..status = _status
+        ..colorSettings = _colorId
+        ..icon = _iconName
+        ..description = desc.isEmpty ? null : desc,
+    );
+
+    switch (m) {
+      case CreateRoot() || CreateNested():
+        final result = await repo.create(req);
+        return _handleResult(result, m);
+      case EditCategory(:final category):
+        final result = await repo.update(
+          categoryId: category.categoryId!,
+          update: req,
+        );
+        return _handleResult(result, m);
+    }
+  }
+
+  bool _handleResult(ApiResult<Object?> result, CreateEditMode m) {
+    if (!mounted) return false;
+    switch (result) {
+      case ApiSuccess<Object?>():
+        // Invalidate per spec §3.4.
+        ref.invalidate(categoryOverviewProvider);
+        if (m is CreateNested) {
+          ref.invalidate(categoryByIdProvider(m.parentId));
+        } else if (m is EditCategory) {
+          ref.invalidate(categoryByIdProvider(m.category.categoryId!));
+        }
+        return true;
+      case ApiFailure<Object?>(:final err):
+        _surfaceError(err);
+        return false;
+    }
+  }
+
+  void _surfaceError(ApiException err) {
+    final l = AppLocalizations.of(context);
+    switch (err) {
+      case BadRequestException():
+        // 400 — surface verbatim on the Name field. Most BE validation
+        // messages we see in practice are name-related; later we can
+        // route to the right field based on err.code.
+        setState(() => _nameError = err.message);
+      case ForbiddenException():
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.categoryNotifyForbidden)));
+      case UnauthorizedException():
+        // 401 — defer to caller; the dio interceptor stack already
+        // routes through the auth redirect. Just close the sheet.
+        break;
+      case NetworkException():
+      case TimeoutException():
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.categoryNotifyNetwork)));
+      case ServerException():
+      case UnknownException():
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l.categoryNotifyServer)));
+    }
   }
 
   @override
