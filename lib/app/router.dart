@@ -25,39 +25,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       final boot = ref.read(splashGateProvider);
       final seenOnboarding = ref.read(onboardingSeenProvider);
       final loc = state.matchedLocation;
+
+      // Prefer the LAST resolved value over the transient AsyncLoading we
+      // re-enter every time someone invalidates `appBootstrapProvider`
+      // (sign-in, sign-out, org switch, TOTP verify, …). Without this,
+      // every invalidate bounces the user through `/splash`, which feels
+      // like the splash is re-rendering on every fetch. Initial cold
+      // start has no previous value → falls through to the splash branch
+      // exactly once, which is what we want.
+      final settled = boot.valueOrNull;
+      if (settled != null) {
+        return _routeForBootstrap(
+          settled,
+          loc,
+          seenOnboarding,
+          ref.read(currentOrgIdProvider),
+        );
+      }
+
       return boot.when(
         loading: () => loc == '/splash' ? null : '/splash',
         error: (_, __) => loc == '/login' ? null : '/login',
-        data: (result) {
-          if (result is BootstrapUnauthed) {
-            if (!seenOnboarding) {
-              return loc == '/onboarding' ? null : '/onboarding';
-            }
-            const publicRoutes = {'/login', '/register'};
-            return publicRoutes.contains(loc) ? null : '/login';
-          }
-          if (result is BootstrapMfaPending) {
-            // Lock the user to /totp and /totp/recovery until verification.
-            const mfaRoutes = {'/totp', '/totp/recovery'};
-            return mfaRoutes.contains(loc) ? null : '/totp';
-          }
-          // BootstrapAuthed
-          final user = (result as BootstrapAuthed).user;
-          if (user.orgInfos.isEmpty) {
-            return loc == '/create-org' ? null : '/create-org';
-          }
-          if (user.orgInfos.length > 1 &&
-              ref.read(currentOrgIdProvider) == null) {
-            return loc == '/org-picker' ? null : '/org-picker';
-          }
-          // Authed shell branches — bottom-nav routes (and their sub-paths)
-          // are all valid destinations for a fully-authed user. Without this
-          // safelist, a deep link / push notification / restored URL hitting
-          // /catalog or /settings would bounce back to /home.
-          const authedShellPrefixes = ['/home', '/catalog', '/settings'];
-          final isAuthedShellRoute = authedShellPrefixes.any(loc.startsWith);
-          return isAuthedShellRoute ? null : '/home';
-        },
+        data: (result) => _routeForBootstrap(
+          result,
+          loc,
+          seenOnboarding,
+          ref.read(currentOrgIdProvider),
+        ),
       );
     },
     // Re-evaluate redirect whenever bootstrap state changes.
@@ -131,6 +125,44 @@ final routerProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
+
+/// Pure router-table function: where should an authenticated/unauthenticated
+/// user end up given the resolved [BootstrapResult]? Returns null to keep
+/// the user on [loc], or a target path to redirect to.
+String? _routeForBootstrap(
+  BootstrapResult result,
+  String loc,
+  bool seenOnboarding,
+  String? currentOrgId,
+) {
+  if (result is BootstrapUnauthed) {
+    if (!seenOnboarding) {
+      return loc == '/onboarding' ? null : '/onboarding';
+    }
+    const publicRoutes = {'/login', '/register'};
+    return publicRoutes.contains(loc) ? null : '/login';
+  }
+  if (result is BootstrapMfaPending) {
+    // Lock the user to /totp and /totp/recovery until verification.
+    const mfaRoutes = {'/totp', '/totp/recovery'};
+    return mfaRoutes.contains(loc) ? null : '/totp';
+  }
+  // BootstrapAuthed
+  final user = (result as BootstrapAuthed).user;
+  if (user.orgInfos.isEmpty) {
+    return loc == '/create-org' ? null : '/create-org';
+  }
+  if (user.orgInfos.length > 1 && currentOrgId == null) {
+    return loc == '/org-picker' ? null : '/org-picker';
+  }
+  // Authed shell branches — bottom-nav routes (and their sub-paths) are
+  // all valid destinations. Without this safelist, a deep link / push
+  // notification / restored URL hitting /catalog or /settings would
+  // bounce back to /home.
+  const authedShellPrefixes = ['/home', '/catalog', '/settings'];
+  final isAuthedShellRoute = authedShellPrefixes.any(loc.startsWith);
+  return isAuthedShellRoute ? null : '/home';
+}
 
 class _BootstrapNotifier extends ChangeNotifier {
   _BootstrapNotifier(this._ref) {

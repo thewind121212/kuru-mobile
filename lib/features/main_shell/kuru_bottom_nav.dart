@@ -49,10 +49,11 @@ class KuruBottomNav extends StatelessWidget {
   static const double _pillRadius = 28;
   static const double _actionSize = 56;
   static const double _sideMargin = 16;
-  // Tight gap above the home indicator. SafeArea already adds the system
-  // inset (~34dp on iPhones with a home bar) — 4dp here is the visual
-  // breathing room above that, NOT the full clearance.
-  static const double _bottomMargin = 4;
+  // No explicit gap above the home indicator. SafeArea already adds the
+  // system inset (~34dp on iPhones with a home bar) — that's clearance
+  // enough. Stacking another margin on top wastes scrollable height on
+  // shorter screens.
+  static const double _bottomMargin = 0;
   static const double _gapBeforeAction = 10;
   static const double _blurSigma = 20;
 
