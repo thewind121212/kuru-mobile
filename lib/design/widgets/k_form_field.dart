@@ -45,11 +45,19 @@ class KFormField extends StatefulWidget {
 
 class _KFormFieldState extends State<KFormField> {
   late bool _revealed;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _revealed = false;
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -64,81 +72,90 @@ class _KFormFieldState extends State<KFormField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        KGlass(
-          borderRadius: BorderRadius.circular(14),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          borderColor: hasError ? c.danger : null,
-          borderWidth: hasError ? 1.5 : null,
-          child: Row(
-            children: [
-              if (widget.icon != null) ...[
-                IconTheme(
-                  data: IconThemeData(
-                    color: hasError ? c.danger : c.textMuted,
-                    size: 18,
-                  ),
-                  child: widget.icon!,
-                ),
-                const SizedBox(width: 10),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      widget.label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: hasError ? c.danger : c.textMuted,
-                        letterSpacing: 0.5,
-                      ),
+        // Wrapping the field with a translucent GestureDetector lets a tap
+        // on the icon, label, or whitespace focus the TextField — the
+        // TextField still wins taps in its own bounds (cursor positioning
+        // preserved), and the eye IconButton wins its own area too.
+        GestureDetector(
+          onTap: _focusNode.requestFocus,
+          behavior: HitTestBehavior.translucent,
+          child: KGlass(
+            borderRadius: BorderRadius.circular(14),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+            borderColor: hasError ? c.danger : null,
+            borderWidth: hasError ? 1.5 : null,
+            child: Row(
+              children: [
+                if (widget.icon != null) ...[
+                  IconTheme(
+                    data: IconThemeData(
+                      color: hasError ? c.danger : c.textMuted,
+                      size: 18,
                     ),
-                    TextField(
-                      controller: widget.controller,
-                      obscureText: effectivelyObscured,
-                      keyboardType: widget.keyboardType,
-                      autofillHints: widget.autofillHints,
-                      textInputAction: widget.textInputAction,
-                      onSubmitted: widget.onSubmitted,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: c.textPrimary,
-                        fontWeight: FontWeight.w500,
+                    child: widget.icon!,
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        widget.label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: hasError ? c.danger : c.textMuted,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
+                      TextField(
+                        controller: widget.controller,
+                        focusNode: _focusNode,
+                        obscureText: effectivelyObscured,
+                        keyboardType: widget.keyboardType,
+                        autofillHints: widget.autofillHints,
+                        textInputAction: widget.textInputAction,
+                        onSubmitted: widget.onSubmitted,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: c.textPrimary,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
+                    ],
+                  ),
+                ),
+                if (showEye) ...[
+                  const SizedBox(width: 6),
+                  IconButton(
+                    tooltip: _revealed
+                        ? l!.fieldPasswordHide
+                        : l!.fieldPasswordShow,
+                    onPressed: () => setState(() => _revealed = !_revealed),
+                    icon: Icon(
+                      _revealed
+                          ? Icons.visibility_off_outlined
+                          : Icons.visibility_outlined,
+                      size: 18,
+                      color: c.textMuted,
                     ),
-                  ],
-                ),
-              ),
-              if (showEye) ...[
-                const SizedBox(width: 6),
-                IconButton(
-                  tooltip: _revealed
-                      ? l!.fieldPasswordHide
-                      : l!.fieldPasswordShow,
-                  onPressed: () => setState(() => _revealed = !_revealed),
-                  icon: Icon(
-                    _revealed
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 18,
-                    color: c.textMuted,
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 32,
+                      height: 32,
+                    ),
                   ),
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 32,
-                    height: 32,
-                  ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
         // Helper slot — animates between 0 and ~20px so the layout doesn't
@@ -152,11 +169,7 @@ class _KFormFieldState extends State<KFormField> {
                   padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 12,
-                        color: c.danger,
-                      ),
+                      Icon(Icons.error_outline, size: 12, color: c.danger),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(

@@ -53,128 +53,144 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
       orElse: () => null,
     );
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _CategoriesHeader(
-              title: l.categoryTitle,
-              totalCount: totalCount,
-              onCreate: () async {
-                final saved = await showCreateEditCategorySheet(
-                  context: context,
-                  mode: const CreateRoot(),
-                );
-                if (!context.mounted) return;
-                if (saved ?? false) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l.categoryNotifySaved)),
+      // Tap outside the search bar dismisses the keyboard. Inner buttons,
+      // cards, and the search field itself keep their own gestures.
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _CategoriesHeader(
+                title: l.categoryTitle,
+                totalCount: totalCount,
+                onCreate: () async {
+                  final saved = await showCreateEditCategorySheet(
+                    context: context,
+                    mode: const CreateRoot(),
                   );
-                }
-              },
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: KSearchBar(
-                hint: l.categorySearchHint,
-                onChanged: (q) => setState(() => _searchQuery = q),
+                  if (!context.mounted) return;
+                  if (saved ?? false) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(l.categoryNotifySaved)),
+                    );
+                  }
+                },
               ),
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: ref
-                  .watch(categoryOverviewProvider)
-                  .when(
-                    loading: () => const _CategorySkeletonList(),
-                    error: (e, _) => _CategoryErrorState(
-                      onRetry: () => ref.invalidate(categoryOverviewProvider),
-                    ),
-                    data: (categories) {
-                      if (categories.isEmpty) {
-                        return _CategoryEmpty(
-                          onCreate: () async {
-                            final saved = await showCreateEditCategorySheet(
-                              context: context,
-                              mode: const CreateRoot(),
-                            );
-                            if (!context.mounted) return;
-                            if (saved ?? false) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(l.categoryNotifySaved)),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: KSearchBar(
+                  hint: l.categorySearchHint,
+                  onChanged: (q) => setState(() => _searchQuery = q),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Expanded(
+                child: ref
+                    .watch(categoryOverviewProvider)
+                    .when(
+                      loading: () => const _CategorySkeletonList(),
+                      error: (e, _) => _CategoryErrorState(
+                        onRetry: () => ref.invalidate(categoryOverviewProvider),
+                      ),
+                      data: (categories) {
+                        if (categories.isEmpty) {
+                          return _CategoryEmpty(
+                            onCreate: () async {
+                              final saved = await showCreateEditCategorySheet(
+                                context: context,
+                                mode: const CreateRoot(),
                               );
-                            }
-                          },
-                        );
-                      }
-                      final layers =
-                          categories.map((c) => c.layer ?? '1').toSet().toList()
-                            ..sort(
-                              (a, b) => (int.tryParse(a) ?? 0).compareTo(
-                                int.tryParse(b) ?? 0,
-                              ),
-                            );
-                      final filters = <_LayerFilter>[
-                        _LayerFilter(
-                          id: 'all',
-                          label: l.categoryLayerAll,
-                          count: categories.length,
-                        ),
-                        for (final layer in layers)
+                              if (!context.mounted) return;
+                              if (saved ?? false) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(l.categoryNotifySaved),
+                                  ),
+                                );
+                              }
+                            },
+                          );
+                        }
+                        final layers =
+                            categories
+                                .map((c) => c.layer ?? '1')
+                                .toSet()
+                                .toList()
+                              ..sort(
+                                (a, b) => (int.tryParse(a) ?? 0).compareTo(
+                                  int.tryParse(b) ?? 0,
+                                ),
+                              );
+                        final filters = <_LayerFilter>[
                           _LayerFilter(
-                            id: layer,
-                            label: _layerLabel(context, layer),
-                            count: categories
-                                .where((c) => (c.layer ?? '1') == layer)
-                                .length,
+                            id: 'all',
+                            label: l.categoryLayerAll,
+                            count: categories.length,
                           ),
-                      ];
-                      final visible = _activeLayer == 'all'
-                          ? categories
-                          : categories
-                                .where((c) => (c.layer ?? '1') == _activeLayer)
-                                .toList();
-                      final normalizedQuery = normalizeForSearch(_searchQuery);
-                      final filtered = normalizedQuery.isEmpty
-                          ? visible
-                          : visible
-                                .where(
-                                  (c) => normalizeForSearch(
-                                    c.name ?? '',
-                                  ).contains(normalizedQuery),
-                                )
-                                .toList();
-                      return Column(
-                        children: [
-                          _LayerFilterRow(
-                            filters: filters,
-                            active: _activeLayer,
-                            onChange: (id) => setState(() => _activeLayer = id),
-                          ),
-                          const SizedBox(height: 12),
-                          Expanded(
-                            child: ListView.separated(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                              ),
-                              itemCount: filtered.length,
-                              separatorBuilder: (_, __) =>
-                                  const SizedBox(height: 12),
-                              itemBuilder: (ctx, i) => _CategoryCardItem(
-                                category: filtered[i],
-                                onTap: () => context.go(
-                                  '/catalog/categories/${filtered[i].categoryId}',
+                          for (final layer in layers)
+                            _LayerFilter(
+                              id: layer,
+                              label: _layerLabel(context, layer),
+                              count: categories
+                                  .where((c) => (c.layer ?? '1') == layer)
+                                  .length,
+                            ),
+                        ];
+                        final visible = _activeLayer == 'all'
+                            ? categories
+                            : categories
+                                  .where(
+                                    (c) => (c.layer ?? '1') == _activeLayer,
+                                  )
+                                  .toList();
+                        final normalizedQuery = normalizeForSearch(
+                          _searchQuery,
+                        );
+                        final filtered = normalizedQuery.isEmpty
+                            ? visible
+                            : visible
+                                  .where(
+                                    (c) => normalizeForSearch(
+                                      c.name ?? '',
+                                    ).contains(normalizedQuery),
+                                  )
+                                  .toList();
+                        return Column(
+                          children: [
+                            _LayerFilterRow(
+                              filters: filters,
+                              active: _activeLayer,
+                              onChange: (id) =>
+                                  setState(() => _activeLayer = id),
+                            ),
+                            const SizedBox(height: 12),
+                            Expanded(
+                              child: ListView.separated(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                ),
+                                itemCount: filtered.length,
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(height: 12),
+                                itemBuilder: (ctx, i) => _CategoryCardItem(
+                                  category: filtered[i],
+                                  onTap: () => context.go(
+                                    '/catalog/categories/${filtered[i].categoryId}',
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 12),
-                        ],
-                      );
-                    },
-                  ),
-            ),
-          ],
+                            const SizedBox(height: 12),
+                          ],
+                        );
+                      },
+                    ),
+              ),
+            ],
+          ),
         ),
       ),
     );

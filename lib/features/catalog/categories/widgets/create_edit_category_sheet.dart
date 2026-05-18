@@ -209,70 +209,89 @@ class _CreateEditBodyState extends ConsumerState<_CreateEditBody> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final m = widget.mode;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          KTextField(
-            label: l.categoryFieldName,
-            controller: _nameController,
-            placeholder: l.categoryFieldNameHint,
-            errorText: _nameError,
-          ),
-          const SizedBox(height: 12),
-          KSelect<String>(
-            label: l.categoryFieldStatus,
-            value: _status,
-            options: [
-              KSelectOption(value: 'ACTIVE', label: l.categoryStatusActive),
-              KSelectOption(value: 'INACTIVE', label: l.categoryStatusInactive),
-              KSelectOption(value: 'ARCHIVED', label: l.categoryStatusArchived),
-            ],
-            onChanged: (v) => setState(() => _status = v),
-          ),
-          const SizedBox(height: 12),
-          KTextarea(
-            label: l.categoryFieldDescription,
-            controller: _descriptionController,
-            placeholder: l.categoryFieldDescriptionHint,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: IconPickerTile(
-                  label: l.categoryFieldIcon,
-                  valueName: _iconName,
-                  onChanged: (v) => setState(() => _iconName = v),
+    return GestureDetector(
+      // Tap on the sheet's whitespace dismisses the keyboard. KTextField
+      // / KTextarea taps focus their own field (Material default). The
+      // KSelect chip opens its picker without keyboard interaction.
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            KTextField(
+              label: l.categoryFieldName,
+              controller: _nameController,
+              placeholder: l.categoryFieldNameHint,
+              errorText: _nameError,
+            ),
+            const SizedBox(height: 12),
+            KSelect<String>(
+              label: l.categoryFieldStatus,
+              value: _status,
+              options: [
+                KSelectOption(value: 'ACTIVE', label: l.categoryStatusActive),
+                KSelectOption(
+                  value: 'INACTIVE',
+                  label: l.categoryStatusInactive,
+                ),
+                KSelectOption(
+                  value: 'ARCHIVED',
+                  label: l.categoryStatusArchived,
+                ),
+              ],
+              onChanged: (v) => setState(() => _status = v),
+            ),
+            const SizedBox(height: 12),
+            KTextarea(
+              label: l.categoryFieldDescription,
+              controller: _descriptionController,
+              placeholder: l.categoryFieldDescriptionHint,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: IconPickerTile(
+                    label: l.categoryFieldIcon,
+                    valueName: _iconName,
+                    onChanged: (v) => setState(() => _iconName = v),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ColorPickerTile(
+                    label: l.categoryFieldColor,
+                    valueId: _colorId,
+                    onChanged: (v) => setState(() => _colorId = v),
+                  ),
+                ),
+              ],
+            ),
+            if (m is CreateNested) ...[
+              const SizedBox(height: 12),
+              Text(
+                '${l.categoryFieldParent}: ${m.parentName}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: ColorPickerTile(
-                  label: l.categoryFieldColor,
-                  valueId: _colorId,
-                  onChanged: (v) => setState(() => _colorId = v),
+            ],
+            if (m is EditCategory &&
+                (m.category.parentName ?? '').isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Text(
+                '${l.categoryFieldParent}: ${m.category.parentName}',
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
-          ),
-          if (m is CreateNested) ...[
-            const SizedBox(height: 12),
-            Text(
-              '${l.categoryFieldParent}: ${m.parentName}',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-            ),
           ],
-          if (m is EditCategory &&
-              (m.category.parentName ?? '').isNotEmpty) ...[
-            const SizedBox(height: 12),
-            Text(
-              '${l.categoryFieldParent}: ${m.category.parentName}',
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
