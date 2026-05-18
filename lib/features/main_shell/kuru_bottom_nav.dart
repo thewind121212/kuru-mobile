@@ -1,29 +1,31 @@
-// TablerIcons exports snake_case names used in const widget trees.
-// ignore_for_file: non_constant_identifier_names
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
-import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 
 /// One destination in [KuruBottomNav].
 class KuruBottomNavItem {
   const KuruBottomNavItem({required this.icon, required this.label});
+
+  /// Tabler icon rendered in the pill. Labels are not painted but are kept
+  /// for tooltips + semantics.
   final IconData icon;
   final String label;
 }
 
-/// Custom bottom navigation matching the kuru reference design 1:1:
+/// Floating liquid-glass bottom nav matching the iOS 26 reference design.
 ///
-/// - Flat surfaceElev bar with a thin top border (no Material 3 pill or
-///   inkwell behind the active icon).
-/// - Active tab has a 3px accent indicator pinned to the very top, an
-///   accent-coloured icon, and an accent label below — Material's default
-///   NavigationBar visually buries the active state under a pill, which
-///   doesn't match the reference.
-/// - Inactive tabs use textMuted across icon + label.
-/// - An optional circular "+" action button sits inside the bar to the
-///   right of all tabs (intended for POS — a global, always-visible action
-///   on every tab). It is NOT a Material FloatingActionButton because we
-///   want it docked into the bar rather than floating above the body.
+/// - Pill floats with 16px side margins + 12px bottom margin from the
+///   safe-area edge. Uses [BackdropFilter] for a Gaussian blur of the
+///   content behind it; the Scaffold must set `extendBody: true` for
+///   the blur to have anything to sample.
+/// - Icon-only tabs. The active tab gets a soft accent-tinted pill behind
+///   its icon (Material 3 indicator style, but smaller and glass-friendly).
+///   Labels are kept in [KuruBottomNavItem] for tooltips/semantics but
+///   never painted.
+/// - Optional trailing `+` action button rendered as a SEPARATE floating
+///   accent circle (not docked inside the pill) — preserves the visual
+///   separation in the reference screenshot.
 class KuruBottomNav extends StatelessWidget {
   const KuruBottomNav({
     required this.tabs,
@@ -38,52 +40,109 @@ class KuruBottomNav extends StatelessWidget {
   final List<KuruBottomNavItem> tabs;
   final int currentIndex;
   final ValueChanged<int> onTabChanged;
-
-  /// Icon for the trailing circular action button (e.g. POS `+`). When
-  /// null, no action button is rendered.
   final IconData? actionIcon;
-
-  /// Callback for the trailing action button. Required if [actionIcon]
-  /// is provided.
   final VoidCallback? onActionPressed;
-
-  /// Tooltip shown on long-press of the action button.
   final String? actionTooltip;
 
-  static const double _height = 72;
-  static const double _actionSize = 44;
-  static const double _indicatorWidth = 28;
-  static const double _indicatorHeight = 3;
+  // Tunables. Heights / radii feel right for an icon-only pill at 24px icons.
+  static const double _pillHeight = 56;
+  static const double _pillRadius = 28;
+  static const double _actionSize = 56;
+  static const double _sideMargin = 16;
+  static const double _bottomMargin = 12;
+  static const double _gapBeforeAction = 10;
+  static const double _blurSigma = 20;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          _sideMargin,
+          0,
+          _sideMargin,
+          _bottomMargin,
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _GlassPill(
+                tabs: tabs,
+                currentIndex: currentIndex,
+                onTabChanged: onTabChanged,
+              ),
+            ),
+            if (actionIcon != null) ...[
+              const SizedBox(width: _gapBeforeAction),
+              _ActionCircle(
+                icon: actionIcon!,
+                tooltip: actionTooltip,
+                onPressed: onActionPressed,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _GlassPill extends StatelessWidget {
+  const _GlassPill({
+    required this.tabs,
+    required this.currentIndex,
+    required this.onTabChanged,
+  });
+
+  final List<KuruBottomNavItem> tabs;
+  final int currentIndex;
+  final ValueChanged<int> onTabChanged;
 
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    return Material(
-      color: c.surfaceElev,
-      child: SafeArea(
-        top: false,
-        child: Container(
-          height: _height,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // The fill is the theme's surfaceElev tinted with alpha — gives the
+    // backdrop blur a tone to layer over (pure transparent + blur reads
+    // as a smudge; this reads as glass).
+    final fill = c.surfaceElev.withValues(alpha: isDark ? 0.55 : 0.7);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(KuruBottomNav._pillRadius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: KuruBottomNav._blurSigma,
+          sigmaY: KuruBottomNav._blurSigma,
+        ),
+        child: DecoratedBox(
           decoration: BoxDecoration(
-            border: Border(top: BorderSide(color: c.border, width: 0.5)),
-          ),
-          child: Row(
-            children: [
-              for (var i = 0; i < tabs.length; i++)
-                Expanded(
-                  child: _Tab(
-                    item: tabs[i],
-                    isActive: i == currentIndex,
-                    onTap: () => onTabChanged(i),
-                  ),
-                ),
-              if (actionIcon != null)
-                _ActionButton(
-                  icon: actionIcon!,
-                  tooltip: actionTooltip,
-                  onPressed: onActionPressed,
-                ),
+            color: fill,
+            borderRadius: BorderRadius.circular(KuruBottomNav._pillRadius),
+            border: Border.all(color: c.border.withValues(alpha: 0.6)),
+            // Subtle drop shadow to make the pill read as elevated above
+            // the body content below.
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
             ],
+          ),
+          child: SizedBox(
+            height: KuruBottomNav._pillHeight,
+            child: Row(
+              children: [
+                for (var i = 0; i < tabs.length; i++)
+                  Expanded(
+                    child: _Tab(
+                      item: tabs[i],
+                      isActive: i == currentIndex,
+                      onTap: () => onTabChanged(i),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -101,50 +160,41 @@ class _Tab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final color = isActive ? c.accent600 : c.textMuted;
-    return InkWell(
-      onTap: onTap,
-      child: SizedBox(
-        height: KuruBottomNav._height,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // 3px top indicator pinned to the very top of the tab. Reserve
-            // the slot for inactive tabs too so the icon doesn't shift
-            // vertically when the active tab changes.
-            Container(
-              height: KuruBottomNav._indicatorHeight,
-              width: KuruBottomNav._indicatorWidth,
+    return Tooltip(
+      message: item.label,
+      child: Semantics(
+        label: item.label,
+        button: true,
+        selected: isActive,
+        child: InkResponse(
+          onTap: onTap,
+          radius: 28,
+          child: Center(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? c.accent600 : Colors.transparent,
-                borderRadius: const BorderRadius.vertical(
-                  bottom: Radius.circular(2),
-                ),
+                color: isActive
+                    ? c.accent600.withValues(alpha: 0.14)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Icon(
+                item.icon,
+                size: 24,
+                color: isActive ? c.accent600 : c.textMuted,
               ),
             ),
-            const Spacer(),
-            Icon(item.icon, size: 24, color: color),
-            const SizedBox(height: 2),
-            Text(
-              item.label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                color: color,
-              ),
-            ),
-            const Spacer(),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
+class _ActionCircle extends StatelessWidget {
+  const _ActionCircle({
     required this.icon,
     required this.onPressed,
     this.tooltip,
@@ -157,21 +207,29 @@ class _ActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final button = Padding(
-      padding: const EdgeInsets.only(right: 16, left: 8),
-      child: SizedBox(
-        width: KuruBottomNav._actionSize,
-        height: KuruBottomNav._actionSize,
-        child: Material(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final button = SizedBox(
+      width: KuruBottomNav._actionSize,
+      height: KuruBottomNav._actionSize,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
           color: c.accent600,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: c.accent600.withValues(alpha: isDark ? 0.4 : 0.32),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
           shape: const CircleBorder(),
-          elevation: 2,
           child: InkWell(
             onTap: onPressed,
             customBorder: const CircleBorder(),
-            child: const Center(
-              child: Icon(TablerIcons.plus, size: 24, color: Colors.white),
-            ),
+            child: Center(child: Icon(icon, size: 26, color: Colors.white)),
           ),
         ),
       ),

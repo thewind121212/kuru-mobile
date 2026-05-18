@@ -40,6 +40,9 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     return Scaffold(
+      // Body extends behind the floating glass pill — required for
+      // KuruBottomNav's BackdropFilter to have anything to sample.
+      extendBody: true,
       body: body,
       bottomNavigationBar: KuruBottomNav(
         currentIndex: currentIndex,
