@@ -120,11 +120,8 @@
   "categoryEmptyTitle": "No categories yet",
   "categoryEmptyBody": "Create your first category to organize products.",
   "categoryEmptyAction": "Create first category",
-  "categoryLayerAll": "All",
-  "categoryLayerMain": "Main",
-  "categoryLayerSub": "Sub",
-  "categoryLayerSubSub": "Sub Sub",
-  "categoryLayerPrefix": "Layer",
+  "categoryTabMain": "Main",
+  "categoryTabSub": "Sub",
   "categorySubCount": "{count, plural, one{{count} subcategory} other{{count} subcategories}}",
   "@categorySubCount": {
     "placeholders": {"count": {"type": "num"}}

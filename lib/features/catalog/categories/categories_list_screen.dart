@@ -36,13 +36,7 @@ class CategoriesListScreen extends ConsumerStatefulWidget {
 
 class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
   String _searchQuery = '';
-  String _activeLayer = 'all';
-
-  /// Uniform "Cấp N" / "Layer N" label across all 5 layers — drops the
-  /// awkward "Cấp chính / phụ / phụ phụ" variants per design feedback.
-  String _layerLabel(BuildContext context, String layer) {
-    return '${AppLocalizations.of(context).categoryLayerPrefix} $layer';
-  }
+  _CategoryTab _activeTab = _CategoryTab.main;
 
   @override
   Widget build(BuildContext context) {
@@ -114,73 +108,62 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                             },
                           );
                         }
-                        final layers =
-                            categories
-                                .map((c) => c.layer ?? '1')
-                                .toSet()
-                                .toList()
-                              ..sort(
-                                (a, b) => (int.tryParse(a) ?? 0).compareTo(
-                                  int.tryParse(b) ?? 0,
-                                ),
-                              );
-                        final filters = <_LayerFilter>[
-                          _LayerFilter(
-                            id: 'all',
-                            label: l.categoryLayerAll,
-                            count: categories.length,
-                          ),
-                          for (final layer in layers)
-                            _LayerFilter(
-                              id: layer,
-                              label: _layerLabel(context, layer),
-                              count: categories
-                                  .where((c) => (c.layer ?? '1') == layer)
-                                  .length,
-                            ),
-                        ];
-                        final visible = _activeLayer == 'all'
-                            ? categories
-                            : categories
-                                  .where(
-                                    (c) => (c.layer ?? '1') == _activeLayer,
-                                  )
-                                  .toList();
-                        final normalizedQuery = normalizeForSearch(
-                          _searchQuery,
-                        );
-                        final filtered = normalizedQuery.isEmpty
-                            ? visible
-                            : visible
-                                  .where(
-                                    (c) => normalizeForSearch(
-                                      c.name ?? '',
-                                    ).contains(normalizedQuery),
-                                  )
-                                  .toList();
+                        final mainCats = categories
+                            .where((c) => (c.layer ?? '1') == '1')
+                            .toList();
+                        final subCats = categories
+                            .where((c) => (c.layer ?? '1') != '1')
+                            .toList();
                         return Column(
                           children: [
-                            _LayerFilterRow(
-                              filters: filters,
-                              active: _activeLayer,
-                              onChange: (id) =>
-                                  setState(() => _activeLayer = id),
+                            _CategoryTabBar(
+                              active: _activeTab,
+                              mainCount: mainCats.length,
+                              subCount: subCats.length,
+                              onChange: (t) => setState(() => _activeTab = t),
                             ),
                             const SizedBox(height: 12),
                             Expanded(
-                              child: ListView.separated(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                itemCount: filtered.length,
-                                separatorBuilder: (_, __) =>
-                                    const SizedBox(height: 12),
-                                itemBuilder: (ctx, i) => _CategoryCardItem(
-                                  category: filtered[i],
-                                  onTap: () => context.go(
-                                    '/catalog/categories/${filtered[i].categoryId}',
-                                  ),
-                                ),
+                              child: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 220),
+                                switchInCurve: Curves.easeOutCubic,
+                                switchOutCurve: Curves.easeInCubic,
+                                transitionBuilder: (child, anim) {
+                                  // Slide direction depends on which tab we
+                                  // are entering — Main slides in from the
+                                  // LEFT (its position in the bar), Sub from
+                                  // the RIGHT. Fade lays on top of slide.
+                                  final goingToMain =
+                                      child.key == const ValueKey('main');
+                                  final offset = Tween<Offset>(
+                                    begin: Offset(
+                                      goingToMain ? -0.08 : 0.08,
+                                      0,
+                                    ),
+                                    end: Offset.zero,
+                                  ).animate(anim);
+                                  return ClipRect(
+                                    child: FadeTransition(
+                                      opacity: anim,
+                                      child: SlideTransition(
+                                        position: offset,
+                                        child: child,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                child: _activeTab == _CategoryTab.main
+                                    ? _MainTabList(
+                                        key: const ValueKey('main'),
+                                        categories: mainCats,
+                                        searchQuery: _searchQuery,
+                                      )
+                                    : _SubTabGroupedList(
+                                        key: const ValueKey('sub'),
+                                        allCategories: categories,
+                                        subCategories: subCats,
+                                        searchQuery: _searchQuery,
+                                      ),
                               ),
                             ),
                             const SizedBox(height: 12),
@@ -473,81 +456,90 @@ class _CategoryErrorState extends StatelessWidget {
   }
 }
 
-/// One option on the [`_LayerFilterRow`] — the filter id, its label, and
-/// the count of categories that match (rendered as a subtle inline number).
-@immutable
-class _LayerFilter {
-  const _LayerFilter({
-    required this.id,
-    required this.label,
-    required this.count,
-  });
-
-  final String id;
-  final String label;
-  final int count;
-}
-
-/// Horizontally scrollable minimalist filter row for the layer tabs.
+/// Catalog tab modes: Main = layer-1 roots, Sub = everything below.
 ///
-/// Active filter: solid accent-tinted pill with bold accent text + a
-/// rounded count chip on the right. Inactive filters: plain text + a
-/// subtle muted count badge — no surrounding pill, so the row reads as
-/// "one selected option among options" rather than a heavy segmented
-/// control. Tap any filter to switch.
-class _LayerFilterRow extends StatelessWidget {
-  const _LayerFilterRow({
-    required this.filters,
+/// Replaces the legacy 6-tab "All / Cấp 1..5" layer filter with a binary
+/// segmented control. Sub tab groups children by their direct parent to
+/// preserve hierarchy context (per UX redesign).
+enum _CategoryTab { main, sub }
+
+/// Two-tab segmented control (Chính / Con). Active tab has a solid
+/// accent pill background + white label + opaque count chip; inactive
+/// has muted text and subtle count. Fits in fixed width — no horizontal
+/// scrolling, unlike the old layer filter row.
+class _CategoryTabBar extends StatelessWidget {
+  const _CategoryTabBar({
     required this.active,
+    required this.mainCount,
+    required this.subCount,
     required this.onChange,
   });
 
-  final List<_LayerFilter> filters;
-  final String active;
-  final ValueChanged<String> onChange;
+  final _CategoryTab active;
+  final int mainCount;
+  final int subCount;
+  final ValueChanged<_CategoryTab> onChange;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: filters.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (ctx, i) {
-          final f = filters[i];
-          return _LayerFilterChip(
-            filter: f,
-            isActive: f.id == active,
-            onTap: () => onChange(f.id),
-          );
-        },
+    final c = kuruColors(context);
+    final l = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: c.surfaceElev,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: _CategoryTabChip(
+                label: l.categoryTabMain,
+                count: mainCount,
+                isActive: active == _CategoryTab.main,
+                onTap: () => onChange(_CategoryTab.main),
+              ),
+            ),
+            Expanded(
+              child: _CategoryTabChip(
+                label: l.categoryTabSub,
+                count: subCount,
+                isActive: active == _CategoryTab.sub,
+                onTap: () => onChange(_CategoryTab.sub),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _LayerFilterChip extends StatelessWidget {
-  const _LayerFilterChip({
-    required this.filter,
+class _CategoryTabChip extends StatelessWidget {
+  const _CategoryTabChip({
+    required this.label,
+    required this.count,
     required this.isActive,
     required this.onTap,
   });
 
-  final _LayerFilter filter;
+  final String label;
+  final int count;
   final bool isActive;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final fg = isActive ? c.accent600 : c.textMuted;
+    const dur = Duration(milliseconds: 220);
+    const curve = Curves.easeOutCubic;
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOut,
+      duration: dur,
+      curve: curve,
       decoration: BoxDecoration(
-        color: isActive ? c.accent600.withValues(alpha: 0.10) : null,
+        color: isActive ? c.accent600 : Colors.transparent,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Material(
@@ -557,45 +549,233 @@ class _LayerFilterChip extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(999),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  filter.label,
+                AnimatedDefaultTextStyle(
+                  duration: dur,
+                  curve: curve,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    color: fg,
+                    fontWeight: FontWeight.w700,
+                    color: isActive ? Colors.white : c.textMuted,
                   ),
+                  child: Text(label),
                 ),
                 const SizedBox(width: 6),
-                DecoratedBox(
+                AnimatedContainer(
+                  duration: dur,
+                  curve: curve,
                   decoration: BoxDecoration(
                     color: isActive
-                        ? c.accent600.withValues(alpha: 0.18)
+                        ? Colors.white.withValues(alpha: 0.18)
                         : c.surfaceHover,
                     borderRadius: BorderRadius.circular(999),
                   ),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 1,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 1,
+                  ),
+                  child: AnimatedDefaultTextStyle(
+                    duration: dur,
+                    curve: curve,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isActive ? Colors.white : c.textMuted,
                     ),
-                    child: Text(
-                      '${filter.count}',
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: fg,
-                      ),
-                    ),
+                    child: Text('$count'),
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Main-tab list: flat layer-1 roots only. Filtered by search.
+class _MainTabList extends StatelessWidget {
+  const _MainTabList({
+    required this.categories,
+    required this.searchQuery,
+    super.key,
+  });
+
+  final List<gen.CategoryResponse> categories;
+  final String searchQuery;
+
+  @override
+  Widget build(BuildContext context) {
+    final q = normalizeForSearch(searchQuery);
+    final filtered = q.isEmpty
+        ? categories
+        : categories
+              .where((c) => normalizeForSearch(c.name ?? '').contains(q))
+              .toList();
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: filtered.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (ctx, i) => _CategoryCardItem(
+        category: filtered[i],
+        onTap: () =>
+            context.go('/catalog/categories/${filtered[i].categoryId}'),
+      ),
+    );
+  }
+}
+
+/// Sub-tab list: every non-root category grouped under its direct parent.
+///
+/// Each group has a header (color dot + parent name) followed by the
+/// direct children as standard category cards. Preserves hierarchy
+/// context that a flat sub-list would destroy ("Polo Nữ" sitting next
+/// to "Jeans Nam" with no parent in sight).
+class _SubTabGroupedList extends StatelessWidget {
+  const _SubTabGroupedList({
+    required this.allCategories,
+    required this.subCategories,
+    required this.searchQuery,
+    super.key,
+  });
+
+  final List<gen.CategoryResponse> allCategories;
+  final List<gen.CategoryResponse> subCategories;
+  final String searchQuery;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final q = normalizeForSearch(searchQuery);
+    final visible = q.isEmpty
+        ? subCategories
+        : subCategories
+              .where((c) => normalizeForSearch(c.name ?? '').contains(q))
+              .toList();
+    if (visible.isEmpty) {
+      return KEmptyState(
+        icon: TablerIcons.search,
+        title: l.categoryEmptyTitle,
+        subtitle: l.categoryEmptyBody,
+      );
+    }
+
+    final byId = <String, gen.CategoryResponse>{
+      for (final c in allCategories)
+        if (c.categoryId != null) c.categoryId!: c,
+    };
+
+    final byParent = <String, List<gen.CategoryResponse>>{};
+    for (final child in visible) {
+      final pid = child.parentId;
+      if (pid == null) continue;
+      byParent.putIfAbsent(pid, () => []).add(child);
+    }
+    final groups =
+        byParent.entries
+            .map(
+              (e) => _SubGroup(
+                parent: byId[e.key],
+                parentId: e.key,
+                children: e.value,
+              ),
+            )
+            .where((g) => g.parent != null)
+            .toList()
+          ..sort(
+            (a, b) => (a.parent!.name ?? '').compareTo(b.parent!.name ?? ''),
+          );
+
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: groups.length,
+      itemBuilder: (ctx, i) {
+        final g = groups[i];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _SubGroupHeader(parent: g.parent!),
+              const SizedBox(height: 8),
+              for (var j = 0; j < g.children.length; j++) ...[
+                _CategoryCardItem(
+                  category: g.children[j],
+                  onTap: () => context.go(
+                    '/catalog/categories/${g.children[j].categoryId}',
+                  ),
+                ),
+                if (j < g.children.length - 1) const SizedBox(height: 12),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+@immutable
+class _SubGroup {
+  const _SubGroup({
+    required this.parent,
+    required this.parentId,
+    required this.children,
+  });
+
+  final gen.CategoryResponse? parent;
+  final String parentId;
+  final List<gen.CategoryResponse> children;
+}
+
+/// Parent group header — small colored dot + parent name. Sits above its
+/// child cards in [_SubTabGroupedList]. Uses the parent's `colorSettings`
+/// for the dot (falls back to slate-400) so users can spot a group at a
+/// glance.
+class _SubGroupHeader extends StatelessWidget {
+  const _SubGroupHeader({required this.parent});
+
+  final gen.CategoryResponse parent;
+
+  Color _dotColor() {
+    final id = parent.colorSettings;
+    if (id == null || id.isEmpty) return kAllColors.first.swatch;
+    return kAllColors
+        .firstWhere((co) => co.id == id, orElse: () => kAllColors.first)
+        .swatch;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      child: Row(
+        children: [
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              color: _dotColor(),
+              borderRadius: BorderRadius.circular(3),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            parent.name ?? '',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: c.textMuted,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
       ),
     );
   }

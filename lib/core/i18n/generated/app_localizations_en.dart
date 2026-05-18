@@ -314,19 +314,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryEmptyAction => 'Create first category';
 
   @override
-  String get categoryLayerAll => 'All';
+  String get categoryTabMain => 'Main';
 
   @override
-  String get categoryLayerMain => 'Main';
-
-  @override
-  String get categoryLayerSub => 'Sub';
-
-  @override
-  String get categoryLayerSubSub => 'Sub Sub';
-
-  @override
-  String get categoryLayerPrefix => 'Layer';
+  String get categoryTabSub => 'Sub';
 
   @override
   String categorySubCount(num count) {

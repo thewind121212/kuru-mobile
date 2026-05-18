@@ -656,35 +656,17 @@ abstract class AppLocalizations {
   /// **'Tạo danh mục đầu tiên'**
   String get categoryEmptyAction;
 
-  /// No description provided for @categoryLayerAll.
+  /// No description provided for @categoryTabMain.
   ///
   /// In vi, this message translates to:
-  /// **'Tất cả'**
-  String get categoryLayerAll;
+  /// **'Chính'**
+  String get categoryTabMain;
 
-  /// No description provided for @categoryLayerMain.
+  /// No description provided for @categoryTabSub.
   ///
   /// In vi, this message translates to:
-  /// **'Cấp chính'**
-  String get categoryLayerMain;
-
-  /// No description provided for @categoryLayerSub.
-  ///
-  /// In vi, this message translates to:
-  /// **'Cấp phụ'**
-  String get categoryLayerSub;
-
-  /// No description provided for @categoryLayerSubSub.
-  ///
-  /// In vi, this message translates to:
-  /// **'Cấp phụ phụ'**
-  String get categoryLayerSubSub;
-
-  /// No description provided for @categoryLayerPrefix.
-  ///
-  /// In vi, this message translates to:
-  /// **'Cấp'**
-  String get categoryLayerPrefix;
+  /// **'Phụ'**
+  String get categoryTabSub;
 
   /// No description provided for @categorySubCount.
   ///

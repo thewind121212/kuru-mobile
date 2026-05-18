@@ -309,19 +309,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get categoryEmptyAction => 'Tạo danh mục đầu tiên';
 
   @override
-  String get categoryLayerAll => 'Tất cả';
+  String get categoryTabMain => 'Chính';
 
   @override
-  String get categoryLayerMain => 'Cấp chính';
-
-  @override
-  String get categoryLayerSub => 'Cấp phụ';
-
-  @override
-  String get categoryLayerSubSub => 'Cấp phụ phụ';
-
-  @override
-  String get categoryLayerPrefix => 'Cấp';
+  String get categoryTabSub => 'Phụ';
 
   @override
   String categorySubCount(num count) {
