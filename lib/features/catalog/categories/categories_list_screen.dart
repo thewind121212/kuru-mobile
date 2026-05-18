@@ -7,6 +7,7 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/text/search_normalize.dart';
 import 'package:kuru_mobile/design/core/catalog/k_category_card.dart';
@@ -16,7 +17,6 @@ import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
 import 'package:kuru_mobile/design/core/input/k_icon_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_search_bar.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
-import 'package:kuru_mobile/design/core/input/k_tab_nav.dart';
 import 'package:kuru_mobile/design/core/modal/color_options.dart';
 import 'package:kuru_mobile/design/core/modal/icon_mapping.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
@@ -33,18 +33,10 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
   String _searchQuery = '';
   String _activeLayer = 'all';
 
+  /// Uniform "Cấp N" / "Layer N" label across all 5 layers — drops the
+  /// awkward "Cấp chính / phụ / phụ phụ" variants per design feedback.
   String _layerLabel(BuildContext context, String layer) {
-    final l = AppLocalizations.of(context);
-    switch (layer) {
-      case '1':
-        return l.categoryLayerMain;
-      case '2':
-        return l.categoryLayerSub;
-      case '3':
-        return l.categoryLayerSubSub;
-      default:
-        return '${l.categoryLayerPrefix} $layer';
-    }
+    return '${AppLocalizations.of(context).categoryLayerPrefix} $layer';
   }
 
   @override
@@ -93,12 +85,19 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                                 int.tryParse(b) ?? 0,
                               ),
                             );
-                      final tabs = <KTabItem<String>>[
-                        KTabItem(id: 'all', label: l.categoryLayerAll),
+                      final filters = <_LayerFilter>[
+                        _LayerFilter(
+                          id: 'all',
+                          label: l.categoryLayerAll,
+                          count: categories.length,
+                        ),
                         for (final layer in layers)
-                          KTabItem(
+                          _LayerFilter(
                             id: layer,
                             label: _layerLabel(context, layer),
+                            count: categories
+                                .where((c) => (c.layer ?? '1') == layer)
+                                .length,
                           ),
                       ];
                       final visible = _activeLayer == 'all'
@@ -118,14 +117,10 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                                 .toList();
                       return Column(
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: KTabNav<String>(
-                              tabs: tabs,
-                              active: _activeLayer,
-                              onChange: (id) =>
-                                  setState(() => _activeLayer = id),
-                            ),
+                          _LayerFilterRow(
+                            filters: filters,
+                            active: _activeLayer,
+                            onChange: (id) => setState(() => _activeLayer = id),
                           ),
                           const SizedBox(height: 12),
                           Expanded(
@@ -325,6 +320,134 @@ class _CategoryErrorState extends StatelessWidget {
         onPressed: onRetry,
         label: l.categoryLoadRetry,
         fullWidth: false,
+      ),
+    );
+  }
+}
+
+/// One option on the [`_LayerFilterRow`] — the filter id, its label, and
+/// the count of categories that match (rendered as a subtle inline number).
+@immutable
+class _LayerFilter {
+  const _LayerFilter({
+    required this.id,
+    required this.label,
+    required this.count,
+  });
+
+  final String id;
+  final String label;
+  final int count;
+}
+
+/// Horizontally scrollable minimalist filter row for the layer tabs.
+///
+/// Active filter: solid accent-tinted pill with bold accent text + a
+/// rounded count chip on the right. Inactive filters: plain text + a
+/// subtle muted count badge — no surrounding pill, so the row reads as
+/// "one selected option among options" rather than a heavy segmented
+/// control. Tap any filter to switch.
+class _LayerFilterRow extends StatelessWidget {
+  const _LayerFilterRow({
+    required this.filters,
+    required this.active,
+    required this.onChange,
+  });
+
+  final List<_LayerFilter> filters;
+  final String active;
+  final ValueChanged<String> onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 40,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: filters.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        itemBuilder: (ctx, i) {
+          final f = filters[i];
+          return _LayerFilterChip(
+            filter: f,
+            isActive: f.id == active,
+            onTap: () => onChange(f.id),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _LayerFilterChip extends StatelessWidget {
+  const _LayerFilterChip({
+    required this.filter,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final _LayerFilter filter;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final fg = isActive ? c.accent600 : c.textMuted;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        color: isActive ? c.accent600.withValues(alpha: 0.10) : null,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(999),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(999),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  filter.label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: fg,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? c.accent600.withValues(alpha: 0.18)
+                        : c.surfaceHover,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 1,
+                    ),
+                    child: Text(
+                      '${filter.count}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: fg,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
