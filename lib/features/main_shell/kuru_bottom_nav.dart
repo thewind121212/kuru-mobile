@@ -49,8 +49,6 @@ class KuruBottomNav extends StatelessWidget {
   static const double _pillRadius = 32;
   static const double _actionSize = 56;
   static const double _sideMargin = 16;
-  static const double _indicatorWidth = 24;
-  static const double _indicatorHeight = 3;
   // Total clearance from the screen bottom edge to the pill. iOS reserves
   // ~34dp for the home indicator via MediaQuery.viewPadding.bottom; that
   // SafeArea inset (when used) is too generous and pushes the pill far
@@ -178,24 +176,12 @@ class _Tab extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // 3px top indicator pinned just above the icon, accent when
-              // active. Reserves the slot for inactive tabs too so the icon
-              // doesn't shift vertically as the active tab changes.
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOut,
-                height: KuruBottomNav._indicatorHeight,
-                width: KuruBottomNav._indicatorWidth,
-                decoration: BoxDecoration(
-                  color: isActive ? c.accent600 : Colors.transparent,
-                  borderRadius: const BorderRadius.vertical(
-                    bottom: Radius.circular(2),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Icon(item.icon, size: 22, color: tone),
-              const SizedBox(height: 2),
+              // Active state is conveyed via icon + label tint and weight
+              // alone — the 3dp top-indicator bar was reading as a stray
+              // top border on the pill and was dropped per design
+              // feedback.
+              Icon(item.icon, size: 24, color: tone),
+              const SizedBox(height: 4),
               Text(
                 item.label,
                 maxLines: 1,
