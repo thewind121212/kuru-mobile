@@ -44,11 +44,13 @@ class KuruBottomNav extends StatelessWidget {
   final VoidCallback? onActionPressed;
   final String? actionTooltip;
 
-  // Tunables. Heights / radii feel right for an icon-only pill at 24px icons.
-  static const double _pillHeight = 56;
-  static const double _pillRadius = 28;
+  // Tunables. Icon + label needs more vertical room than an icon-only bar.
+  static const double _pillHeight = 68;
+  static const double _pillRadius = 32;
   static const double _actionSize = 56;
   static const double _sideMargin = 16;
+  static const double _indicatorWidth = 24;
+  static const double _indicatorHeight = 3;
   // No explicit gap above the home indicator. SafeArea already adds the
   // system inset (~34dp on iPhones with a home bar) — that's clearance
   // enough. Stacking another margin on top wastes scrollable height on
@@ -164,32 +166,49 @@ class _Tab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    return Tooltip(
-      message: item.label,
-      child: Semantics(
-        label: item.label,
-        button: true,
-        selected: isActive,
-        child: InkResponse(
-          onTap: onTap,
-          radius: 28,
-          child: Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.easeOut,
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? c.accent600.withValues(alpha: 0.14)
-                    : Colors.transparent,
-                borderRadius: BorderRadius.circular(20),
+    final tone = isActive ? c.accent600 : c.textMuted;
+    return Semantics(
+      label: item.label,
+      button: true,
+      selected: isActive,
+      child: InkResponse(
+        onTap: onTap,
+        radius: 32,
+        child: SizedBox(
+          height: KuruBottomNav._pillHeight,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // 3px top indicator pinned just above the icon, accent when
+              // active. Reserves the slot for inactive tabs too so the icon
+              // doesn't shift vertically as the active tab changes.
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOut,
+                height: KuruBottomNav._indicatorHeight,
+                width: KuruBottomNav._indicatorWidth,
+                decoration: BoxDecoration(
+                  color: isActive ? c.accent600 : Colors.transparent,
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(2),
+                  ),
+                ),
               ),
-              child: Icon(
-                item.icon,
-                size: 24,
-                color: isActive ? c.accent600 : c.textMuted,
+              const SizedBox(height: 8),
+              Icon(item.icon, size: 22, color: tone),
+              const SizedBox(height: 2),
+              Text(
+                item.label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  color: tone,
+                  height: 1.1,
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
