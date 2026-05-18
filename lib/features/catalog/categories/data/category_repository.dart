@@ -133,6 +133,28 @@ class CategoryRepository {
     }
   }
 
+  /// Deletes one or more categories. BE accepts a list even for a single
+  /// id — mobile typically passes `[id]`. Returns `ApiSuccess<void>` on
+  /// success; the BE response payload (`removedCount`) is not surfaced
+  /// because callers already know which ids they asked to delete.
+  ///
+  /// 400 with `category has children` is a common UX failure — surface
+  /// the verbatim message via [BadRequestException] per spec §6.2.
+  Future<ApiResult<void>> remove(List<String> categoryIds) async {
+    try {
+      final res = await _api.removeCategory(
+        removeCategoryRequest: gen.RemoveCategoryRequest(
+          (b) => b..categoryIds.replace(categoryIds),
+        ),
+      );
+      log.i('RemoveCategory ← ${res.statusCode} ids=$categoryIds');
+      return ApiResult.success(null);
+    } on DioException catch (e) {
+      log.w('RemoveCategory($categoryIds) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
   /// Converts a [DioException] into a typed [ApiException].
   ///
   /// Prefers any [ApiException] already attached to `e.error` by the

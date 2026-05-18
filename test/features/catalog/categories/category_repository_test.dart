@@ -91,6 +91,9 @@ void main() {
           ),
       ),
     );
+    registerFallbackValue(
+      gen.RemoveCategoryRequest((b) => b..categoryIds.replace(<String>[])),
+    );
   });
 
   setUp(() {
@@ -536,6 +539,62 @@ void main() {
         (result as ApiFailure<gen.UpdateCategoryResponse>).err,
         isA<ForbiddenException>(),
       );
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // remove
+  // ---------------------------------------------------------------------------
+  group('remove', () {
+    test('returns ApiSuccess<void> on 201', () async {
+      when(
+        () => api.removeCategory(
+          removeCategoryRequest: any(named: 'removeCategoryRequest'),
+        ),
+      ).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(),
+          statusCode: 201,
+          data: gen.RemoveCategory200Response(
+            (b) => b
+              ..success = true
+              ..data.replace(
+                gen.RemoveCategoryResponse((b2) => b2..removedCount = 1),
+              )
+              ..timestamp = DateTime(2026),
+          ),
+        ),
+      );
+
+      final result = await repo.remove(['abc']);
+      expect(result, isA<ApiSuccess<void>>());
+    });
+
+    test('returns ApiFailure(BadRequestException) when BE rejects '
+        '(e.g. category has children)', () async {
+      when(
+        () => api.removeCategory(
+          removeCategoryRequest: any(named: 'removeCategoryRequest'),
+        ),
+      ).thenThrow(
+        DioException(
+          requestOptions: RequestOptions(),
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: RequestOptions(),
+            statusCode: 400,
+            data: {
+              'success': false,
+              'error': {'message': 'category has children'},
+            },
+          ),
+        ),
+      );
+
+      final result = await repo.remove(['abc']);
+      final err = (result as ApiFailure).err;
+      expect(err, isA<BadRequestException>());
+      expect(err.message, 'category has children');
     });
   });
 }
