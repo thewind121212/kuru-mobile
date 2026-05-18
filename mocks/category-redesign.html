@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Simplestore — Category UX redesign mock</title>
+<style>
+  :root {
+    --bg: #0b0f1a;
+    --surface: #131a2b;
+    --surface-elev: #1a2238;
+    --surface-hover: #222a44;
+    --border: #2a3350;
+    --text: #e6e9f2;
+    --text-muted: #8a92a8;
+    --accent-50: rgba(99, 102, 241, 0.10);
+    --accent-100: rgba(99, 102, 241, 0.20);
+    --accent-300: #818cf8;
+    --accent-400: #6366f1;
+    --accent-600: #4f46e5;
+    --accent-700: #4338ca;
+    --danger: #ef4444;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #050816; color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  body { display: flex; gap: 24px; padding: 24px; align-items: flex-start; flex-wrap: wrap; justify-content: center; min-height: 100vh; }
+
+  .phone {
+    width: 390px;
+    height: 844px;
+    background: var(--bg);
+    border-radius: 44px;
+    border: 8px solid #111;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+  .phone-label {
+    position: absolute;
+    top: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .statusbar {
+    height: 48px;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .statusbar .icons { display: flex; gap: 6px; font-size: 12px; opacity: 0.85; }
+  .header {
+    padding: 12px 16px 8px;
+    text-align: center;
+    position: relative;
+  }
+  .header h1 { margin: 0; font-size: 20px; font-weight: 700; }
+  .header .count { margin-top: 2px; font-size: 12px; color: var(--text-muted); }
+  .header .plus {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    width: 32px; height: 32px;
+    background: var(--accent-100);
+    border: none; color: var(--accent-300);
+    border-radius: 8px;
+    font-size: 18px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .search {
+    margin: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .search svg { fill: var(--text-muted); flex-shrink: 0; }
+  .search input {
+    background: transparent; border: none; outline: none;
+    color: var(--text); flex: 1; font-size: 14px;
+  }
+  .search input::placeholder { color: var(--text-muted); }
+  .search .clear {
+    color: var(--text-muted); cursor: pointer; font-size: 18px;
+    background: none; border: none; padding: 0;
+  }
+  .tabs {
+    margin: 0 16px 12px;
+    display: flex; gap: 4px;
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 4px;
+  }
+  .tab {
+    flex: 1; text-align: center;
+    padding: 8px 12px;
+    font-size: 13px; font-weight: 600;
+    color: var(--text-muted);
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tab.active {
+    background: var(--accent-600);
+    color: white;
+  }
+  .tab .count {
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .tab:not(.active) .count {
+    background: rgba(255,255,255,0.06);
+  }
+  .list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 16px;
+  }
+  .list::-webkit-scrollbar { width: 6px; }
+  .list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Card — root / category row */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .card:hover { background: var(--surface-hover); }
+  .card.focused {
+    background: var(--accent-50);
+    border-color: var(--accent-400);
+    box-shadow: 0 0 0 1px var(--accent-400) inset, 0 4px 16px var(--accent-100);
+  }
+  .icon-chip {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; flex-shrink: 0;
+  }
+  .icon-chip svg { width: 22px; height: 22px; fill: white; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-title {
+    font-size: 15px; font-weight: 600;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .card-title mark {
+    background: var(--accent-100);
+    color: var(--accent-300);
+    font-weight: 700;
+    padding: 0 2px;
+    border-radius: 3px;
+  }
+  .card-meta {
+    display: flex; gap: 8px;
+    margin-top: 4px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .card-meta .dot { width: 3px; height: 3px; background: var(--text-muted); border-radius: 50%; align-self: center; }
+  .breadcrumb {
+    font-size: 11px; color: var(--text-muted);
+    margin-top: 4px;
+    display: flex; gap: 4px; align-items: center;
+  }
+  .breadcrumb mark { background: transparent; color: var(--accent-300); font-weight: 600; }
+  .kebab {
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    background: none; border: none; cursor: pointer; border-radius: 6px;
+  }
+  .kebab:hover { background: var(--surface-hover); }
+
+  /* Sub-tab grouping */
+  .group {
+    margin-bottom: 16px;
+  }
+  .group-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 4px;
+    color: var(--text-muted);
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .group-header .dot-color { width: 10px; height: 10px; border-radius: 3px; }
+  .group .card {
+    margin-left: 16px;
+    padding: 10px 12px;
+  }
+  .group .card .icon-chip { width: 32px; height: 32px; border-radius: 8px; }
+  .group .card .icon-chip svg { width: 18px; height: 18px; }
+  .group .card .card-title { font-size: 14px; }
+
+  /* Bottom nav */
+  .nav {
+    height: 64px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 0 12px;
+  }
+  .nav-item {
+    flex: 1;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 11px;
+    cursor: pointer;
+  }
+  .nav-item svg { display: block; margin: 0 auto 2px; width: 22px; height: 22px; fill: currentColor; }
+  .nav-item.active { color: var(--accent-300); }
+
+  .fab {
+    position: absolute;
+    right: 16px; bottom: 80px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: var(--accent-600);
+    color: white;
+    border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    font-size: 24px;
+  }
+
+  /* Empty state */
+  .empty {
+    text-align: center; padding: 60px 24px;
+    color: var(--text-muted);
+  }
+  .empty svg { fill: var(--text-muted); opacity: 0.5; }
+  .empty .title { color: var(--text); font-weight: 600; margin: 12px 0 4px; }
+  .empty .hint { font-size: 13px; }
+
+  /* Suggestions chip row */
+  .suggestions {
+    margin: 8px 16px 12px;
+    display: flex; gap: 8px; overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .suggestions::-webkit-scrollbar { display: none; }
+  .chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 12px;
+    font-size: 12px; font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer; white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .chip:hover { background: var(--surface-hover); color: var(--text); }
+  .chip-label {
+    font-size: 11px; color: var(--text-muted); margin: 4px 16px;
+    text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em;
+  }
+
+  .legend {
+    color: #888; font-size: 13px;
+    max-width: 360px;
+    line-height: 1.6;
+  }
+  .legend h2 { margin: 0 0 8px; color: #e6e9f2; font-size: 14px; }
+  .legend strong { color: #c9cdd9; }
+  .legend code { background: #1a2238; padding: 1px 6px; border-radius: 4px; font-size: 12px; color: #c9cdd9; }
+</style>
+</head>
+<body>
+
+<!-- ============ SCREEN 1: Main tab, no search ============ -->
+<div class="phone">
+  <div class="phone-label">A — Main tab (default)</div>
+  <div class="statusbar">
+    <span>19:57</span>
+    <span class="icons">📶 📶 🔋</span>
+  </div>
+
+  <div class="header">
+    <h1>Danh mục</h1>
+    <div class="count">12 danh mục · 248 sản phẩm</div>
+    <button class="plus" title="Tạo mới">＋</button>
+  </div>
+
+  <div class="search">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M10 18a8 8 0 1 1 5.3-14.07A8 8 0 0 1 10 18m11.71 1.29-3.4-3.39A9.96 9.96 0 0 0 20 10a10 10 0 1 0-10 10 9.96 9.96 0 0 0 5.9-1.69l3.39 3.4a1 1 0 0 0 1.42-1.42"/></svg>
+    <input type="text" placeholder="Tìm danh mục, sản phẩm…" />
+  </div>
+
+  <div class="tabs">
+    <div class="tab active">Chính <span class="count">5</span></div>
+    <div class="tab">Con <span class="count">7</span></div>
+  </div>
+
+  <div class="list">
+    <div class="card">
+      <div class="icon-chip" style="background:#a855f7"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5z"/></svg></div>
+      <div class="card-body">
+        <div class="card-title">Unisex</div>
+        <div class="card-meta">2 danh mục con<span class="dot"></span>38 sản phẩm</div>
+      </div>
+      <button class="kebab">⋮</button>
+    </div>
+
+    <div class="card">
+      <div class="icon-chip" style="background:#ec4899"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+      <div class="card-body">
+        <div class="card-title">Đồ Nữ</div>
+        <div class="card-meta">3 danh mục con<span class="dot"></span>92 sản phẩm</div>
+      </div>
+      <button class="kebab">⋮</button>
+    </div>
+
+    <div class="card">
+      <div class="icon-chip" style="background:#3b82f6"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+      <div class="card-body">
+        <div class="card-title">Đồ Nam</div>
+        <div class="card-meta">2 danh mục con<span class="dot"></span>61 sản phẩm</div>
+      </div>
+      <button class="kebab">⋮</button>
+    </div>
+
+    <div class="card">
+      <div class="icon-chip" style="background:#f59e0b"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.43 12.98a7.88 7.88 0 0 0 .07-.98 7.88 7.88 0 0 0-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.65 7.65 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.6.24-1.17.57-1.69.98l-2.49-1a.49.49 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.88 7.88 0 0 0-.07.98 7.88 7.88 0 0 0 .07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.41 1.09.74 1.69.98l.38 2.65A.49.49 0 0 0 10 22h4a.49.49 0 0 0 .49-.42l.38-2.65c.6-.24 1.17-.57 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64z"/></svg></div>
+      <div class="card-body">
+        <div class="card-title">Phụ Kiện</div>
+        <div class="card-meta">1 danh mục con<span class="dot"></span>24 sản phẩm</div>
+      </div>
+      <button class="kebab">⋮</button>
+    </div>
+
+    <div class="card">
+      <div class="icon-chip" style="background:#64748b"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/></svg></div>
+      <div class="card-body">
+        <div class="card-title">Uncategorized</div>
+        <div class="card-meta">0 danh mục con<span class="dot"></span>33 sản phẩm</div>
+      </div>
+      <button class="kebab">⋮</button>
+    </div>
+  </div>
+
+  <button class="fab">＋</button>
+
+  <div class="nav">
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6a1 1 0 0 0-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1"/></svg>
+      Trang chủ
+    </div>
+    <div class="nav-item active">
+      <svg viewBox="0 0 24 24"><path d="M4 11h5V5H4zm0 7h5v-6H4zm6 0h5v-6h-5zm6 0h5v-6h-5zm-6-7h5V5h-5zm6-6v6h5V5z"/></svg>
+      Danh mục
+    </div>
+    <div class="nav-item">
+      <svg viewBox="0 0 24 24"><path d="M19.43 12.98a7.88 7.88 0 0 0 .07-.98 7.88 7.88 0 0 0-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.65 7.65 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65c-.6.24-1.17.57-1.69.98l-2.49-1a.49.49 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.64l2.11 1.65a7.88 7.88 0 0 0-.07.98 7.88 7.88 0 0 0 .07.98l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.41 1.09.74 1.69.98l.38 2.65A.49.49 0 0 0 10 22h4a.49.49 0 0 0 .49-.42l.38-2.65c.6-.24 1.17-.57 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7"/></svg>
+      Cài đặt
+    </div>
+  </div>
+</div>
+
+<div class="legend">
+  <h2>A · Main tab (default)</h2>
+  <ul>
+    <li>Two-tab segmented: <strong>Chính</strong> (roots, 5) + <strong>Con</strong> (non-roots, 7).</li>
+    <li>Each main card shows <code>{subcat count}</code> + <code>{product count}</code> — actionable signal, no layer badge.</li>
+    <li>Title — total counts in subtitle. No "Áo Thun Polo Nữ" focus title.</li>
+    <li>Search bar always present; placeholder hints at depth.</li>
+  </ul>
+</div>
+
+
+<!-- ============ SCREEN 2: Sub tab, grouped ============ -->
+<div class="phone">
+  <div class="phone-label">B — Sub tab (grouped by parent)</div>
+  <div class="statusbar"><span>19:57</span><span class="icons">📶 📶 🔋</span></div>
+
+  <div class="header">
+    <h1>Danh mục</h1>
+    <div class="count">12 danh mục · 248 sản phẩm</div>
+    <button class="plus">＋</button>
+  </div>
+
+  <div class="search">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M10 18a8 8 0 1 1 5.3-14.07A8 8 0 0 1 10 18m11.71 1.29-3.4-3.39A9.96 9.96 0 0 0 20 10a10 10 0 1 0-10 10 9.96 9.96 0 0 0 5.9-1.69l3.39 3.4a1 1 0 0 0 1.42-1.42"/></svg>
+    <input type="text" placeholder="Tìm danh mục, sản phẩm…" />
+  </div>
+
+  <div class="tabs">
+    <div class="tab">Chính <span class="count">5</span></div>
+    <div class="tab active">Con <span class="count">7</span></div>
+  </div>
+
+  <div class="list">
+    <div class="group">
+      <div class="group-header">
+        <span class="dot-color" style="background:#a855f7"></span>
+        Unisex
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#a855f7;opacity:0.85"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5z"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Hoodie</div>
+          <div class="card-meta">12 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#a855f7;opacity:0.85"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5z"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Cap</div>
+          <div class="card-meta">6 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-header">
+        <span class="dot-color" style="background:#ec4899"></span>
+        Đồ Nữ
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#ec4899;opacity:0.85"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Áo Thun Polo Nữ</div>
+          <div class="card-meta">18 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#ec4899;opacity:0.85"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Váy Suông</div>
+          <div class="card-meta">22 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#ec4899;opacity:0.85"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Quần Tây Nữ</div>
+          <div class="card-meta">14 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-header">
+        <span class="dot-color" style="background:#3b82f6"></span>
+        Đồ Nam
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#3b82f6;opacity:0.85"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Quần Jeans Nam</div>
+          <div class="card-meta">15 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#3b82f6;opacity:0.85"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Áo Sơ Mi Nam</div>
+          <div class="card-meta">9 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="group-header">
+        <span class="dot-color" style="background:#f59e0b"></span>
+        Phụ Kiện
+      </div>
+      <div class="card">
+        <div class="icon-chip" style="background:#f59e0b;opacity:0.85"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg></div>
+        <div class="card-body">
+          <div class="card-title">Túi xách</div>
+          <div class="card-meta">8 sản phẩm</div>
+        </div>
+        <button class="kebab">⋮</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-item">🏠<br>Trang chủ</div>
+    <div class="nav-item active">▦<br>Danh mục</div>
+    <div class="nav-item">⚙<br>Cài đặt</div>
+  </div>
+</div>
+
+<div class="legend">
+  <h2>B · Sub tab (grouped, not flat)</h2>
+  <ul>
+    <li>Children grouped under their <strong>root parent header</strong> with the root's color dot.</li>
+    <li>Each child card faded variant of its root color — visual lineage at a glance.</li>
+    <li>NO layer badge — depth is implied by grouping.</li>
+    <li>Compares badly with current flat-Sub-filter: now you SEE that Polo Nữ belongs to Đồ Nữ without tapping anything.</li>
+  </ul>
+</div>
+
+
+<!-- ============ SCREEN 3: Search active ============ -->
+<div class="phone">
+  <div class="phone-label">C — Deep search ("polo")</div>
+  <div class="statusbar"><span>19:57</span><span class="icons">📶 📶 🔋</span></div>
+
+  <div class="header">
+    <h1>Danh mục</h1>
+    <div class="count">12 danh mục · 248 sản phẩm</div>
+    <button class="plus">＋</button>
+  </div>
+
+  <div class="search">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M10 18a8 8 0 1 1 5.3-14.07A8 8 0 0 1 10 18m11.71 1.29-3.4-3.39A9.96 9.96 0 0 0 20 10a10 10 0 1 0-10 10 9.96 9.96 0 0 0 5.9-1.69l3.39 3.4a1 1 0 0 0 1.42-1.42"/></svg>
+    <input type="text" value="polo" />
+    <button class="clear">✕</button>
+  </div>
+
+  <div class="chip-label">Đang tìm trong tất cả · 2 kết quả</div>
+
+  <div class="list">
+    <div class="card">
+      <div class="icon-chip" style="background:#ec4899"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+      <div class="card-body">
+        <div class="card-title">Áo Thun <mark>Polo</mark> Nữ</div>
+        <div class="breadcrumb">Đồ Nữ › Áo Thun</div>
+        <div class="card-meta">18 sản phẩm</div>
+      </div>
+      <button class="kebab">⋮</button>
+    </div>
+    <div class="card">
+      <div class="icon-chip" style="background:#3b82f6"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+      <div class="card-body">
+        <div class="card-title">Áo <mark>Polo</mark> Nam</div>
+        <div class="breadcrumb">Đồ Nam › Áo</div>
+        <div class="card-meta">11 sản phẩm</div>
+      </div>
+      <button class="kebab">⋮</button>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-item">🏠<br>Trang chủ</div>
+    <div class="nav-item active">▦<br>Danh mục</div>
+    <div class="nav-item">⚙<br>Cài đặt</div>
+  </div>
+</div>
+
+<div class="legend">
+  <h2>C · Deep search</h2>
+  <ul>
+    <li>Search active → <strong>tabs hidden</strong>, replaced by result count line.</li>
+    <li>Searches <strong>all categories regardless of tab</strong>.</li>
+    <li>Each result: matched substring highlighted with <code>&lt;mark&gt;</code>.</li>
+    <li>Breadcrumb chip under name: <strong>Đồ Nữ › Áo Thun</strong> — instant context.</li>
+    <li>Token search: typing <code>đồ nữ polo</code> matches because <em>both tokens</em> appear in path.</li>
+    <li>Diacritic-insensitive (reuse <code>normalizeForSearch</code>).</li>
+  </ul>
+</div>
+
+
+<!-- ============ SCREEN 4: Empty search, suggestions ============ -->
+<div class="phone">
+  <div class="phone-label">D — Focus search, no query</div>
+  <div class="statusbar"><span>19:57</span><span class="icons">📶 📶 🔋</span></div>
+
+  <div class="header">
+    <h1>Danh mục</h1>
+    <div class="count">12 danh mục · 248 sản phẩm</div>
+    <button class="plus">＋</button>
+  </div>
+
+  <div class="search" style="border-color: var(--accent-400); box-shadow: 0 0 0 2px var(--accent-100);">
+    <svg viewBox="0 0 24 24" width="18" height="18"><path d="M10 18a8 8 0 1 1 5.3-14.07A8 8 0 0 1 10 18m11.71 1.29-3.4-3.39A9.96 9.96 0 0 0 20 10a10 10 0 1 0-10 10 9.96 9.96 0 0 0 5.9-1.69l3.39 3.4a1 1 0 0 0 1.42-1.42"/></svg>
+    <input type="text" placeholder="Tìm danh mục, sản phẩm…" />
+  </div>
+
+  <div class="chip-label">Tìm kiếm gần đây</div>
+  <div class="suggestions">
+    <div class="chip">polo nữ</div>
+    <div class="chip">áo thun</div>
+    <div class="chip">quần jeans</div>
+    <div class="chip">phụ kiện</div>
+  </div>
+
+  <div class="chip-label">Danh mục hay dùng</div>
+  <div class="suggestions">
+    <div class="chip" style="background: var(--accent-100); color: var(--accent-300); border-color: var(--accent-400);">Đồ Nữ · 92</div>
+    <div class="chip" style="background: var(--accent-100); color: var(--accent-300); border-color: var(--accent-400);">Đồ Nam · 61</div>
+    <div class="chip">Phụ Kiện · 24</div>
+    <div class="chip">Unisex · 38</div>
+  </div>
+
+  <div class="empty">
+    <svg width="48" height="48" viewBox="0 0 24 24"><path d="M10 18a8 8 0 1 1 5.3-14.07A8 8 0 0 1 10 18m11.71 1.29-3.4-3.39A9.96 9.96 0 0 0 20 10a10 10 0 1 0-10 10 9.96 9.96 0 0 0 5.9-1.69l3.39 3.4a1 1 0 0 0 1.42-1.42"/></svg>
+    <div class="title">Tìm gì cũng được</div>
+    <div class="hint">Thử <strong>"polo"</strong> hoặc <strong>"đồ nữ"</strong>.<br>Có dấu hay không đều ra kết quả.</div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-item">🏠<br>Trang chủ</div>
+    <div class="nav-item active">▦<br>Danh mục</div>
+    <div class="nav-item">⚙<br>Cài đặt</div>
+  </div>
+</div>
+
+<div class="legend">
+  <h2>D · Focused search, empty query</h2>
+  <ul>
+    <li>When user taps search but hasn't typed: show <strong>recent searches</strong> + <strong>frequently used categories</strong>.</li>
+    <li>Helps shop owner who reaches for the same buckets daily.</li>
+    <li>Empty-state copy is friendly + diacritic hint.</li>
+  </ul>
+</div>
+
+
+<!-- ============ SCREEN 5: Detail screen redesign ============ -->
+<div class="phone">
+  <div class="phone-label">E — Detail (drill-down + breadcrumb)</div>
+  <div class="statusbar"><span>19:57</span><span class="icons">📶 📶 🔋</span></div>
+
+  <div style="padding: 12px 16px 8px; display: flex; align-items: center; gap: 12px;">
+    <button style="background:none;border:none;color:var(--text);font-size:20px;cursor:pointer">‹</button>
+    <div style="flex:1">
+      <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 2px;">Đồ Nữ › Áo Thun</div>
+      <div style="font-size: 17px; font-weight: 700;">Áo Thun Polo Nữ</div>
+    </div>
+    <button class="kebab" style="font-size:20px">⋮</button>
+  </div>
+
+  <div style="margin: 4px 16px 12px; padding: 16px; background: var(--accent-50); border: 1px solid var(--accent-400); border-radius: var(--radius); display: flex; gap: 12px; align-items: center;">
+    <div class="icon-chip" style="background:#ec4899"><svg viewBox="0 0 24 24"><path d="M21 9V7l-8-2.5V3.5l-1-1-1 1v1L3 7v2l8-1v3.5L9 14h6l-2-2.5V8z"/></svg></div>
+    <div style="flex:1">
+      <div style="font-size: 15px; font-weight: 600;">Áo Thun Polo Nữ</div>
+      <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">18 sản phẩm · 3.2 triệu ₫ tổng giá trị</div>
+    </div>
+  </div>
+
+  <div class="chip-label">Danh mục con (0)</div>
+  <div style="margin: 0 16px;">
+    <div class="empty" style="background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius); padding: 32px 16px;">
+      <svg width="32" height="32" viewBox="0 0 24 24"><path d="M4 11h5V5H4zm0 7h5v-6H4zm6 0h5v-6h-5zm6 0h5v-6h-5zm-6-7h5V5h-5zm6-6v6h5V5z"/></svg>
+      <div class="title">Chưa có danh mục con</div>
+      <div class="hint">Bạn có thể tạo thêm để chia nhóm nhỏ hơn.</div>
+      <button style="margin-top: 12px; background: var(--accent-600); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;">＋ Tạo danh mục con</button>
+    </div>
+  </div>
+
+  <div style="flex:1"></div>
+
+  <div class="nav">
+    <div class="nav-item">🏠<br>Trang chủ</div>
+    <div class="nav-item active">▦<br>Danh mục</div>
+    <div class="nav-item">⚙<br>Cài đặt</div>
+  </div>
+</div>
+
+<div class="legend">
+  <h2>E · Detail screen redesign</h2>
+  <ul>
+    <li><strong>Breadcrumb above title:</strong> "Đồ Nữ › Áo Thun" — user knows where they are.</li>
+    <li><strong>Focused card surfaced</strong>: highlighted in accent, stats line.</li>
+    <li><strong>Children section</strong>: simple list. Empty state has CTA.</li>
+    <li>No tree widget at all. No "5 roots that aren't this one". One job: show THIS category + its direct children.</li>
+    <li>Drill-down: tap child → push another detail screen with deeper breadcrumb. Familiar iOS Settings pattern.</li>
+  </ul>
+</div>
+
+</body>
+</html>
