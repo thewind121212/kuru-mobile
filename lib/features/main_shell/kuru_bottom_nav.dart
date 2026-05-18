@@ -51,44 +51,42 @@ class KuruBottomNav extends StatelessWidget {
   static const double _sideMargin = 16;
   static const double _indicatorWidth = 24;
   static const double _indicatorHeight = 3;
-  // No explicit gap above the home indicator. SafeArea already adds the
-  // system inset (~34dp on iPhones with a home bar) — that's clearance
-  // enough. Stacking another margin on top wastes scrollable height on
-  // shorter screens.
-  static const double _bottomMargin = 0;
+  // Total clearance from the screen bottom edge to the pill. iOS reserves
+  // ~34dp for the home indicator via MediaQuery.viewPadding.bottom; that
+  // SafeArea inset (when used) is too generous and pushes the pill far
+  // above the indicator line. 12dp is a tight visual gap that still
+  // clears the indicator's interactive zone.
+  static const double _bottomGap = 12;
   static const double _gapBeforeAction = 10;
   static const double _blurSigma = 20;
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          _sideMargin,
-          0,
-          _sideMargin,
-          _bottomMargin,
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: _GlassPill(
-                tabs: tabs,
-                currentIndex: currentIndex,
-                onTabChanged: onTabChanged,
-              ),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+        _sideMargin,
+        0,
+        _sideMargin,
+        _bottomGap,
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _GlassPill(
+              tabs: tabs,
+              currentIndex: currentIndex,
+              onTabChanged: onTabChanged,
             ),
-            if (actionIcon != null) ...[
-              const SizedBox(width: _gapBeforeAction),
-              _ActionCircle(
-                icon: actionIcon!,
-                tooltip: actionTooltip,
-                onPressed: onActionPressed,
-              ),
-            ],
+          ),
+          if (actionIcon != null) ...[
+            const SizedBox(width: _gapBeforeAction),
+            _ActionCircle(
+              icon: actionIcon!,
+              tooltip: actionTooltip,
+              onPressed: onActionPressed,
+            ),
           ],
-        ),
+        ],
       ),
     );
   }
