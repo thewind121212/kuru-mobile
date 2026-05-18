@@ -30,9 +30,19 @@ import 'package:kuru_mobile/features/catalog/categories/widgets/create_edit_cate
 /// `parentId`. The whole tree builds from one network round-trip
 /// (the overview provider).
 class CategoryTree extends StatelessWidget {
-  const CategoryTree({required this.allCategories, this.focusedId, super.key});
+  const CategoryTree({
+    required this.allCategories,
+    this.rootId,
+    this.focusedId,
+    super.key,
+  });
 
   final List<gen.CategoryResponse> allCategories;
+
+  /// When set, the tree renders ONLY the node matching this id as its lone
+  /// root (regardless of that node's `parentId`). Use on detail screens to
+  /// scope the view to one category's subtree.
+  final String? rootId;
 
   /// Optional id of the category to highlight (and auto-expand the path
   /// to). When null, the tree renders unfocused with default expansion
@@ -41,11 +51,17 @@ class CategoryTree extends StatelessWidget {
 
   static const _nilUuid = '00000000-0000-0000-0000-000000000000';
 
-  /// All categories whose `parentId` is null or NIL_UUID — the trees roots.
-  List<gen.CategoryResponse> get _roots => allCategories.where((c) {
-    final p = c.parentId;
-    return p == null || p == _nilUuid;
-  }).toList();
+  /// Roots to render. When [rootId] is set, the single matching node;
+  /// otherwise every category whose `parentId` is null or NIL_UUID.
+  List<gen.CategoryResponse> get _roots {
+    if (rootId != null) {
+      return allCategories.where((c) => c.categoryId == rootId).toList();
+    }
+    return allCategories.where((c) {
+      final p = c.parentId;
+      return p == null || p == _nilUuid;
+    }).toList();
+  }
 
   /// Set of ids on the path from the focused node up to (and including)
   /// its root. Used by [_TreeNode] to auto-expand the ancestor chain.
@@ -278,9 +294,8 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
           ]
         : <BoxShadow>[];
 
-    // Tappable card: whole row toggles expand/collapse when the node has
-    // children. The kebab is its own InkWell (Material InkWell stops the
-    // outer tap before it reaches the row), so it doesn't double-fire.
+    // Row itself is NOT tappable. Only the chevron (its own InkWell) and
+    // the kebab toggle behavior — row tap does nothing, per UX.
     final card = Material(
       color: cardBg,
       borderRadius: BorderRadius.circular(10),
@@ -291,71 +306,71 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
           borderRadius: BorderRadius.circular(10),
           boxShadow: boxShadow,
         ),
-        child: InkWell(
-          onTap: hasChildren ? _toggle : null,
-          borderRadius: BorderRadius.circular(10),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-            child: Row(
-              children: [
-                // Chevron animates regardless; non-tappable on its own (the
-                // whole row carries the gesture now).
-                if (hasChildren)
-                  RotationTransition(
-                    turns: Tween<double>(
-                      begin: 0,
-                      end: 0.25,
-                    ).animate(_chevronController),
-                    child: Icon(
-                      TablerIcons.chevron_right,
-                      size: 18,
-                      color: c.textMuted,
-                    ),
-                  )
-                else
-                  const SizedBox(width: 18),
-                const SizedBox(width: 8),
-                // Layer badge — small colored chip with the layer number.
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _bg(c),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    widget.node.layer ?? '?',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Row(
+            children: [
+              // Chevron is the ONLY tap target for expand/collapse. Wrapped
+              // in its own InkWell so only its hit area toggles.
+              if (hasChildren)
+                InkWell(
+                  onTap: _toggle,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: RotationTransition(
+                      turns: Tween<double>(
+                        begin: 0,
+                        end: 0.25,
+                      ).animate(_chevronController),
+                      child: Icon(
+                        TablerIcons.chevron_right,
+                        size: 18,
+                        color: c.textMuted,
+                      ),
                     ),
                   ),
+                )
+              else
+                const SizedBox(width: 26),
+              const SizedBox(width: 4),
+              // Layer badge — small colored chip with the layer number.
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _bg(c),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    widget.node.name ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: isFocused ? FontWeight.w700 : FontWeight.w500,
-                      color: isFocused ? c.accent700 : c.textPrimary,
-                    ),
+                child: Text(
+                  widget.node.layer ?? '?',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
-                // Kebab — its own InkWell blocks the row tap so we don't
-                // toggle expand when the user actually wanted the menu.
-                KIconBtn(
-                  icon: const Icon(TablerIcons.dots_vertical),
-                  size: 32,
-                  onPressed: _onMenu,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.node.name ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: isFocused ? FontWeight.w700 : FontWeight.w500,
+                    color: isFocused ? c.accent700 : c.textPrimary,
+                  ),
                 ),
-              ],
-            ),
+              ),
+              // Kebab — its own InkWell blocks the row tap so we don't
+              // toggle expand when the user actually wanted the menu.
+              KIconBtn(
+                icon: const Icon(TablerIcons.dots_vertical),
+                size: 32,
+                onPressed: _onMenu,
+              ),
+            ],
           ),
         ),
       ),
