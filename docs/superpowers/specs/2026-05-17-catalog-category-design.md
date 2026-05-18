@@ -596,3 +596,64 @@ Revisit when ARB exceeds ~500 entries or when more than 3 modules share string-c
 From `lib/design/core/`: `KPageHeader`, `KSearchBar`, `KTextField`, `KTextarea`, `KSelect`, `KIconBtn`, `KSecondaryBtn`, `KDangerBtn`, `KTabNav`, `KListRow`, `KSkeleton`, `KSpinner`, `KEmptyState`, `KBadge`, `showKModalSheet`, `showKConfirmDialog`, `showKActionSheet`, `KPopupMenu`, `showKColorPicker`, `showKIconPicker`.
 
 From `lib/core/feedback/`: `KNotify` (success / warning / networkError / info / error).
+
+### 10.3 Pre-generation sanity check log
+
+Performed on 2026-05-17 against commit `821a4db5` of `../gen-barcode`.
+
+Sources read (all 10):
+- `be/core/domains/catalog/dto/category/create-category.dto.ts`
+- `be/core/domains/catalog/dto/category/update-category.dto.ts`
+- `be/core/domains/catalog/dto/category/get-category-by-id.dto.ts`
+- `be/core/domains/catalog/dto/category/remove-category.dto.ts`
+- `be/core/domains/catalog/dto/category/get-category-overview.dto.ts`
+- `be/core/domains/catalog/dto/category/get-category-overview-with-depth.dto.ts`
+- `be/core/domains/catalog/dto/category/get-category-tree.dto.ts`
+- `be/core/domains/catalog/api/category.route.ts`
+- `be/types/category.d.ts`
+- `be/core/domains/catalog/services/category.service.ts`
+
+#### CategoryResponse field-by-field table
+
+| Field | openapi `CategoryResponse` | `be/types/category.d.ts` | Service `resData` shape | Divergence? |
+|---|---|---|---|---|
+| `categoryId` | `string` (optional) | `string?` (optional) | `category.id` (always set) | none |
+| `name` | `string` (optional) | `string?` (optional) | `category.name` (always set) | none |
+| `parentId` | `string` (optional) | `string?` (optional) | `category.parentId ?? NIL_UUID` or `undefined` | none |
+| `parentName` | `string` (optional) | `parentName?: string` (line 30) | returned by `GetCategoryById` only | none |
+| `layer` | `string` (optional) | `string?` (optional) | `category.layer` | none |
+| `status` | `string` (optional) | `string?` (optional, no enum) | `CategoryStatus` enum value | minor: no enum narrowing in openapi or `.d.ts` (both use `string`); Zod DTO enforces `ACTIVE/INACTIVE/ARCHIVED` at ingress |
+| `colorSettings` | `string` (optional) | `string?` (optional) | `category.colorSettings ?? undefined` | none |
+| `icon` | `string` (optional) | `string?` (optional) | `category.icon ?? undefined` | none |
+| `description` | `string` (optional) | `string?` (optional) | `category.description ?? undefined` | none |
+| `subCategoriesCount` | `integer/int32` (optional) | `number?` (optional) | `category.descendantsCount ?? 0` | none |
+| `itemCount` | `integer/int32` (**required**) | `number` (**required**) | computed numeric | none |
+| `totalValue` | `string/int64` (**required**) | `number` (**required**) | JS `number` (float arithmetic) | **MISMATCH**: openapi says `type: string, format: int64`; `.d.ts` and service both use `number` |
+| `lowStockCount` | `integer/int32` (**required**) | `number` (**required**) | hardcoded `0` | none |
+| `orgId` | `string` (**required**) | `string` (**required**) | `orgId` string | none |
+
+#### CreateCategoryRequest required-fields table
+
+| Field | openapi `required[]` | Zod DTO (`.optional()`?) | Divergence? |
+|---|---|---|---|
+| `name` | required | required (`min(1)`) | none |
+| `layer` | required | required (`min(1)`) | none |
+| `status` | required | required (`z.enum(...)`) | none |
+| `colorSettings` | **required** (in openapi) | **optional** (`z.string().optional()`) | **MISMATCH**: openapi marks required; Zod DTO is optional |
+| `icon` | **required** (in openapi) | **optional** (`z.string().optional()`) | **MISMATCH**: openapi marks required; Zod DTO is optional |
+| `parentId` | optional | optional | none |
+| `description` | optional | optional | none |
+
+#### Findings summary
+
+**3 divergences found across 2 shapes:**
+
+1. `CategoryResponse.totalValue` — openapi: `type: string, format: int64`; `.d.ts` + service: `number`. The service performs floating-point arithmetic and returns a JS number. The openapi proto-generation mapped it to int64 string encoding, which is wrong for the Dart client. **Patched.**
+
+2. *(initial finding revised on review)* `CategoryResponse.parentName` was first flagged as missing from `be/types/category.d.ts`. Re-check confirmed `parentName?: string;` IS present at `be/types/category.d.ts:30`. No divergence; no patch needed.
+
+3. `CreateCategoryRequest` required fields — openapi marks `colorSettings` and `icon` as required; Zod DTO (source of truth for validation) has both as `.optional()`. Mobile must not mark these as required. **Patched.**
+
+**Action taken:** `tool/openapi-patches/category.openapi.json` created with two edits:
+- `CategoryResponse.totalValue`: changed to `"type": "number"` (removed `"format": "int64"`).
+- `CreateCategoryRequest.required`: removed `colorSettings` and `icon`; kept `["name", "layer", "status"]`.

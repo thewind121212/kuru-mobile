@@ -5,6 +5,7 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "lib/core/i18n/generated/**"
+    - "lib/api/**"
 
 linter:
   rules:

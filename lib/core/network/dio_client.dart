@@ -96,8 +96,11 @@ ApiException mapDioError(DioException e) {
     case DioExceptionType.badResponse:
       final status = e.response?.statusCode ?? 0;
       final msg = _extractMessage(e.response?.data) ?? 'HTTP $status';
-      if (status == 401 || status == 403) {
+      if (status == 401) {
         return UnauthorizedException(msg);
+      }
+      if (status == 403) {
+        return ForbiddenException(msg);
       }
       if (status >= 400 && status < 500) {
         return BadRequestException(msg, code: _extractCode(e.response?.data));

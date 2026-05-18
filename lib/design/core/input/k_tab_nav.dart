@@ -10,8 +10,10 @@ class KTabItem<T> {
 
 enum KTabSize { sm, md }
 
-/// Horizontally scrollable pill-tab strip. Active tab uses accent50 BG +
-/// accent600 text. Inactive tabs are transparent on a surfaceHover track.
+/// Horizontally scrollable pill-tab strip. Active tab uses surfaceElev BG
+/// + textPrimary text + a soft shadow on top of the surfaceHover track —
+/// mirrors kuru-web's `bg-white shadow-sm` selected-tab pattern. Inactive
+/// tabs are transparent + textMuted.
 class KTabNav<T> extends StatelessWidget {
   const KTabNav({
     required this.tabs,
@@ -65,34 +67,51 @@ class KTabNav<T> extends StatelessWidget {
     double iconSize,
   ) {
     final isActive = tab.id == active;
-    return Material(
-      color: isActive ? c.accent50 : Colors.transparent,
-      borderRadius: BorderRadius.circular(6),
-      child: InkWell(
-        onTap: () => onChange(tab.id),
+    final activeColor = c.textPrimary;
+    final inactiveColor = c.textMuted;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isActive ? c.surfaceElev : Colors.transparent,
         borderRadius: BorderRadius.circular(6),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (tab.icon != null) ...[
-                Icon(
-                  tab.icon,
-                  size: iconSize,
-                  color: isActive ? c.accent600 : c.textSecondary,
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 4,
+                  offset: const Offset(0, 1),
                 ),
-                const SizedBox(width: 6),
+              ]
+            : null,
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+        child: InkWell(
+          onTap: () => onChange(tab.id),
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (tab.icon != null) ...[
+                  Icon(
+                    tab.icon,
+                    size: iconSize,
+                    color: isActive ? activeColor : inactiveColor,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  tab.label,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive ? activeColor : inactiveColor,
+                  ),
+                ),
               ],
-              Text(
-                tab.label,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.w600,
-                  color: isActive ? c.accent600 : c.textSecondary,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

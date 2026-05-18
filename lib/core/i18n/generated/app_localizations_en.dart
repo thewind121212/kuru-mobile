@@ -275,4 +275,118 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get orgPickerNote =>
       'Each organization is an isolated data space. You can switch any time from Settings.';
+
+  @override
+  String get navHome => 'Home';
+
+  @override
+  String get navCatalog => 'Catalog';
+
+  @override
+  String get navSettings => 'Settings';
+
+  @override
+  String get posOpenTooltip => 'Open POS';
+
+  @override
+  String get posComingSoon => 'POS coming soon';
+
+  @override
+  String get settingsPlaceholder => 'Settings coming soon';
+
+  @override
+  String get categoryTitle => 'Categories';
+
+  @override
+  String get categorySubtitle => 'Manage product classifications';
+
+  @override
+  String get categorySearchHint => 'Search categories...';
+
+  @override
+  String get categoryEmptyTitle => 'No categories yet';
+
+  @override
+  String get categoryEmptyBody =>
+      'Create your first category to organize products.';
+
+  @override
+  String get categoryEmptyAction => 'Create first category';
+
+  @override
+  String get categoryLayerAll => 'All';
+
+  @override
+  String get categoryLayerMain => 'Main';
+
+  @override
+  String get categoryLayerSub => 'Sub';
+
+  @override
+  String get categoryLayerSubSub => 'Sub Sub';
+
+  @override
+  String get categoryLayerPrefix => 'Layer';
+
+  @override
+  String categorySubCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count subcategories',
+      one: '$count subcategory',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String categoryItemCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items',
+      one: '$count item',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryLoadError => 'Couldn\'t load categories';
+
+  @override
+  String get categoryLoadRetry => 'Retry';
+
+  @override
+  String get categoryDetailPlaceholder => 'Detail view coming soon';
+
+  @override
+  String get categoryStatSubCategories => 'Sub';
+
+  @override
+  String get categoryStatItems => 'Items';
+
+  @override
+  String get categoryStatValue => 'Value';
+
+  @override
+  String categoryLowStockBadge(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count low stock',
+      one: '$count low stock',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String categoryTotalCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count categories',
+      one: '$count category',
+    );
+    return '$_temp0';
+  }
 }
