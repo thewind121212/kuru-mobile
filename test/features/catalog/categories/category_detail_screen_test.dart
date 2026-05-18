@@ -2,9 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/app/router.dart';
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
+import 'package:kuru_mobile/core/auth/org_info.dart';
+import 'package:kuru_mobile/core/auth/user_info.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/catalog/categories/category_detail_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:kuru_mobile/features/splash/splash_screen.dart';
 
 gen.CategoryResponse _cat({
   required String id,
@@ -56,4 +62,75 @@ void main() {
     expect(find.text('Audio'), findsOneWidget);
     expect(find.text('Mobile'), findsOneWidget);
   });
+
+  testWidgets('tapping a child row pushes its detail screen', (tester) async {
+    const fakeUser = UserInfo(
+      email: 't@x.com',
+      orgInfos: <OrgInfo>[OrgInfo(id: 'org-x', name: 'Test', role: 'Owner')],
+    );
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          splashGateProvider.overrideWith(
+            (ref) async => const BootstrapAuthed(fakeUser),
+          ),
+          currentOrgIdProvider.overrideWith(() {
+            final n = CurrentOrgIdController();
+            return n..orgId = 'org-x';
+          }),
+          onboardingSeenProvider.overrideWith(_SeenNotifier.new),
+          categoryByIdProvider(
+            'root',
+          ).overrideWith((ref) async => _cat(id: 'root', name: 'Electronics')),
+          categoryByIdProvider('c1').overrideWith(
+            (ref) async =>
+                _cat(id: 'c1', name: 'Audio', layer: '2', parentId: 'root'),
+          ),
+          categoryOverviewProvider.overrideWith(
+            (ref) async => [
+              _cat(id: 'root', name: 'Electronics'),
+              _cat(id: 'c1', name: 'Audio', layer: '2', parentId: 'root'),
+            ],
+          ),
+        ],
+        child: Consumer(
+          builder: (ctx, ref, _) {
+            final router = ref.watch(routerProvider);
+            return MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('en'),
+            );
+          },
+        ),
+      ),
+    );
+    // Splash → home.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+    // Switch to Catalog tab.
+    await tester.tap(find.text('Catalog'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    // Tap root category row to open its detail screen.
+    await tester.tap(find.text('Electronics'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Detail of root visible — tap the 'Audio' child row to drill in.
+    expect(find.text('Audio'), findsOneWidget);
+    await tester.tap(find.text('Audio'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Audio's detail screen now shows.
+    expect(find.text('Audio'), findsWidgets);
+  });
+}
+
+class _SeenNotifier extends OnboardingSeenController {
+  @override
+  bool build() => true;
 }
