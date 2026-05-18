@@ -17,67 +17,69 @@ import 'package:kuru_mobile/features/catalog/categories/providers/category_provi
 import 'package:kuru_mobile/features/catalog/categories/widgets/category_action_menu.dart';
 import 'package:kuru_mobile/features/catalog/categories/widgets/create_edit_category_sheet.dart';
 
-/// Recursive indented tree of categories rooted at [rootId].
+/// Recursive indented tree showing every root category + descendants.
 ///
 /// Mirrors kuru-web's `NestedCategoriesView` / `CategoryTreeItem` pattern:
 /// each node is a card with a layer badge, name, and action menu. Non-leaf
-/// nodes have a chevron (rotates 90° when expanded). The root node is
-/// always rendered "focused" — accent border + accent-tinted background +
-/// ring — to anchor the viewer on which category they drilled into.
+/// nodes have a chevron (rotates 90° when expanded). When [focusedId] is
+/// provided, the matching node gets an accent halo + ring, and every
+/// ancestor on the path from a root down to that node is auto-expanded so
+/// the focused row is visible without scrolling.
 ///
 /// Children are derived client-side from [allCategories] by filtering on
 /// `parentId`. The whole tree builds from one network round-trip
 /// (the overview provider).
 class CategoryTree extends StatelessWidget {
-  const CategoryTree({
-    required this.rootId,
-    required this.allCategories,
-    this.includeRoot = true,
-    super.key,
-  });
+  const CategoryTree({required this.allCategories, this.focusedId, super.key});
 
-  final String rootId;
   final List<gen.CategoryResponse> allCategories;
 
-  /// When true, render the root node itself as the first (focused) card,
-  /// then descendants below. When false (the detail-screen case where
-  /// the parent screen owns the header card), render only the direct
-  /// children of [rootId] at level 0 with no enclosing root.
-  final bool includeRoot;
+  /// Optional id of the category to highlight (and auto-expand the path
+  /// to). When null, the tree renders unfocused with default expansion
+  /// (root + first-level children expanded; deeper levels collapsed).
+  final String? focusedId;
 
-  gen.CategoryResponse? get _root {
+  static const _nilUuid = '00000000-0000-0000-0000-000000000000';
+
+  /// All categories whose `parentId` is null or NIL_UUID — the trees roots.
+  List<gen.CategoryResponse> get _roots => allCategories.where((c) {
+    final p = c.parentId;
+    return p == null || p == _nilUuid;
+  }).toList();
+
+  /// Set of ids on the path from the focused node up to (and including)
+  /// its root. Used by [_TreeNode] to auto-expand the ancestor chain.
+  Set<String> _ancestorIds() {
+    if (focusedId == null) return const {};
+    final byId = <String, gen.CategoryResponse>{};
     for (final c in allCategories) {
-      if (c.categoryId == rootId) return c;
+      final id = c.categoryId;
+      if (id != null) byId[id] = c;
     }
-    return null;
+    final ancestors = <String>{};
+    var cur = focusedId;
+    while (cur != null && ancestors.add(cur)) {
+      final parent = byId[cur]?.parentId;
+      cur = (parent == null || parent == _nilUuid) ? null : parent;
+    }
+    return ancestors;
   }
-
-  List<gen.CategoryResponse> get _directChildren =>
-      allCategories.where((c) => c.parentId == rootId).toList();
 
   @override
   Widget build(BuildContext context) {
-    if (includeRoot) {
-      final root = _root;
-      if (root == null) return const SizedBox.shrink();
-      return _TreeNode(
-        node: root,
-        allCategories: allCategories,
-        level: 0,
-        isFocused: true,
-      );
-    }
-    final children = _directChildren;
-    if (children.isEmpty) return const SizedBox.shrink();
+    final roots = _roots;
+    if (roots.isEmpty) return const SizedBox.shrink();
+    final ancestors = _ancestorIds();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (final child in children) ...[
+        for (final root in roots) ...[
           _TreeNode(
-            node: child,
+            node: root,
             allCategories: allCategories,
             level: 0,
-            isFocused: false,
+            focusedId: focusedId,
+            ancestorIds: ancestors,
           ),
           const SizedBox(height: 6),
         ],
@@ -91,13 +93,27 @@ class _TreeNode extends ConsumerStatefulWidget {
     required this.node,
     required this.allCategories,
     required this.level,
-    required this.isFocused,
+    required this.ancestorIds,
+    this.focusedId,
   });
 
   final gen.CategoryResponse node;
   final List<gen.CategoryResponse> allCategories;
   final int level;
-  final bool isFocused;
+
+  /// Id of the focused node, or null if no focus. Used to highlight one
+  /// row in the tree.
+  final String? focusedId;
+
+  /// Set of node ids on the path from a root down to [focusedId]
+  /// (inclusive). Nodes in this set auto-expand on initial build so the
+  /// focused row is visible.
+  final Set<String> ancestorIds;
+
+  bool get isFocused => focusedId != null && node.categoryId == focusedId;
+
+  bool get isOnFocusedPath =>
+      node.categoryId != null && ancestorIds.contains(node.categoryId);
 
   @override
   ConsumerState<_TreeNode> createState() => _TreeNodeState();
@@ -118,10 +134,12 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
   @override
   void initState() {
     super.initState();
-    // Root level + first-level children are expanded by default so the
-    // viewer sees the immediate sub-tree without tapping. Deeper levels
-    // start collapsed to keep the surface visible without scrolling.
-    _expanded = widget.level <= 1;
+    // Auto-expand if (a) the node is on the focused path (so the focused
+    // row is visible without tapping), or (b) no focus is set and this
+    // is a top-level root (give the user a default sense of structure).
+    _expanded =
+        widget.isOnFocusedPath ||
+        (widget.focusedId == null && widget.level == 0);
     _chevronController = AnimationController(
       vsync: this,
       duration: _animDuration,
@@ -353,7 +371,8 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
                             node: child,
                             allCategories: widget.allCategories,
                             level: widget.level + 1,
-                            isFocused: false,
+                            focusedId: widget.focusedId,
+                            ancestorIds: widget.ancestorIds,
                           ),
                           const SizedBox(height: 6),
                         ],
