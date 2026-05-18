@@ -84,6 +84,12 @@
 				</dict>
 			</dict>
 		</dict>
+		<key>NSLocalNetworkUsageDescription</key>
+		<string>Simplestore needs local network access to connect to the development backend and the Dart VM service for hot reload.</string>
+		<key>NSBonjourServices</key>
+		<array>
+			<string>_dartVmService._tcp</string>
+		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
 	</dict>
