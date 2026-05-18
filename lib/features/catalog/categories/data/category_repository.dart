@@ -100,6 +100,39 @@ class CategoryRepository {
     }
   }
 
+  /// Updates an existing category. [update] carries the full new state
+  /// (BE expects the whole `CreateCategoryRequest` shape inside
+  /// `categoryUpdate`, not a partial). [categoryId] is the row to edit.
+  ///
+  /// Returns [ApiSuccess] with the BE's [gen.UpdateCategoryResponse] (which
+  /// echoes only the `categoryId`). Callers should invalidate the overview
+  /// provider to refresh the full row data.
+  Future<ApiResult<gen.UpdateCategoryResponse>> update({
+    required String categoryId,
+    required gen.CreateCategoryRequest update,
+  }) async {
+    try {
+      final res = await _api.updateCategory(
+        updateCategoryRequest: gen.UpdateCategoryRequest(
+          (b) => b
+            ..categoryId = categoryId
+            ..categoryUpdate.replace(update),
+        ),
+      );
+      final body = res.data?.data;
+      if (body == null) {
+        return ApiResult.failure(
+          const UnknownException('Empty body from UpdateCategory'),
+        );
+      }
+      log.i('UpdateCategory ← ${res.statusCode} id=${body.categoryId}');
+      return ApiResult.success(body);
+    } on DioException catch (e) {
+      log.w('UpdateCategory($categoryId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
   /// Converts a [DioException] into a typed [ApiException].
   ///
   /// Prefers any [ApiException] already attached to `e.error` by the

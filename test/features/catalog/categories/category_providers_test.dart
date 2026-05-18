@@ -36,6 +36,14 @@ class _FakeCategoryRepo implements CategoryRepository {
   Future<ApiResult<gen.CreateCategoryResponse>> create(
     gen.CreateCategoryRequest request,
   ) async => ApiResult.success(gen.CreateCategoryResponse((b) => b));
+
+  @override
+  Future<ApiResult<gen.UpdateCategoryResponse>> update({
+    required String categoryId,
+    required gen.CreateCategoryRequest update,
+  }) async => ApiResult.success(
+    gen.UpdateCategoryResponse((b) => b..categoryId = categoryId),
+  );
 }
 
 final callCountsByid = <String, int>{};
