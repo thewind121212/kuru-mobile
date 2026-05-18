@@ -122,7 +122,8 @@ class _GlassPill extends StatelessWidget {
           decoration: BoxDecoration(
             color: fill,
             borderRadius: BorderRadius.circular(KuruBottomNav._pillRadius),
-            border: Border.all(color: c.border.withValues(alpha: 0.6)),
+            // Border removed per design feedback — the glass blur +
+            // shadow already separates the pill from the body content.
             // Subtle drop shadow to make the pill read as elevated above
             // the body content below.
             boxShadow: [
