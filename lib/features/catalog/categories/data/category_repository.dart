@@ -73,6 +73,88 @@ class CategoryRepository {
     }
   }
 
+  /// Creates a new category. The [request] must already have `name`,
+  /// `layer`, and `status` set; mobile derives `layer` from context
+  /// (root vs nested) — never lets the user pick it.
+  ///
+  /// Returns [ApiSuccess] with the newly-created category's ID (the BE
+  /// echoes the generated UUID in [gen.CreateCategoryResponse]). On HTTP 400
+  /// the `error.message` is surfaced verbatim through [BadRequestException]
+  /// (per spec §6.2 — the BE writes user-readable validation messages).
+  Future<ApiResult<gen.CreateCategoryResponse>> create(
+    gen.CreateCategoryRequest request,
+  ) async {
+    try {
+      final res = await _api.createCategory(createCategoryRequest: request);
+      final body = res.data?.data;
+      if (body == null) {
+        return ApiResult.failure(
+          const UnknownException('Empty body from CreateCategory'),
+        );
+      }
+      log.i('CreateCategory ← ${res.statusCode} id=${body.categoryId}');
+      return ApiResult.success(body);
+    } on DioException catch (e) {
+      log.w('CreateCategory failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  /// Updates an existing category. [update] carries the full new state
+  /// (BE expects the whole `CreateCategoryRequest` shape inside
+  /// `categoryUpdate`, not a partial). [categoryId] is the row to edit.
+  ///
+  /// Returns [ApiSuccess] with the BE's [gen.UpdateCategoryResponse] (which
+  /// echoes only the `categoryId`). Callers should invalidate the overview
+  /// provider to refresh the full row data.
+  Future<ApiResult<gen.UpdateCategoryResponse>> update({
+    required String categoryId,
+    required gen.CreateCategoryRequest update,
+  }) async {
+    try {
+      final res = await _api.updateCategory(
+        updateCategoryRequest: gen.UpdateCategoryRequest(
+          (b) => b
+            ..categoryId = categoryId
+            ..categoryUpdate.replace(update),
+        ),
+      );
+      final body = res.data?.data;
+      if (body == null) {
+        return ApiResult.failure(
+          const UnknownException('Empty body from UpdateCategory'),
+        );
+      }
+      log.i('UpdateCategory ← ${res.statusCode} id=${body.categoryId}');
+      return ApiResult.success(body);
+    } on DioException catch (e) {
+      log.w('UpdateCategory($categoryId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  /// Deletes one or more categories. BE accepts a list even for a single
+  /// id — mobile typically passes `[id]`. Returns `ApiSuccess<void>` on
+  /// success; the BE response payload (`removedCount`) is not surfaced
+  /// because callers already know which ids they asked to delete.
+  ///
+  /// 400 with `category has children` is a common UX failure — surface
+  /// the verbatim message via [BadRequestException] per spec §6.2.
+  Future<ApiResult<void>> remove(List<String> categoryIds) async {
+    try {
+      final res = await _api.removeCategory(
+        removeCategoryRequest: gen.RemoveCategoryRequest(
+          (b) => b..categoryIds.replace(categoryIds),
+        ),
+      );
+      log.i('RemoveCategory ← ${res.statusCode} ids=$categoryIds');
+      return ApiResult.success(null);
+    } on DioException catch (e) {
+      log.w('RemoveCategory($categoryIds) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
   /// Converts a [DioException] into a typed [ApiException].
   ///
   /// Prefers any [ApiException] already attached to `e.error` by the

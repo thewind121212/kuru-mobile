@@ -745,6 +745,192 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'{count, plural, other{{count} danh mục}}'**
   String categoryTotalCount(num count);
+
+  /// No description provided for @categoryCreateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục mới'**
+  String get categoryCreateTitle;
+
+  /// No description provided for @categoryCreateSubcategoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục con mới'**
+  String get categoryCreateSubcategoryTitle;
+
+  /// No description provided for @categoryEditTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa danh mục'**
+  String get categoryEditTitle;
+
+  /// No description provided for @categoryFieldName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên'**
+  String get categoryFieldName;
+
+  /// No description provided for @categoryFieldNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Điện tử'**
+  String get categoryFieldNameHint;
+
+  /// No description provided for @categoryFieldDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả'**
+  String get categoryFieldDescription;
+
+  /// No description provided for @categoryFieldDescriptionHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú ngắn (tuỳ chọn)'**
+  String get categoryFieldDescriptionHint;
+
+  /// No description provided for @categoryFieldStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get categoryFieldStatus;
+
+  /// No description provided for @categoryFieldIcon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biểu tượng'**
+  String get categoryFieldIcon;
+
+  /// No description provided for @categoryFieldColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu'**
+  String get categoryFieldColor;
+
+  /// No description provided for @categoryFieldParent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục cha'**
+  String get categoryFieldParent;
+
+  /// No description provided for @categoryStatusActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang hoạt động'**
+  String get categoryStatusActive;
+
+  /// No description provided for @categoryStatusInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngừng'**
+  String get categoryStatusInactive;
+
+  /// No description provided for @categoryStatusArchived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu trữ'**
+  String get categoryStatusArchived;
+
+  /// No description provided for @categorySaveCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu'**
+  String get categorySaveCta;
+
+  /// No description provided for @categorySavingCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lưu…'**
+  String get categorySavingCta;
+
+  /// No description provided for @categoryActionEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa'**
+  String get categoryActionEdit;
+
+  /// No description provided for @categoryActionDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá'**
+  String get categoryActionDelete;
+
+  /// No description provided for @categoryActionAddSubcategory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm danh mục con'**
+  String get categoryActionAddSubcategory;
+
+  /// No description provided for @categoryDeleteConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá danh mục?'**
+  String get categoryDeleteConfirmTitle;
+
+  /// No description provided for @categoryDeleteConfirmBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} sẽ bị xoá. Không thể hoàn tác.'**
+  String categoryDeleteConfirmBody(Object name);
+
+  /// No description provided for @categoryDeleteConfirmCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá'**
+  String get categoryDeleteConfirmCta;
+
+  /// No description provided for @categoryNotifySaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu danh mục'**
+  String get categoryNotifySaved;
+
+  /// No description provided for @categoryNotifyDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xoá danh mục'**
+  String get categoryNotifyDeleted;
+
+  /// No description provided for @categoryNotifyNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được máy chủ. Thử lại.'**
+  String get categoryNotifyNetwork;
+
+  /// No description provided for @categoryNotifyServer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có lỗi xảy ra. Thử lại sau.'**
+  String get categoryNotifyServer;
+
+  /// No description provided for @categoryNotifyForbidden.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có quyền thực hiện thao tác này.'**
+  String get categoryNotifyForbidden;
+
+  /// No description provided for @categoryNotifyRateLimited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chậm lại nhé — thử lại sau giây lát.'**
+  String get categoryNotifyRateLimited;
+
+  /// No description provided for @categoryMaxLayerReached.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đạt độ sâu tối đa'**
+  String get categoryMaxLayerReached;
+
+  /// No description provided for @categoryDetailSubcategoriesHeader.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{Danh mục con ({count})}}'**
+  String categoryDetailSubcategoriesHeader(num count);
+
+  /// No description provided for @categoryDetailNoSubcategories.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có danh mục con'**
+  String get categoryDetailNoSubcategories;
 }
 
 class _AppLocalizationsDelegate
