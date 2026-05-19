@@ -504,7 +504,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get brandTitle => 'Thương hiệu';
 
   @override
-  String brandTotalCount(int count) {
+  String brandTotalCount(num count) {
     return '$count thương hiệu';
   }
 
@@ -512,7 +512,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get brandSearchHint => 'Tìm thương hiệu...';
 
   @override
-  String brandStatProducts(int count) {
+  String brandStatProducts(num count) {
     return '$count sản phẩm';
   }
 
@@ -571,7 +571,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get brandNotifyDeleted => 'Đã xóa thương hiệu';
 
   @override
-  String get brandNotifyServer => 'Đã có lỗi xảy ra';
+  String get brandNotifyServer => 'Đã có lỗi xảy ra. Thử lại sau.';
+
+  @override
+  String get brandNotifyNetwork => 'Không kết nối được máy chủ. Thử lại.';
 
   @override
   String get brandActionEdit => 'Chỉnh sửa';

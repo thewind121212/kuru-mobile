@@ -181,10 +181,10 @@
 
   "brandTitle": "Thương hiệu",
   "brandTotalCount": "{count} thương hiệu",
-  "@brandTotalCount": { "placeholders": { "count": { "type": "int" } } },
+  "@brandTotalCount": { "placeholders": { "count": { "type": "num" } } },
   "brandSearchHint": "Tìm thương hiệu...",
   "brandStatProducts": "{count} sản phẩm",
-  "@brandStatProducts": { "placeholders": { "count": { "type": "int" } } },
+  "@brandStatProducts": { "placeholders": { "count": { "type": "num" } } },
   "brandEmptyTitle": "Chưa có thương hiệu",
   "brandEmptyBody": "Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất.",
   "brandEmptyAction": "Tạo thương hiệu đầu tiên",
@@ -206,7 +206,8 @@
 
   "brandNotifySaved": "Đã lưu thương hiệu",
   "brandNotifyDeleted": "Đã xóa thương hiệu",
-  "brandNotifyServer": "Đã có lỗi xảy ra",
+  "brandNotifyServer": "Đã có lỗi xảy ra. Thử lại sau.",
+  "brandNotifyNetwork": "Không kết nối được máy chủ. Thử lại.",
 
   "brandActionEdit": "Chỉnh sửa",
   "brandActionDelete": "Xóa"

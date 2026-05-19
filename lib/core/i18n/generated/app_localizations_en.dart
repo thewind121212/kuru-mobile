@@ -492,7 +492,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catalogHubCategoriesTitle => 'Categories';
 
   @override
-  String get catalogHubCategoriesSub => 'Group products by group';
+  String get catalogHubCategoriesSub => 'Organize products by category';
 
   @override
   String get catalogHubBrandsTitle => 'Brands';
@@ -513,7 +513,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brandTitle => 'Brands';
 
   @override
-  String brandTotalCount(int count) {
+  String brandTotalCount(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -527,7 +527,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brandSearchHint => 'Search brands...';
 
   @override
-  String brandStatProducts(int count) {
+  String brandStatProducts(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
@@ -592,7 +592,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get brandNotifyDeleted => 'Brand deleted';
 
   @override
-  String get brandNotifyServer => 'Something went wrong';
+  String get brandNotifyServer => 'Something went wrong. Try again later.';
+
+  @override
+  String get brandNotifyNetwork => 'Couldn\'t reach the server. Try again.';
 
   @override
   String get brandActionEdit => 'Edit';

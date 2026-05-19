@@ -184,7 +184,7 @@
 
   "catalogHubTitle": "Catalog",
   "catalogHubCategoriesTitle": "Categories",
-  "catalogHubCategoriesSub": "Group products by group",
+  "catalogHubCategoriesSub": "Organize products by category",
   "catalogHubBrandsTitle": "Brands",
   "catalogHubBrandsSub": "Manage manufacturers",
   "catalogHubDistributorsTitle": "Distributors",
@@ -193,10 +193,10 @@
 
   "brandTitle": "Brands",
   "brandTotalCount": "{count, plural, one{# brand} other{# brands}}",
-  "@brandTotalCount": { "placeholders": { "count": { "type": "int" } } },
+  "@brandTotalCount": { "placeholders": { "count": { "type": "num" } } },
   "brandSearchHint": "Search brands...",
   "brandStatProducts": "{count, plural, one{# product} other{# products}}",
-  "@brandStatProducts": { "placeholders": { "count": { "type": "int" } } },
+  "@brandStatProducts": { "placeholders": { "count": { "type": "num" } } },
   "brandEmptyTitle": "No brands yet",
   "brandEmptyBody": "Create your first brand to group products by manufacturer.",
   "brandEmptyAction": "Create first brand",
@@ -218,7 +218,8 @@
 
   "brandNotifySaved": "Brand saved",
   "brandNotifyDeleted": "Brand deleted",
-  "brandNotifyServer": "Something went wrong",
+  "brandNotifyServer": "Something went wrong. Try again later.",
+  "brandNotifyNetwork": "Couldn't reach the server. Try again.",
 
   "brandActionEdit": "Edit",
   "brandActionDelete": "Delete"

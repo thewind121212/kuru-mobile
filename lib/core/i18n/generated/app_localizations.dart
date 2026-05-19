@@ -972,7 +972,7 @@ abstract class AppLocalizations {
   ///
   /// In vi, this message translates to:
   /// **'{count} thương hiệu'**
-  String brandTotalCount(int count);
+  String brandTotalCount(num count);
 
   /// No description provided for @brandSearchHint.
   ///
@@ -984,7 +984,7 @@ abstract class AppLocalizations {
   ///
   /// In vi, this message translates to:
   /// **'{count} sản phẩm'**
-  String brandStatProducts(int count);
+  String brandStatProducts(num count);
 
   /// No description provided for @brandEmptyTitle.
   ///
@@ -1091,8 +1091,14 @@ abstract class AppLocalizations {
   /// No description provided for @brandNotifyServer.
   ///
   /// In vi, this message translates to:
-  /// **'Đã có lỗi xảy ra'**
+  /// **'Đã có lỗi xảy ra. Thử lại sau.'**
   String get brandNotifyServer;
+
+  /// No description provided for @brandNotifyNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được máy chủ. Thử lại.'**
+  String get brandNotifyNetwork;
 
   /// No description provided for @brandActionEdit.
   ///
