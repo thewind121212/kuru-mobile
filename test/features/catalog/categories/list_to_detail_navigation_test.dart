@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/app/router.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
 import 'package:kuru_mobile/core/auth/org_info.dart';
@@ -15,6 +17,17 @@ import 'package:kuru_mobile/features/splash/splash_screen.dart';
 class _SeenNotifier extends OnboardingSeenController {
   @override
   bool build() => true;
+}
+
+/// Returns a fixed org-id from build() without mutating state, preventing the
+/// LateInitializationError that occurs when the setter fires notifyListeners()
+/// before the GoRouter element is fully mounted.
+class _FixedOrgController extends CurrentOrgIdController {
+  _FixedOrgController(this._orgId);
+  final String _orgId;
+
+  @override
+  String? build() => _orgId;
 }
 
 void main() {
@@ -36,11 +49,9 @@ void main() {
             (ref) async => const BootstrapAuthed(fakeUser),
           ),
           // Override currentOrgIdProvider so router sees a selected org and
-          // doesn't redirect to /org-picker.
-          currentOrgIdProvider.overrideWith(() {
-            final n = CurrentOrgIdController();
-            return n..orgId = 'org-x';
-          }),
+          // doesn't redirect to /org-picker. Uses a subclass that returns the
+          // value from build() to avoid a LateInitializationError in GoRouter.
+          currentOrgIdProvider.overrideWith(() => _FixedOrgController('org-x')),
           // Onboarding already seen — no SharedPrefs needed.
           onboardingSeenProvider.overrideWith(_SeenNotifier.new),
           // Provide test category data, bypassing the real HTTP client.
@@ -64,6 +75,8 @@ void main() {
             final router = ref.watch(routerProvider);
             return MaterialApp.router(
               routerConfig: router,
+              theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+              locale: const Locale('en'),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
             );
@@ -74,6 +87,8 @@ void main() {
 
     // Advance through splash → redirect → /home.
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 

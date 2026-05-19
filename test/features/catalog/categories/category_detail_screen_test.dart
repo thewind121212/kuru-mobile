@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/app/router.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
 import 'package:kuru_mobile/core/auth/org_info.dart';
@@ -29,6 +31,23 @@ gen.CategoryResponse _cat({
     ..lowStockCount = 0
     ..subCategoriesCount = 0,
 );
+
+/// Minimal notifier that always says "onboarding seen" — no SharedPrefs needed.
+class _SeenNotifier extends OnboardingSeenController {
+  @override
+  bool build() => true;
+}
+
+/// Returns a fixed org-id from build() without mutating state, preventing the
+/// LateInitializationError that occurs when the setter fires notifyListeners()
+/// before the GoRouter element is fully mounted.
+class _FixedOrgController extends CurrentOrgIdController {
+  _FixedOrgController(this._orgId);
+  final String _orgId;
+
+  @override
+  String? build() => _orgId;
+}
 
 void main() {
   testWidgets('renders header (name) + child rows when overview has them', (
@@ -74,10 +93,10 @@ void main() {
           splashGateProvider.overrideWith(
             (ref) async => const BootstrapAuthed(fakeUser),
           ),
-          currentOrgIdProvider.overrideWith(() {
-            final n = CurrentOrgIdController();
-            return n..orgId = 'org-x';
-          }),
+          // Uses a subclass that returns the value from build() to avoid a
+          // LateInitializationError when the setter fires notifyListeners()
+          // before the GoRouter element is fully mounted.
+          currentOrgIdProvider.overrideWith(() => _FixedOrgController('org-x')),
           onboardingSeenProvider.overrideWith(_SeenNotifier.new),
           categoryByIdProvider(
             'root',
@@ -98,6 +117,7 @@ void main() {
             final router = ref.watch(routerProvider);
             return MaterialApp.router(
               routerConfig: router,
+              theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               locale: const Locale('en'),
@@ -108,6 +128,8 @@ void main() {
     );
     // Splash → home.
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
     // Switch to Catalog tab.
@@ -132,9 +154,4 @@ void main() {
     // Audio's detail screen now shows.
     expect(find.text('Audio'), findsWidgets);
   });
-}
-
-class _SeenNotifier extends OnboardingSeenController {
-  @override
-  bool build() => true;
 }

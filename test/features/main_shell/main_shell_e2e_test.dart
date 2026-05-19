@@ -19,6 +19,17 @@ class _SeenNotifier extends OnboardingSeenController {
   bool build() => true;
 }
 
+/// Returns a fixed org-id from build() without mutating state, preventing the
+/// LateInitializationError that occurs when the setter fires notifyListeners()
+/// before the GoRouter element is fully mounted.
+class _FixedOrgController extends CurrentOrgIdController {
+  _FixedOrgController(this._orgId);
+  final String _orgId;
+
+  @override
+  String? build() => _orgId;
+}
+
 void main() {
   testWidgets('three tabs mount correct screens; tap returns to mounted tab', (
     tester,
@@ -33,17 +44,18 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          // Override the splash gate so bootstrap resolves immediately
-          // to authed.
+          // Override both bootstrap providers so no real network calls are
+          // made. splashGateProvider drives the router redirect;
+          // appBootstrapProvider drives the HomeStubScreen body.
+          appBootstrapProvider.overrideWith(
+            (_) async => const BootstrapAuthed(fakeUser),
+          ),
           splashGateProvider.overrideWith(
             (ref) async => const BootstrapAuthed(fakeUser),
           ),
           // Override currentOrgIdProvider so router sees a selected org and
           // doesn't redirect to /org-picker.
-          currentOrgIdProvider.overrideWith(() {
-            final n = CurrentOrgIdController();
-            return n..orgId = 'org-x';
-          }),
+          currentOrgIdProvider.overrideWith(() => _FixedOrgController('org-x')),
           // Onboarding already seen — no SharedPrefs needed.
           onboardingSeenProvider.overrideWith(_SeenNotifier.new),
           // Provide an empty category list — this test doesn't tap rows.
@@ -67,7 +79,12 @@ void main() {
     );
 
     // Advance through splash → bootstrap → /home (default tab).
+    // Pump chain: pumpWidget schedules first frame → pump() lets the
+    // FutureProvider microtask run → pump(50ms) lets Riverpod notify →
+    // pump(50ms) lets GoRouter fire its redirect → pump(50ms) renders /home.
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
