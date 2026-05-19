@@ -36,11 +36,12 @@ spec_for() {
   local module="$1"
   case "$module" in
     category) echo "../gen-barcode/openapi/category.openapi.json" ;;
+    brand)    echo "../gen-barcode/openapi/brand.openapi.json" ;;
     *) echo "" ;;
   esac
 }
 
-ALL_MODULES="category"
+ALL_MODULES="category brand"
 
 generate() {
   local module="$1"

@@ -477,6 +477,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.9.5"
+  kuru_brand_api:
+    dependency: "direct main"
+    description:
+      path: "lib/api/brand"
+      relative: true
+    source: path
+    version: "0.4.0"
   kuru_category_api:
     dependency: "direct main"
     description:

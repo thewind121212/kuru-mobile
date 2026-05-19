@@ -64,6 +64,8 @@ dependencies:
   built_collection: ^5.1.1
   kuru_category_api:
     path: lib/api/category
+  kuru_brand_api:
+    path: lib/api/brand
 
 dev_dependencies:
   flutter_test:
