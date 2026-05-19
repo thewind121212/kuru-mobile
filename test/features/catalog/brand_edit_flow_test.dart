@@ -55,7 +55,7 @@ void main() {
     await tester.pumpAndSettle(); // wait for bottom-sheet slide-in animation
 
     // Sheet open, name prefilled. Replace the text in the form field.
-    // Scope to BottomSheet so we don't accidentally hit the search bar behind it.
+    // Scope to BottomSheet to avoid hitting the search bar behind it.
     final field = find.descendant(
       of: find.byType(BottomSheet),
       matching: find.byType(TextField),
