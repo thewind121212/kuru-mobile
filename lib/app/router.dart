@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
+import 'package:kuru_mobile/features/catalog/catalog_launcher_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/category_detail_screen.dart';
 import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
@@ -99,14 +100,21 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/catalog',
-                builder: (_, __) => const CategoriesListScreen(),
+                builder: (_, __) => const CatalogLauncherScreen(),
                 routes: [
                   GoRoute(
-                    path: 'categories/:id',
-                    builder: (_, state) => CategoryDetailScreen(
-                      categoryId: state.pathParameters['id'] ?? '',
-                    ),
+                    path: 'categories',
+                    builder: (_, __) => const CategoriesListScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => CategoryDetailScreen(
+                          categoryId: state.pathParameters['id'] ?? '',
+                        ),
+                      ),
+                    ],
                   ),
+                  // /catalog/brands is added once BrandsListScreen ships.
                 ],
               ),
             ],
