@@ -475,4 +475,107 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get categoryDetailNoSubcategories => 'Chưa có danh mục con';
+
+  @override
+  String get catalogHubTitle => 'Danh mục sản phẩm';
+
+  @override
+  String get catalogHubCategoriesTitle => 'Danh mục';
+
+  @override
+  String get catalogHubCategoriesSub => 'Tổ chức sản phẩm theo nhóm';
+
+  @override
+  String get catalogHubBrandsTitle => 'Thương hiệu';
+
+  @override
+  String get catalogHubBrandsSub => 'Quản lý các nhà sản xuất';
+
+  @override
+  String get catalogHubDistributorsTitle => 'Nhà phân phối';
+
+  @override
+  String get catalogHubTaxTitle => 'Thuế';
+
+  @override
+  String get catalogHubComingSoon => 'Sắp có';
+
+  @override
+  String get brandTitle => 'Thương hiệu';
+
+  @override
+  String brandTotalCount(int count) {
+    return '$count thương hiệu';
+  }
+
+  @override
+  String get brandSearchHint => 'Tìm thương hiệu...';
+
+  @override
+  String brandStatProducts(int count) {
+    return '$count sản phẩm';
+  }
+
+  @override
+  String get brandEmptyTitle => 'Chưa có thương hiệu';
+
+  @override
+  String get brandEmptyBody =>
+      'Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất.';
+
+  @override
+  String get brandEmptyAction => 'Tạo thương hiệu đầu tiên';
+
+  @override
+  String get brandLoadError => 'Không tải được danh sách thương hiệu';
+
+  @override
+  String get brandLoadRetry => 'Thử lại';
+
+  @override
+  String get brandCreateTitle => 'Tạo thương hiệu';
+
+  @override
+  String get brandEditTitle => 'Chỉnh sửa thương hiệu';
+
+  @override
+  String get brandFieldNameLabel => 'Tên thương hiệu *';
+
+  @override
+  String get brandFieldNameHint => 'VD: Bosch, Makita, Stanley';
+
+  @override
+  String get brandFieldNameRequired => 'Tên thương hiệu là bắt buộc';
+
+  @override
+  String get brandCreateCta => 'Tạo';
+
+  @override
+  String get brandEditCta => 'Cập nhật';
+
+  @override
+  String get brandDeleteConfirmTitle => 'Xóa thương hiệu?';
+
+  @override
+  String brandDeleteConfirmBody(String name) {
+    return 'Hành động không thể hoàn tác. $name sẽ bị xóa.';
+  }
+
+  @override
+  String get brandDeleteConfirmCta => 'Xóa';
+
+  @override
+  String get brandNotifySaved => 'Đã lưu thương hiệu';
+
+  @override
+  String get brandNotifyDeleted => 'Đã xóa thương hiệu';
+
+  @override
+  String get brandNotifyServer => 'Đã có lỗi xảy ra';
+
+  @override
+  String get brandActionEdit => 'Chỉnh sửa';
+
+  @override
+  String get brandActionDelete => 'Xóa';
 }

@@ -484,4 +484,119 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryDetailNoSubcategories => 'No subcategories yet';
+
+  @override
+  String get catalogHubTitle => 'Catalog';
+
+  @override
+  String get catalogHubCategoriesTitle => 'Categories';
+
+  @override
+  String get catalogHubCategoriesSub => 'Group products by group';
+
+  @override
+  String get catalogHubBrandsTitle => 'Brands';
+
+  @override
+  String get catalogHubBrandsSub => 'Manage manufacturers';
+
+  @override
+  String get catalogHubDistributorsTitle => 'Distributors';
+
+  @override
+  String get catalogHubTaxTitle => 'Tax';
+
+  @override
+  String get catalogHubComingSoon => 'Coming soon';
+
+  @override
+  String get brandTitle => 'Brands';
+
+  @override
+  String brandTotalCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# brands',
+      one: '# brand',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get brandSearchHint => 'Search brands...';
+
+  @override
+  String brandStatProducts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '# products',
+      one: '# product',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get brandEmptyTitle => 'No brands yet';
+
+  @override
+  String get brandEmptyBody =>
+      'Create your first brand to group products by manufacturer.';
+
+  @override
+  String get brandEmptyAction => 'Create first brand';
+
+  @override
+  String get brandLoadError => 'Could not load brands';
+
+  @override
+  String get brandLoadRetry => 'Retry';
+
+  @override
+  String get brandCreateTitle => 'Create brand';
+
+  @override
+  String get brandEditTitle => 'Edit brand';
+
+  @override
+  String get brandFieldNameLabel => 'Name *';
+
+  @override
+  String get brandFieldNameHint => 'e.g. Bosch, Makita, Stanley';
+
+  @override
+  String get brandFieldNameRequired => 'Name is required';
+
+  @override
+  String get brandCreateCta => 'Create';
+
+  @override
+  String get brandEditCta => 'Update';
+
+  @override
+  String get brandDeleteConfirmTitle => 'Delete brand?';
+
+  @override
+  String brandDeleteConfirmBody(String name) {
+    return 'Cannot be undone. $name will be deleted.';
+  }
+
+  @override
+  String get brandDeleteConfirmCta => 'Delete';
+
+  @override
+  String get brandNotifySaved => 'Brand saved';
+
+  @override
+  String get brandNotifyDeleted => 'Brand deleted';
+
+  @override
+  String get brandNotifyServer => 'Something went wrong';
+
+  @override
+  String get brandActionEdit => 'Edit';
+
+  @override
+  String get brandActionDelete => 'Delete';
 }

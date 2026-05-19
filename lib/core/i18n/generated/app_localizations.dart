@@ -913,6 +913,198 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Chưa có danh mục con'**
   String get categoryDetailNoSubcategories;
+
+  /// No description provided for @catalogHubTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục sản phẩm'**
+  String get catalogHubTitle;
+
+  /// No description provided for @catalogHubCategoriesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục'**
+  String get catalogHubCategoriesTitle;
+
+  /// No description provided for @catalogHubCategoriesSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổ chức sản phẩm theo nhóm'**
+  String get catalogHubCategoriesSub;
+
+  /// No description provided for @catalogHubBrandsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thương hiệu'**
+  String get catalogHubBrandsTitle;
+
+  /// No description provided for @catalogHubBrandsSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý các nhà sản xuất'**
+  String get catalogHubBrandsSub;
+
+  /// No description provided for @catalogHubDistributorsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhà phân phối'**
+  String get catalogHubDistributorsTitle;
+
+  /// No description provided for @catalogHubTaxTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế'**
+  String get catalogHubTaxTitle;
+
+  /// No description provided for @catalogHubComingSoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp có'**
+  String get catalogHubComingSoon;
+
+  /// No description provided for @brandTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thương hiệu'**
+  String get brandTitle;
+
+  /// No description provided for @brandTotalCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} thương hiệu'**
+  String brandTotalCount(int count);
+
+  /// No description provided for @brandSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm thương hiệu...'**
+  String get brandSearchHint;
+
+  /// No description provided for @brandStatProducts.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} sản phẩm'**
+  String brandStatProducts(int count);
+
+  /// No description provided for @brandEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thương hiệu'**
+  String get brandEmptyTitle;
+
+  /// No description provided for @brandEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất.'**
+  String get brandEmptyBody;
+
+  /// No description provided for @brandEmptyAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo thương hiệu đầu tiên'**
+  String get brandEmptyAction;
+
+  /// No description provided for @brandLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách thương hiệu'**
+  String get brandLoadError;
+
+  /// No description provided for @brandLoadRetry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử lại'**
+  String get brandLoadRetry;
+
+  /// No description provided for @brandCreateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo thương hiệu'**
+  String get brandCreateTitle;
+
+  /// No description provided for @brandEditTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa thương hiệu'**
+  String get brandEditTitle;
+
+  /// No description provided for @brandFieldNameLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên thương hiệu *'**
+  String get brandFieldNameLabel;
+
+  /// No description provided for @brandFieldNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Bosch, Makita, Stanley'**
+  String get brandFieldNameHint;
+
+  /// No description provided for @brandFieldNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên thương hiệu là bắt buộc'**
+  String get brandFieldNameRequired;
+
+  /// No description provided for @brandCreateCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo'**
+  String get brandCreateCta;
+
+  /// No description provided for @brandEditCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật'**
+  String get brandEditCta;
+
+  /// No description provided for @brandDeleteConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa thương hiệu?'**
+  String get brandDeleteConfirmTitle;
+
+  /// No description provided for @brandDeleteConfirmBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hành động không thể hoàn tác. {name} sẽ bị xóa.'**
+  String brandDeleteConfirmBody(String name);
+
+  /// No description provided for @brandDeleteConfirmCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa'**
+  String get brandDeleteConfirmCta;
+
+  /// No description provided for @brandNotifySaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu thương hiệu'**
+  String get brandNotifySaved;
+
+  /// No description provided for @brandNotifyDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xóa thương hiệu'**
+  String get brandNotifyDeleted;
+
+  /// No description provided for @brandNotifyServer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có lỗi xảy ra'**
+  String get brandNotifyServer;
+
+  /// No description provided for @brandActionEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa'**
+  String get brandActionEdit;
+
+  /// No description provided for @brandActionDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa'**
+  String get brandActionDelete;
 }
 
 class _AppLocalizationsDelegate

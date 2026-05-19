@@ -168,5 +168,46 @@
   "categoryNotifyRateLimited": "Chậm lại nhé — thử lại sau giây lát.",
   "categoryMaxLayerReached": "Đã đạt độ sâu tối đa",
   "categoryDetailSubcategoriesHeader": "{count, plural, other{Danh mục con ({count})}}",
-  "categoryDetailNoSubcategories": "Chưa có danh mục con"
+  "categoryDetailNoSubcategories": "Chưa có danh mục con",
+
+  "catalogHubTitle": "Danh mục sản phẩm",
+  "catalogHubCategoriesTitle": "Danh mục",
+  "catalogHubCategoriesSub": "Tổ chức sản phẩm theo nhóm",
+  "catalogHubBrandsTitle": "Thương hiệu",
+  "catalogHubBrandsSub": "Quản lý các nhà sản xuất",
+  "catalogHubDistributorsTitle": "Nhà phân phối",
+  "catalogHubTaxTitle": "Thuế",
+  "catalogHubComingSoon": "Sắp có",
+
+  "brandTitle": "Thương hiệu",
+  "brandTotalCount": "{count} thương hiệu",
+  "@brandTotalCount": { "placeholders": { "count": { "type": "int" } } },
+  "brandSearchHint": "Tìm thương hiệu...",
+  "brandStatProducts": "{count} sản phẩm",
+  "@brandStatProducts": { "placeholders": { "count": { "type": "int" } } },
+  "brandEmptyTitle": "Chưa có thương hiệu",
+  "brandEmptyBody": "Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất.",
+  "brandEmptyAction": "Tạo thương hiệu đầu tiên",
+  "brandLoadError": "Không tải được danh sách thương hiệu",
+  "brandLoadRetry": "Thử lại",
+
+  "brandCreateTitle": "Tạo thương hiệu",
+  "brandEditTitle": "Chỉnh sửa thương hiệu",
+  "brandFieldNameLabel": "Tên thương hiệu *",
+  "brandFieldNameHint": "VD: Bosch, Makita, Stanley",
+  "brandFieldNameRequired": "Tên thương hiệu là bắt buộc",
+  "brandCreateCta": "Tạo",
+  "brandEditCta": "Cập nhật",
+
+  "brandDeleteConfirmTitle": "Xóa thương hiệu?",
+  "brandDeleteConfirmBody": "Hành động không thể hoàn tác. {name} sẽ bị xóa.",
+  "@brandDeleteConfirmBody": { "placeholders": { "name": { "type": "String" } } },
+  "brandDeleteConfirmCta": "Xóa",
+
+  "brandNotifySaved": "Đã lưu thương hiệu",
+  "brandNotifyDeleted": "Đã xóa thương hiệu",
+  "brandNotifyServer": "Đã có lỗi xảy ra",
+
+  "brandActionEdit": "Chỉnh sửa",
+  "brandActionDelete": "Xóa"
 }

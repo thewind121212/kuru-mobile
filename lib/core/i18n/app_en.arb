@@ -180,5 +180,46 @@
   "@categoryDetailSubcategoriesHeader": {
     "placeholders": {"count": {"type": "num"}}
   },
-  "categoryDetailNoSubcategories": "No subcategories yet"
+  "categoryDetailNoSubcategories": "No subcategories yet",
+
+  "catalogHubTitle": "Catalog",
+  "catalogHubCategoriesTitle": "Categories",
+  "catalogHubCategoriesSub": "Group products by group",
+  "catalogHubBrandsTitle": "Brands",
+  "catalogHubBrandsSub": "Manage manufacturers",
+  "catalogHubDistributorsTitle": "Distributors",
+  "catalogHubTaxTitle": "Tax",
+  "catalogHubComingSoon": "Coming soon",
+
+  "brandTitle": "Brands",
+  "brandTotalCount": "{count, plural, one{# brand} other{# brands}}",
+  "@brandTotalCount": { "placeholders": { "count": { "type": "int" } } },
+  "brandSearchHint": "Search brands...",
+  "brandStatProducts": "{count, plural, one{# product} other{# products}}",
+  "@brandStatProducts": { "placeholders": { "count": { "type": "int" } } },
+  "brandEmptyTitle": "No brands yet",
+  "brandEmptyBody": "Create your first brand to group products by manufacturer.",
+  "brandEmptyAction": "Create first brand",
+  "brandLoadError": "Could not load brands",
+  "brandLoadRetry": "Retry",
+
+  "brandCreateTitle": "Create brand",
+  "brandEditTitle": "Edit brand",
+  "brandFieldNameLabel": "Name *",
+  "brandFieldNameHint": "e.g. Bosch, Makita, Stanley",
+  "brandFieldNameRequired": "Name is required",
+  "brandCreateCta": "Create",
+  "brandEditCta": "Update",
+
+  "brandDeleteConfirmTitle": "Delete brand?",
+  "brandDeleteConfirmBody": "Cannot be undone. {name} will be deleted.",
+  "@brandDeleteConfirmBody": { "placeholders": { "name": { "type": "String" } } },
+  "brandDeleteConfirmCta": "Delete",
+
+  "brandNotifySaved": "Brand saved",
+  "brandNotifyDeleted": "Brand deleted",
+  "brandNotifyServer": "Something went wrong",
+
+  "brandActionEdit": "Edit",
+  "brandActionDelete": "Delete"
 }
