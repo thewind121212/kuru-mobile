@@ -12,6 +12,158 @@
 
 ---
 
+## Plan Corrections — API substitutions
+
+> **READ THIS BEFORE EXECUTING ANY TASK.** The plan body below was drafted against assumed APIs. A post-write review against the real codebase (`kuru-mobile` HEAD on `feat/catalog-category`) found 6 mismatches. **Apply these substitutions to every code sample in Phases 1–9.** They are the source of truth — when the prose conflicts, the table wins.
+
+| # | Where plan says | Real API |
+|---|---|---|
+| 1 | `KFormField(controller:, labelText:, errorText:, obscureText:, onChanged:)` | `KFormField(controller:, label:, errorText:, obscureText:)` — **no `onChanged` param**. Clear field errors via `controller.addListener` in `initState` or a `ValueListenableBuilder`. |
+| 2 | `KPageHeader(title:, showBack: true)` | `KPageHeader(title:, subtitle?, actions?)` — **no `showBack`**. For back navigation use Flutter's `AppBar(title: Text(...))` instead of KPageHeader on sub-screens that need a back arrow. Keep KPageHeader only for top-level Settings home (no back). |
+| 3 | `KListRow(leadingIcon: IconData, iconBackground: Color, iconColor: Color, label: String, trailingText: String, labelColor: Color, showChevron: bool, onTap: ...)` | `KListRow(leading: Widget, title: String, subtitle: String?, trailing: Widget?, onTap:, onLongPress:)`. Build a 28x28 tinted icon square inline and pass as `leading`. Trailing chevron + value text must be combined into one `trailing: Widget`. Use the helper below (define once in `lib/design/core/catalog/k_settings_row.dart`). |
+| 4 | `showKModalSheet(bodyBuilder: (ctx) => ...)` | `showKModalSheet(builder: (ctx) => ...)` — param is `builder`, not `bodyBuilder`. |
+| 5 | `case ApiFailure<T>(:final error)` | `case ApiFailure<T>(:final err)` — destructure field is `err`. Same in every `switch` arm. |
+| 6 | `KPrimaryBtn(label: String, onPressed:, loading: bool)` | `KPrimaryBtn(child: Widget, onPressed:, icon?, fullWidth?, tone?, shine?)` — **no `loading` prop**. For loading state, swap `child:` between `Text('Lưu')` and `KSpinner(color: Colors.white)` based on local `_saving` state. |
+| 7 | `KuruPalette.label` (used in AppearanceScreen) | Enum is bare `{purple, indigo}` — **add a Dart extension** in `lib/app/theme/kuru_palettes.dart`: ```dart\nextension KuruPaletteLabel on KuruPalette {\n  String get label => switch (this) {\n    KuruPalette.purple => 'Tím',\n    KuruPalette.indigo => 'Chàm',\n  };\n}\n``` |
+| 8 | `KuruColors.borderSubtle` | Field is `border` (or `borderSoft` for fainter dividers). Replace every `c.borderSubtle` with `c.border`. |
+| 9 | When deleting `settings_stub_screen.dart`, plan only removes the file | Also delete the `import …/settings_stub_screen.dart` line from `lib/app/router.dart` in Task 12 Step 2 — otherwise `flutter analyze` exits non-zero on unused-import. |
+| 10 | UpdateProfile body sends `avatarStyle: null` to reset | The BE Zod schema uses `.optional()` (not `.nullable()`). To reset, **omit** the keys instead of sending `null`. Plan code: `data: {'name': name, 'avatarStyle': avatarStyle, 'avatarSeed': avatarSeed}` should become `data: {'name': name, if (avatarStyle != null) 'avatarStyle': avatarStyle, if (avatarSeed != null) 'avatarSeed': avatarSeed}`. **Verify against `be/core/domains/profile/dto/profile/update-profile.dto.ts` first** — if the schema is `.nullable()`, the original null-sending form is fine. |
+
+### Helper widget to define before Phase 3
+
+Add this as the **first step of Task 8** (before KAvatar) so all later tasks can use it. Create `lib/design/core/catalog/k_settings_row.dart`:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/design/core/catalog/k_list_row.dart';
+
+class KSettingsRow extends StatelessWidget {
+  const KSettingsRow({
+    super.key,
+    required this.leadingIcon,
+    required this.iconBackground,
+    required this.iconColor,
+    required this.label,
+    this.trailingText,
+    this.labelColor,
+    this.showChevron = true,
+    this.onTap,
+  });
+
+  final IconData leadingIcon;
+  final Color iconBackground;
+  final Color iconColor;
+  final String label;
+  final String? trailingText;
+  final Color? labelColor;
+  final bool showChevron;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return KListRow(
+      leading: Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          color: iconBackground,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
+        child: Icon(leadingIcon, size: 16, color: iconColor),
+      ),
+      title: label,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (trailingText != null) ...[
+            Text(trailingText!,
+                style: TextStyle(fontSize: 12, color: c.textMuted)),
+            const SizedBox(width: 4),
+          ],
+          if (showChevron)
+            Icon(Icons.chevron_right, size: 18, color: c.border),
+        ],
+      ),
+      onTap: onTap,
+    );
+  }
+}
+```
+
+**Then every occurrence of `KListRow(leadingIcon: …, iconBackground: …, …)` in the plan code becomes `KSettingsRow(leadingIcon: …, iconBackground: …, …)`.** Same prop names — the wrapper preserves them.
+
+### KPrimaryBtn replacement pattern
+
+Every plan code sample using:
+
+```dart
+KPrimaryBtn(label: _saving ? 'Đang lưu…' : 'Lưu', onPressed: ..., loading: _saving)
+```
+
+becomes:
+
+```dart
+KPrimaryBtn(
+  onPressed: _saving ? null : _save,
+  child: _saving
+      ? const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2, color: Colors.white,
+          ),
+        )
+      : const Text('Lưu',
+          style: TextStyle(
+              color: Colors.white, fontWeight: FontWeight.w700)),
+)
+```
+
+### KFormField error-clearing replacement pattern
+
+The plan uses `onChanged` to clear field errors. Replace with controller listener in `initState`. Example for ProfileScreen Task 14:
+
+```dart
+@override
+void initState() {
+  super.initState();
+  _nameCtrl.addListener(() {
+    if (_nameError != null && mounted) {
+      setState(() => _nameError = null);
+    }
+  });
+}
+```
+
+Apply the same pattern in `_ChangePasswordBody` (Task 20) and `_EnableBiometricBody` (Task 21).
+
+### Sub-screen back-nav replacement pattern
+
+Plan uses `KPageHeader(title: ..., showBack: true)`. Replace at each sub-screen (ProfileScreen, AppearanceScreen, StoreScreen, SecurityScreen) with a real Scaffold AppBar:
+
+```dart
+return Scaffold(
+  backgroundColor: c.pageBg,
+  appBar: AppBar(
+    title: const Text('Hồ sơ'),
+    backgroundColor: c.surfaceElev,
+    elevation: 0,
+  ),
+  body: SafeArea(
+    child: ListView(
+      // ...drop the `KPageHeader(...)` first child — AppBar covers it
+    ),
+  ),
+);
+```
+
+For SettingsHomeScreen (Task 13) keep `KPageHeader(title: 'Cài đặt')` — no back arrow needed (top-level tab).
+
+---
+
 ## Pre-flight: Locked answers to spec's open questions
 
 These resolve the four open questions from §10 of the spec so the plan is unambiguous:
