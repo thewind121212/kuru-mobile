@@ -93,8 +93,10 @@ class BrandRepository {
     }
   }
 
-  /// Soft-deletes a brand. Returns success even on 400; callers must surface
-  /// the verbatim BE message (e.g. "Brand has products" if BE adds it).
+  /// Soft-deletes a brand. BE may 400 with a user-readable reason
+  /// (e.g. "Brand has products" if BE adds that rule); the verbatim
+  /// message bubbles up through [BadRequestException] for callers
+  /// to render in the delete-confirm SnackBar.
   Future<ApiResult<void>> remove(String brandId) async {
     try {
       final res = await _api.deleteBrand(

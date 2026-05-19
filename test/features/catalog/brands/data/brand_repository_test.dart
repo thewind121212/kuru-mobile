@@ -116,6 +116,56 @@ void main() {
     });
   });
 
+  group('getById', () {
+    test('returns BrandResponse on 200', () async {
+      final entity = gen.BrandResponse(
+        (b) => b
+          ..id = 'b1'
+          ..orgId = 'org-1'
+          ..name = 'Nike'
+          ..isDelete = false
+          ..createdAt = DateTime.utc(2026)
+          ..updatedAt = DateTime.utc(2026),
+      );
+      final outer = gen.GetBrandById200Response(
+        (b) => b
+          ..success = true
+          ..data.replace(entity)
+          ..timestamp = DateTime(2026),
+      );
+      when(() => api.getBrandById(brandId: any(named: 'brandId'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(),
+          statusCode: 200,
+          data: outer,
+        ),
+      );
+
+      final result = await repo.getById('b1');
+
+      expect(result, isA<ApiSuccess<gen.BrandResponse>>());
+      expect((result as ApiSuccess<gen.BrandResponse>).data.name, 'Nike');
+    });
+
+    test('returns UnknownException on null body', () async {
+      when(() => api.getBrandById(brandId: any(named: 'brandId'))).thenAnswer(
+        (_) async => Response(
+          requestOptions: RequestOptions(),
+          statusCode: 200,
+          data: null,
+        ),
+      );
+
+      final result = await repo.getById('b1');
+
+      expect(result, isA<ApiFailure<gen.BrandResponse>>());
+      expect(
+        (result as ApiFailure<gen.BrandResponse>).err,
+        isA<UnknownException>(),
+      );
+    });
+  });
+
   group('create', () {
     test('returns brandId on 201', () async {
       final inner = gen.CreateBrandResponse((b) => b..brandId = 'new-brand-id');
