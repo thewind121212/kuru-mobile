@@ -168,7 +168,7 @@ Append these keys to `lib/core/i18n/app_vi.arb` (preserve JSON validity — comm
 "@brandStatProducts": { "placeholders": { "count": { "type": "int" } } },
 "brandEmptyTitle": "Chưa có thương hiệu",
 "brandEmptyBody": "Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất.",
-"brandEmptyAction": "Tạo thương hiệu",
+"brandEmptyAction": "Tạo thương hiệu đầu tiên",
 "brandLoadError": "Không tải được danh sách thương hiệu",
 "brandLoadRetry": "Thử lại",
 
@@ -213,7 +213,7 @@ Append these keys to `lib/core/i18n/app_vi.arb` (preserve JSON validity — comm
 "@brandStatProducts": { "placeholders": { "count": { "type": "int" } } },
 "brandEmptyTitle": "No brands yet",
 "brandEmptyBody": "Create your first brand to group products by manufacturer.",
-"brandEmptyAction": "Create brand",
+"brandEmptyAction": "Create first brand",
 "brandLoadError": "Could not load brands",
 "brandLoadRetry": "Retry",
 
@@ -368,7 +368,7 @@ void main() {
         ], total: 2),
       );
 
-      final result = await repo.overview();
+      final result = await repo.getOverview();
 
       expect(result, isA<ApiSuccess<List<gen.BrandOverviewItem>>>());
       final list = (result as ApiSuccess<List<gen.BrandOverviewItem>>).value;
@@ -383,7 +383,7 @@ void main() {
             searchString: any(named: 'searchString'),
           )).thenThrow(_http400('Bad params'));
 
-      final result = await repo.overview();
+      final result = await repo.getOverview();
 
       expect(result, isA<ApiFailure<List<gen.BrandOverviewItem>>>());
       expect(
@@ -396,7 +396,7 @@ void main() {
   group('create', () {
     test('returns brandId on 201', () async {
       final inner = gen.CreateBrandResponse((b) => b..brandId = 'new-brand-id');
-      final outer = gen.CreateBrand201Response(
+      final outer = gen.CreateBrand200Response(
         (b) => b
           ..success = true
           ..data.replace(inner)
@@ -454,7 +454,7 @@ void main() {
   group('remove', () {
     test('returns success on 201', () async {
       final inner = gen.DeleteBrandResponse((b) => b..success = true);
-      final outer = gen.DeleteBrand201Response(
+      final outer = gen.DeleteBrand200Response(
         (b) => b
           ..success = true
           ..data.replace(inner)
@@ -488,7 +488,7 @@ void main() {
 }
 ```
 
-> **Note:** the exact generated wrapper type names (`GetBrandOverview200Response`, `CreateBrand201Response`, `UpdateBrand200Response`, `DeleteBrand201Response`) come from openapi-generator's path-operation-based class naming. If they differ after codegen, open `lib/api/brand/lib/src/model/` to find the real names and adjust.
+> **Note:** the exact generated wrapper type names (`GetBrandOverview200Response`, `CreateBrand200Response`, `UpdateBrand200Response`, `DeleteBrand200Response`) come from openapi-generator's path-operation-based class naming. If they differ after codegen, open `lib/api/brand/lib/src/model/` to find the real names and adjust.
 
 - [ ] **Step 2: Run test, confirm FAIL (no `BrandRepository` yet)**
 
@@ -520,7 +520,7 @@ class BrandRepository {
   /// Fetches the first page of brands (limit=200). Discards pagination meta —
   /// the list screen treats this as load-all and filters client-side. Re-evaluate
   /// when any real org passes ~150 brands.
-  Future<ApiResult<List<gen.BrandOverviewItem>>> overview() async {
+  Future<ApiResult<List<gen.BrandOverviewItem>>> getOverview() async {
     try {
       final res = await _api.getBrandOverview(
         page: 1,
@@ -697,7 +697,7 @@ final brandOverviewProvider =
     FutureProvider<List<gen.BrandOverviewItem>>((ref) async {
   ref.watch(currentOrgIdProvider);
   final repo = ref.watch(brandRepositoryProvider);
-  return repo.overview().unwrap();
+  return repo.getOverview().unwrap();
 });
 ```
 
@@ -927,30 +927,16 @@ StatefulShellBranch(
             ),
           ],
         ),
-        GoRoute(
-          path: 'brands',
-          // Placeholder until Task 11. Renders a Scaffold so the route
-          // exists and CatalogLauncherScreen's go('/catalog/brands') works.
-          builder: (_, __) => const _BrandsPlaceholder(),
-        ),
+        // /catalog/brands is added by Task 11 once BrandsListScreen ships.
       ],
     ),
   ],
 ),
 ```
 
-Add at the bottom of `lib/app/router.dart` (private):
-
-```dart
-class _BrandsPlaceholder extends StatelessWidget {
-  const _BrandsPlaceholder();
-  @override
-  Widget build(BuildContext context) =>
-      const Scaffold(body: SafeArea(child: Center(child: Text('Brands — TODO'))));
-}
-```
-
-> **Watch out:** The new `/catalog/categories/:id` path is `/catalog/categories/:id`, NOT `/catalog/categories/categories/:id`. GoRoute's `path: ':id'` inside the `categories` parent yields the combined path correctly.
+> **Watch out:**
+> - The new `/catalog/categories/:id` path is `/catalog/categories/:id`, NOT `/catalog/categories/categories/:id`. GoRoute's `path: ':id'` inside the `categories` parent yields the combined path correctly.
+> - Between this commit and Task 11, tapping the launcher's "Thương hiệu" card in a live app will trigger a GoRouter "no route" error — that's expected for the intermediate state. T8's launcher widget test uses its own router harness (with stub `/catalog/brands` route), so it passes without the real route existing.
 
 - [ ] **Step 2: Add imports at top of router.dart**
 
@@ -959,16 +945,17 @@ import 'package:flutter/material.dart';
 import 'package:kuru_mobile/features/catalog/catalog_launcher_screen.dart';
 ```
 
-Remove this line if it's no longer used after the refactor:
+The `CategoriesListScreen` and `CategoryDetailScreen` imports stay — both are still referenced inside the nested `categories` route.
 
-```dart
-// (CategoriesListScreen import stays — it's still referenced)
-```
-
-- [ ] **Step 3: Verify analyze**
+- [ ] **Step 3: Verify analyze + tests still pass**
 
 Run: `flutter analyze`
 Expected: `No issues found!`
+
+Run: `flutter test`
+Expected: existing Category tests still pass — they will because T7 hasn't run yet AND many tests don't tap the Catalog tab. Any failure here MUST be a pre-existing test that taps Catalog and expected to land on Categories — let T7 (next task) handle those, do not patch in this task.
+
+Acceptable: tests in `test/features/main_shell/`, `test/features/catalog/categories/list_to_detail_navigation_test.dart`, `test/features/catalog/categories/category_detail_screen_test.dart`, and `test/features/demo/core_design_demo_screen_test.dart` may fail at this checkpoint. Their fixes belong to T7. Note which ones failed in the commit message.
 
 - [ ] **Step 4: Smoke-test in the simulator (optional but recommended)**
 
@@ -976,7 +963,7 @@ If a simulator is already running, hot-restart the app:
 1. Boot Catalog tab → expect the launcher with 4 cards.
 2. Tap Categories card → expect the existing CategoriesListScreen.
 3. Tap Catalog bottom-nav tab again → expect to return to the launcher (StatefulShellBranch re-tap behavior).
-4. Tap Brands card → expect "Brands — TODO".
+4. **Do NOT** tap Brands yet — the route doesn't exist until T11. Tapping it now will throw a GoRouter "no route" error.
 5. Tap a disabled card → expect no navigation.
 
 - [ ] **Step 5: Commit**
@@ -997,40 +984,56 @@ EOF
 
 ---
 
-## Task 7: Update existing Category tests to new path
+## Task 7: Retarget existing tests at the new Catalog tab structure
 
-**Files:**
-- Modify: any test under `test/features/catalog/categories/**` that pushes/expects the path `/catalog` for the list screen.
+**Files (will be discovered in Step 1):**
+- Likely modified: `test/features/catalog/categories/list_to_detail_navigation_test.dart`
+- Likely modified: `test/features/catalog/categories/category_detail_screen_test.dart`
+- Likely modified: `test/features/main_shell/main_shell_e2e_test.dart`
+- Likely modified: `test/features/main_shell/main_shell_test.dart`
+- Likely modified: `test/features/demo/core_design_demo_screen_test.dart` (only the assertion that "Catalog" is visible — that still holds)
 
-- [ ] **Step 1: Find call sites**
+After T6, the Catalog tab's root is `CatalogLauncherScreen`, NOT `CategoriesListScreen`. Two distinct patterns in tests need updating.
 
-Run: `grep -rn "'/catalog'" test/features/catalog/categories/`
-Examine each match. Anything that means "the categories list lives here" needs to become `/catalog/categories`. Anything that means "the catalog launcher" (unlikely in existing tests) stays `/catalog`.
-
-Also check:
-
-```bash
-grep -rn 'go.*catalog' test/features/catalog/
-grep -rn 'push.*catalog' test/features/catalog/
-grep -rn 'initialLocation.*catalog' test/features/catalog/
-```
-
-- [ ] **Step 2: Update each occurrence**
-
-For every call site whose intent is "categories list", replace `/catalog` with `/catalog/categories`. Also update the nested category-detail path from `/catalog/categories/:id` (the previous value was `/catalog/categories/:id`, which is now unchanged — confirm the test wasn't using the OLD `/catalog/:id` shape).
-
-The category detail path was `/catalog/categories/:id` BEFORE this work (look at the git log of router.dart) — the refactor in T6 keeps the same combined path because the `categories` segment was already in place. Re-verify by running:
+- [ ] **Step 1: Find hardcoded `'/catalog'` strings**
 
 ```bash
-grep -rn ":id" lib/app/router.dart
+grep -rn "'/catalog'" test/features/
+grep -rn '"/catalog"' test/features/
 ```
 
-If it now matches the OLD shape, tests need no detail-path updates. If anything changed, mirror that change in tests.
+For each result whose intent is "the categories list lives here", change to `/catalog/categories`. If it's a `go('/catalog')` whose intent is "the catalog landing screen", leave it as `/catalog` (it now lands on the launcher).
 
-- [ ] **Step 3: Run the test suite**
+- [ ] **Step 2: Find Catalog-tab-tap call sites**
 
-Run: `flutter test test/features/catalog/categories/`
-Expected: all category tests pass. If anything fails with "no route for /catalog", that test still hardcodes the old path — fix.
+```bash
+grep -rn "find.text('Catalog')" test/features/
+```
+
+Expected matches (confirmed at plan-write time): `list_to_detail_navigation_test.dart`, `category_detail_screen_test.dart`, `main_shell_e2e_test.dart`, `main_shell_test.dart`, `core_design_demo_screen_test.dart`.
+
+For each `await tester.tap(find.text('Catalog'))` that EXPECTS the categories list to appear next (i.e. `await tester.tap(find.text('Categories'))` immediately fails because the user is now on the launcher), insert a follow-up tap on the launcher's Categories card:
+
+```dart
+await tester.tap(find.text('Catalog'));          // bottom-nav tab
+await tester.pump();
+await tester.pump(const Duration(milliseconds: 50));
+// NEW: launcher renders. Drill into Categories.
+await tester.tap(find.text('Categories'));       // English-locale tests
+// OR if the test renders the vi locale:
+// await tester.tap(find.text('Danh mục'));
+await tester.pump();
+await tester.pump(const Duration(milliseconds: 50));
+```
+
+Inspect each test's `MaterialApp(locale: ...)` or default locale to choose the right card label. `category_detail_screen_test.dart` sets `locale: Locale('en')` → use `'Categories'`. Most others have no override and inherit the default `vi` → use `'Danh mục'`.
+
+Tests where the Catalog tap is just to verify the tab itself works (e.g. `main_shell_test.dart:23` asserting `find.text('Catalog'), findsOneWidget` for the bottom-nav label) need no follow-up — the launcher arrival is still proof that the tab works.
+
+- [ ] **Step 3: Run the full test directory**
+
+Run: `flutter test test/features/catalog/ test/features/main_shell/ test/features/demo/`
+Expected: all pass. If any fail with "Multiple widgets found for finder" or "no widget", the follow-up tap is missing or pointing at the wrong locale's card title.
 
 - [ ] **Step 4: Verify analyze**
 
@@ -1040,9 +1043,13 @@ Expected: `No issues found!`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add test/features/catalog/categories/
+git add test/features/
 git commit -m "$(cat <<'EOF'
-test(catalog): retarget category tests at /catalog/categories
+test(catalog): retarget existing tests at /catalog launcher
+
+Catalog tab now lands on CatalogLauncherScreen; existing tests that
+tapped the Catalog bottom-nav tab and expected to see the categories
+list need an extra tap on the launcher's Categories card.
 
 Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
@@ -1264,29 +1271,27 @@ Future<BrandAction?> showBrandActionMenu({
   required String brandName,
 }) {
   final l = AppLocalizations.of(context);
-  final c = kuruColors(context);
   return showKActionSheet<BrandAction>(
     context: context,
     title: brandName,
-    items: [
+    actions: [
       KActionItem(
-        value: BrandAction.edit,
+        id: BrandAction.edit,
         label: l.brandActionEdit,
         icon: TablerIcons.edit,
       ),
       KActionItem(
-        value: BrandAction.delete,
+        id: BrandAction.delete,
         label: l.brandActionDelete,
         icon: TablerIcons.trash,
-        iconColor: c.danger,
-        labelColor: c.danger,
+        danger: true,
       ),
     ],
   );
 }
 ```
 
-> **Note:** `KActionItem`'s constructor parameter names come from `lib/design/core/modal/k_action_sheet.dart`. If `iconColor` / `labelColor` aren't on the public API, drop them — the Delete row will still render with default colors. Open the file and verify before committing.
+Verified against `lib/design/core/modal/k_action_sheet.dart`: parameter is `actions:` (not `items:`), `KActionItem` uses `id:` (not `value:`), and destructive rows use `danger: true` (no `iconColor` / `labelColor`). Same shape as `lib/features/catalog/categories/widgets/category_action_menu.dart`.
 
 - [ ] **Step 4: Run tests, confirm PASS**
 
@@ -1370,7 +1375,7 @@ void main() {
       await tester.pumpWidget(_harness(repo, (ctx) async {
         await showCreateEditBrandSheet(
           context: ctx,
-          mode: const CreateBrandMode(),
+          mode: const CreateBrand(),
         );
       }));
       await tester.pump();
@@ -1394,7 +1399,7 @@ void main() {
       await tester.pumpWidget(_harness(repo, (ctx) async {
         returned = await showCreateEditBrandSheet(
           context: ctx,
-          mode: const CreateBrandMode(),
+          mode: const CreateBrand(),
         );
       }));
       await tester.pump();
@@ -1419,7 +1424,7 @@ void main() {
       await tester.pumpWidget(_harness(repo, (ctx) async {
         await showCreateEditBrandSheet(
           context: ctx,
-          mode: const CreateBrandMode(),
+          mode: const CreateBrand(),
         );
       }));
       await tester.pump();
@@ -1440,7 +1445,7 @@ void main() {
       await tester.pumpWidget(_harness(repo, (ctx) async {
         await showCreateEditBrandSheet(
           context: ctx,
-          mode: EditBrandMode(brand: _existing()),
+          mode: EditBrand(brand: _existing()),
         );
       }));
       await tester.pump();
@@ -1458,7 +1463,7 @@ void main() {
       await tester.pumpWidget(_harness(repo, (ctx) async {
         returned = await showCreateEditBrandSheet(
           context: ctx,
-          mode: EditBrandMode(brand: _existing()),
+          mode: EditBrand(brand: _existing()),
         );
       }));
       await tester.pump();
@@ -1479,7 +1484,7 @@ void main() {
 - [ ] **Step 2: Run, confirm FAIL**
 
 Run: `flutter test test/features/catalog/brands/widgets/create_edit_brand_sheet_test.dart`
-Expected: build error — `CreateBrandMode` / `EditBrandMode` / `showCreateEditBrandSheet` undefined.
+Expected: build error — `CreateBrand` / `EditBrand` / `showCreateEditBrandSheet` undefined.
 
 - [ ] **Step 3: Implement the sheet**
 
@@ -1501,12 +1506,12 @@ sealed class BrandSheetMode {
   const BrandSheetMode();
 }
 
-class CreateBrandMode extends BrandSheetMode {
-  const CreateBrandMode();
+class CreateBrand extends BrandSheetMode {
+  const CreateBrand();
 }
 
-class EditBrandMode extends BrandSheetMode {
-  const EditBrandMode({required this.brand});
+class EditBrand extends BrandSheetMode {
+  const EditBrand({required this.brand});
   final gen.BrandOverviewItem brand;
 }
 
@@ -1518,12 +1523,12 @@ Future<bool?> showCreateEditBrandSheet({
 }) {
   final l = AppLocalizations.of(context);
   final title = switch (mode) {
-    CreateBrandMode() => l.brandCreateTitle,
-    EditBrandMode() => l.brandEditTitle,
+    CreateBrand() => l.brandCreateTitle,
+    EditBrand() => l.brandEditTitle,
   };
   final confirmLabel = switch (mode) {
-    CreateBrandMode() => l.brandCreateCta,
-    EditBrandMode() => l.brandEditCta,
+    CreateBrand() => l.brandCreateCta,
+    EditBrand() => l.brandEditCta,
   };
   final key = GlobalKey<_BrandFormState>();
   return showKModalSheet<bool>(
@@ -1552,7 +1557,7 @@ class _BrandFormState extends ConsumerState<_BrandForm> {
     super.initState();
     final m = widget.mode;
     _name = TextEditingController(
-      text: m is EditBrandMode ? (m.brand.name ?? '') : '',
+      text: m is EditBrand ? (m.brand.name ?? '') : '',
     );
   }
 
@@ -1572,20 +1577,29 @@ class _BrandFormState extends ConsumerState<_BrandForm> {
     setState(() => _error = null);
     final repo = ref.read(brandRepositoryProvider);
     final result = switch (widget.mode) {
-      CreateBrandMode() => await repo.create(name: value),
-      EditBrandMode(brand: final b) =>
+      CreateBrand() => await repo.create(name: value),
+      EditBrand(brand: final b) =>
         await repo.update(brandId: b.id!, name: value),
     };
     if (result is ApiSuccess) {
       return true;
     }
+    // ApiFailure — handle ALL error types inside the sheet without throwing.
+    // KModalSheet._handleConfirm has no try/catch (k_modal_sheet.dart:90-105);
+    // any throw wedges the busy state forever. BadRequestException → field
+    // errorText (sheet stays open). Network/timeout/server → SnackBar via
+    // ScaffoldMessenger and stay open so the user can retry.
     final err = (result as ApiFailure).err;
     if (err is BadRequestException) {
       setState(() => _error = err.message);
     } else {
-      // Other failures bubble: rethrow so KModalSheet closes and the caller's
-      // outer SnackBar handler runs.
-      throw err;
+      final msg = err is NetworkException || err is TimeoutException
+          ? err.message
+          : l.brandNotifyServer;
+      if (mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(msg)));
+      }
     }
     return false;
   }
@@ -1598,9 +1612,8 @@ class _BrandFormState extends ConsumerState<_BrandForm> {
       child: KTextField(
         controller: _name,
         label: l.brandFieldNameLabel,
-        hint: l.brandFieldNameHint,
+        placeholder: l.brandFieldNameHint,
         maxLength: 120,
-        autofocus: true,
         errorText: _error,
       ),
     );
@@ -1608,9 +1621,7 @@ class _BrandFormState extends ConsumerState<_BrandForm> {
 }
 ```
 
-> **Watch out:** Verify `KTextField`'s constructor signature in `lib/design/core/input/k_text_field.dart`. If parameter names differ (e.g. `label` vs `labelText`), adapt — do not change the design system to fit this sheet.
->
-> Verify `showKModalSheet`'s `onConfirm` contract in `lib/design/core/modal/k_modal_sheet.dart`. The Category sheet returns `bool` from `onConfirm`; `false` = stay open, `true` = close-and-return. If KModalSheet uses a different convention, follow what it does.
+Verified against `lib/design/core/input/k_text_field.dart`: hint param is `placeholder:` (not `hint:`); there is no `autofocus:` param (do not add — first-field-focus is acceptable to skip in v1). `showKModalSheet`'s `onConfirm` contract per `lib/design/core/modal/k_modal_sheet.dart:90-105`: return `false` to keep the sheet open (busy state clears via `setState`); return `true` to close and pop `true as T?`. **Do NOT throw from `onConfirm`** — `_handleConfirm` has no try/catch, an unhandled throw wedges `_busy=true` forever and surfaces an unhandled async error.
 
 - [ ] **Step 4: Run tests, confirm PASS**
 
@@ -1693,19 +1704,19 @@ void main() {
   setUp(() => repo = _MockRepo());
 
   testWidgets('empty state shows CTA', (tester) async {
-    when(() => repo.overview()).thenAnswer((_) async => ApiResult.success([]));
+    when(() => repo.getOverview()).thenAnswer((_) async => ApiResult.success([]));
 
     await tester.pumpWidget(_harness(repo));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('Chưa có thương hiệu'), findsOneWidget);
-    expect(find.text('Tạo thương hiệu'), findsWidgets);
+    expect(find.text('Tạo thương hiệu đầu tiên'), findsOneWidget);
   });
 
   testWidgets('error state shows retry', (tester) async {
-    when(() => repo.overview()).thenAnswer(
-        (_) async => ApiResult.failure(const ServerException('boom')));
+    when(() => repo.getOverview()).thenAnswer((_) async =>
+        ApiResult.failure(const ServerException('boom', statusCode: 500)));
 
     await tester.pumpWidget(_harness(repo));
     await tester.pump();
@@ -1716,7 +1727,7 @@ void main() {
   });
 
   testWidgets('data state renders cards', (tester) async {
-    when(() => repo.overview()).thenAnswer((_) async => ApiResult.success([
+    when(() => repo.getOverview()).thenAnswer((_) async => ApiResult.success([
           _item(id: 'b1', name: 'Nike', products: 42),
           _item(id: 'b2', name: 'Adidas', products: 31),
         ]));
@@ -1730,7 +1741,7 @@ void main() {
   });
 
   testWidgets('search filters with accent-folding', (tester) async {
-    when(() => repo.overview()).thenAnswer((_) async => ApiResult.success([
+    when(() => repo.getOverview()).thenAnswer((_) async => ApiResult.success([
           _item(id: 'b1', name: 'Nước Suối'),
           _item(id: 'b2', name: 'Coca'),
         ]));
@@ -1793,7 +1804,7 @@ class _BrandsListScreenState extends ConsumerState<BrandsListScreen> {
     final l = AppLocalizations.of(context);
     final saved = await showCreateEditBrandSheet(
       context: context,
-      mode: const CreateBrandMode(),
+      mode: const CreateBrand(),
     );
     if (!mounted) return;
     if (saved ?? false) {
@@ -1936,7 +1947,7 @@ class _BrandCardItem extends ConsumerWidget {
       case BrandAction.edit:
         final saved = await showCreateEditBrandSheet(
           context: context,
-          mode: EditBrandMode(brand: brand),
+          mode: EditBrand(brand: brand),
         );
         if ((saved ?? false) && context.mounted) {
           ref.invalidate(brandOverviewProvider);
@@ -1953,7 +1964,7 @@ class _BrandCardItem extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final saved = await showCreateEditBrandSheet(
       context: context,
-      mode: EditBrandMode(brand: brand),
+      mode: EditBrand(brand: brand),
     );
     if ((saved ?? false) && context.mounted) {
       ref.invalidate(brandOverviewProvider);
@@ -2115,18 +2126,9 @@ Expected: all 4 tests pass.
 Run: `flutter analyze`
 Expected: `No issues found!`
 
-- [ ] **Step 6: Replace router placeholder with the real screen**
+- [ ] **Step 6: Add /catalog/brands route to the router**
 
-Open `lib/app/router.dart` and replace:
-
-```dart
-GoRoute(
-  path: 'brands',
-  builder: (_, __) => const _BrandsPlaceholder(),
-),
-```
-
-with:
+Open `lib/app/router.dart`. Inside the Catalog branch's `routes:`, immediately after the `categories` `GoRoute` (and the placeholder-routes-only comment from T6), add:
 
 ```dart
 GoRoute(
@@ -2135,13 +2137,13 @@ GoRoute(
 ),
 ```
 
-Add the import:
+Add the import at the top:
 
 ```dart
 import 'package:kuru_mobile/features/catalog/brands/brands_list_screen.dart';
 ```
 
-Remove `_BrandsPlaceholder` class definition at the bottom of the file.
+The comment placeholder from T6 ("`// /catalog/brands is added by Task 11 ...`") can now be removed.
 
 - [ ] **Step 7: Re-run analyze**
 
@@ -2179,13 +2181,13 @@ The list screen already has the `BrandAction.delete` switch case stubbed in Task
 
 - [ ] **Step 1: Extend the widget test to cover delete**
 
-Append to `test/features/catalog/brands/brands_list_screen_test.dart`:
+Append to `test/features/catalog/brands/brands_list_screen_test.dart` (also add `import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';` at top of file if not already present):
 
 ```dart
   group('delete', () {
     testWidgets('confirm → repo.remove + invalidate + SnackBar',
         (tester) async {
-      when(() => repo.overview()).thenAnswer((_) async => ApiResult.success([
+      when(() => repo.getOverview()).thenAnswer((_) async => ApiResult.success([
             _item(id: 'b1', name: 'Nike', products: 0),
           ]));
       when(() => repo.remove('b1'))
@@ -2196,7 +2198,7 @@ Append to `test/features/catalog/brands/brands_list_screen_test.dart`:
       await tester.pump(const Duration(milliseconds: 50));
 
       // Open kebab → action sheet → Xóa → confirm dialog → Xóa.
-      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.tap(find.byIcon(TablerIcons.dots_vertical).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
@@ -2214,7 +2216,7 @@ Append to `test/features/catalog/brands/brands_list_screen_test.dart`:
     });
 
     testWidgets('400 reason → SnackBar with verbatim message', (tester) async {
-      when(() => repo.overview()).thenAnswer((_) async => ApiResult.success([
+      when(() => repo.getOverview()).thenAnswer((_) async => ApiResult.success([
             _item(id: 'b1', name: 'Nike'),
           ]));
       when(() => repo.remove('b1')).thenAnswer((_) async =>
@@ -2224,7 +2226,7 @@ Append to `test/features/catalog/brands/brands_list_screen_test.dart`:
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 50));
 
-      await tester.tap(find.byIcon(Icons.more_vert).first);
+      await tester.tap(find.byIcon(TablerIcons.dots_vertical).first);
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
 
@@ -2241,7 +2243,7 @@ Append to `test/features/catalog/brands/brands_list_screen_test.dart`:
   });
 ```
 
-> The kebab icon shown by `KIconBtn(icon: Icon(TablerIcons.dots_vertical))` may not match `Icons.more_vert`. If the test fails to find it, use `find.byType(KIconBtn).first` or `find.byIcon(TablerIcons.dots_vertical).first`.
+> The kebab is `TablerIcons.dots_vertical` — exactly the icon the assertion looks for. If the trailing `KIconBtn` has issues, you can also use `find.byType(KIconBtn).first`.
 
 - [ ] **Step 2: Run, confirm FAIL (delete branch is still a `break`)**
 
@@ -2364,7 +2366,7 @@ void main() {
       ),
     ];
     var callCount = 0;
-    when(() => repo.overview()).thenAnswer((_) async {
+    when(() => repo.getOverview()).thenAnswer((_) async {
       callCount++;
       return ApiResult.success(callCount == 1 ? initial : afterCreate);
     });
@@ -2384,7 +2386,7 @@ void main() {
 
     // Empty state visible — tap the empty-state CTA.
     expect(find.text('Chưa có thương hiệu'), findsOneWidget);
-    await tester.tap(find.text('Tạo thương hiệu').first);
+    await tester.tap(find.text('Tạo thương hiệu đầu tiên'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 
@@ -2460,7 +2462,7 @@ void main() {
       (tester) async {
     final repo = _MockRepo();
     var callCount = 0;
-    when(() => repo.overview()).thenAnswer((_) async {
+    when(() => repo.getOverview()).thenAnswer((_) async {
       callCount++;
       return ApiResult.success([_b(callCount == 1 ? 'Nike' : 'Nike Air Max')]);
     });
@@ -2547,7 +2549,7 @@ void main() {
       (tester) async {
     final repo = _MockRepo();
     var callCount = 0;
-    when(() => repo.overview()).thenAnswer((_) async {
+    when(() => repo.getOverview()).thenAnswer((_) async {
       callCount++;
       if (callCount == 1) {
         return ApiResult.success([

@@ -120,8 +120,7 @@ class BrandRepository {
 - All methods return the sealed `ApiResult<T>` (success/failure) and bubble up typed `ApiException` subclasses from `lib/core/network/api_exception.dart`:
   - 400 → `BadRequestException` — `error.message` surfaced verbatim in the UI
   - 401 → `UnauthorizedException` — caught by `AuthRepository`, triggers `signOut()` + bootstrap invalidation
-  - 429 RATE_LIMITED → `RateLimitedException`
-  - 5xx → fallback `ServerException` with localized message "Đã có lỗi xảy ra"
+  - 5xx → fallback `ServerException` with localized message "Đã có lỗi xảy ra" (429 is not modeled as its own type yet)
 
 ### 5.3 Providers
 
@@ -198,9 +197,12 @@ Implemented via `showKActionSheet<BrandAction>` with two items: Edit + Delete. N
 File: `lib/features/catalog/brands/widgets/create_edit_brand_sheet.dart`
 
 ```dart
-sealed class BrandSheetMode {}
-class CreateBrand extends BrandSheetMode {}
-class EditBrand   extends BrandSheetMode { final BrandOverviewItem brand; }
+sealed class BrandSheetMode { const BrandSheetMode(); }
+class CreateBrand extends BrandSheetMode { const CreateBrand(); }
+class EditBrand   extends BrandSheetMode {
+  const EditBrand({required this.brand});
+  final BrandOverviewItem brand;
+}
 
 Future<bool?> showCreateEditBrandSheet({ required BuildContext context, required BrandSheetMode mode });
 ```
@@ -222,9 +224,11 @@ Future<bool?> showCreateEditBrandSheet({ required BuildContext context, required
 
 | Trigger                          | Where         | Message                                  |
 |----------------------------------|---------------|------------------------------------------|
-| Empty name (client-side)         | KFormField    | `l.brandFieldNameRequired`               |
-| BE 400 dup-name                  | KFormField    | `error.message` verbatim                 |
-| BE 400 other                     | KFormField    | `error.message` verbatim                 |
+| Empty name (client-side)         | KTextField    | `l.brandFieldNameRequired`               |
+| BE 400 dup-name                  | KTextField    | `error.message` verbatim                 |
+| BE 400 other                     | KTextField    | `error.message` verbatim                 |
+
+(`KTextField` is the FLAT design-core widget; `KFormField` is the GLASS auth widget — do not mix them.)
 
 ### 7.2 Screen-level (SnackBar / dialog)
 
@@ -234,8 +238,9 @@ Future<bool?> showCreateEditBrandSheet({ required BuildContext context, required
 | Delete success                   | `KNotify.success(context, l.brandNotifyDeleted)`     |
 | List load network down / 5xx     | `KEmptyState` with retry button (NOT toast)          |
 | Mutation network down / 5xx      | `KNotify.networkError(context, msg, onRetry: ...)`   |
-| 429 RATE_LIMITED                 | `KNotify.warning(context, msg)`                      |
 | 401 mid-flow                     | `signOut()` + `ref.invalidate(appBootstrapProvider)` — router redirects to /login |
+
+(429 `RATE_LIMITED` handling is deferred — the `ApiException` hierarchy doesn't model it yet. Falls into the generic 5xx network-error toast for v1.)
 
 ### 7.3 Delete confirm
 
@@ -282,7 +287,7 @@ brandSearchHint         "Tìm thương hiệu..."      / "Search brands..."
 brandStatProducts       "{count} sản phẩm"        / "{count, plural, one{# product} other{# products}}"
 brandEmptyTitle         "Chưa có thương hiệu"     / "No brands yet"
 brandEmptyBody          "Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất." / "Create your first brand to group products by manufacturer."
-brandEmptyAction        "Tạo thương hiệu"         / "Create brand"
+brandEmptyAction        "Tạo thương hiệu đầu tiên" / "Create first brand"
 brandLoadError          "Không tải được danh sách thương hiệu" / "Could not load brands"
 brandLoadRetry          "Thử lại"                 / "Retry"
 ```
