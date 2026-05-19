@@ -4,6 +4,8 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kuru_brand_api/kuru_brand_api.dart' as gen;
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/core/network/api_exception.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/text/search_normalize.dart';
 import 'package:kuru_mobile/design/core/feedback/k_empty_state.dart';
 import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
@@ -11,6 +13,7 @@ import 'package:kuru_mobile/design/core/input/k_icon_btn.dart';
 import 'package:kuru_mobile/design/core/input/k_search_bar.dart';
 import 'package:kuru_mobile/design/core/input/k_secondary_btn.dart';
 import 'package:kuru_mobile/design/core/modal/color_options.dart';
+import 'package:kuru_mobile/design/core/modal/k_confirm_dialog.dart';
 import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
 import 'package:kuru_mobile/features/catalog/brands/widgets/brand_action_menu.dart';
 import 'package:kuru_mobile/features/catalog/brands/widgets/create_edit_brand_sheet.dart';
@@ -183,8 +186,37 @@ class _BrandCardItem extends ConsumerWidget {
           ).showSnackBar(SnackBar(content: Text(l.brandNotifySaved)));
         }
       case BrandAction.delete:
-        // Delete flow lives in Task 12.
-        break;
+        await _confirmAndDelete(context, ref);
+    }
+  }
+
+  Future<void> _confirmAndDelete(BuildContext context, WidgetRef ref) async {
+    final l = AppLocalizations.of(context);
+    ApiException? failure;
+    final confirmed = await showKConfirmDialog(
+      context: context,
+      title: l.brandDeleteConfirmTitle,
+      subtitle: l.brandDeleteConfirmBody(brand.name),
+      confirmLabel: l.brandDeleteConfirmCta,
+      onConfirm: () async {
+        final result = await ref.read(brandRepositoryProvider).remove(brand.id);
+        if (result is ApiFailure<void>) {
+          failure = result.err;
+          throw result.err; // closes the dialog with null
+        }
+      },
+    );
+    if (!context.mounted) return;
+    if (confirmed ?? false) {
+      ref.invalidate(brandOverviewProvider);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l.brandNotifyDeleted)));
+    } else if (failure != null) {
+      final msg = failure is BadRequestException
+          ? (failure! as BadRequestException).message
+          : l.brandNotifyServer;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
   }
 

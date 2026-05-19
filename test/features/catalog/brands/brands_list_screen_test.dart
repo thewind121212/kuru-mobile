@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_brand_api/kuru_brand_api.dart' as gen;
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
@@ -104,5 +105,67 @@ void main() {
 
     expect(find.text('Nước Suối'), findsOneWidget);
     expect(find.text('Coca'), findsNothing);
+  });
+
+  group('delete', () {
+    testWidgets('confirm → repo.remove + invalidate + SnackBar', (
+      tester,
+    ) async {
+      when(() => repo.getOverview()).thenAnswer(
+        (_) async => ApiResult.success([_item(id: 'b1', name: 'Nike')]),
+      );
+      when(
+        () => repo.remove('b1'),
+      ).thenAnswer((_) async => ApiResult.success(null));
+
+      await tester.pumpWidget(_harness(repo));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      // Open kebab → action sheet → Xóa → confirm dialog → Xóa.
+      await tester.tap(find.byIcon(TablerIcons.dots_vertical).first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      await tester.tap(find.text('Xóa').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      // Confirm dialog visible — tap the destructive Xóa button.
+      await tester.tap(find.text('Xóa').last);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      verify(() => repo.remove('b1')).called(1);
+      expect(find.text('Đã xóa thương hiệu'), findsOneWidget);
+    });
+
+    testWidgets('400 reason → SnackBar with verbatim message', (tester) async {
+      when(() => repo.getOverview()).thenAnswer(
+        (_) async => ApiResult.success([_item(id: 'b1', name: 'Nike')]),
+      );
+      when(() => repo.remove('b1')).thenAnswer(
+        (_) async =>
+            ApiResult.failure(const BadRequestException('Brand has products')),
+      );
+
+      await tester.pumpWidget(_harness(repo));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      await tester.tap(find.byIcon(TablerIcons.dots_vertical).first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      await tester.tap(find.text('Xóa').first);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      await tester.tap(find.text('Xóa').last);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+
+      expect(find.text('Brand has products'), findsOneWidget);
+    });
   });
 }
