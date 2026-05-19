@@ -113,6 +113,10 @@ void main() {
     // Switch to Catalog tab.
     await tester.tap(find.text('Catalog'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    // Catalog tab now lands on CatalogLauncherScreen. Drill into Categories.
+    await tester.tap(find.text('Categories'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     // Tap root category row to open its detail screen.
     await tester.tap(find.text('Electronics'));

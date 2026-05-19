@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/app/router.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
 import 'package:kuru_mobile/core/auth/org_info.dart';
@@ -54,6 +56,8 @@ void main() {
             final router = ref.watch(routerProvider);
             return MaterialApp.router(
               routerConfig: router,
+              theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+              locale: const Locale('en'),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
             );
@@ -74,7 +78,11 @@ void main() {
     await tester.tap(find.text('Catalog'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    // KPageHeader renders the categoryTitle as the page heading.
+    // Catalog tab now lands on CatalogLauncherScreen. Drill into Categories.
+    await tester.tap(find.text('Categories'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    // CategoriesListScreen KPageHeader renders the categoryTitle heading.
     expect(find.text('Categories'), findsWidgets);
 
     // Tap Settings tab (index 2).
@@ -83,8 +91,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.text('Settings coming soon'), findsOneWidget);
 
-    // Tap Catalog tab again — should land back on Categories list
-    // (per-branch stack preserved, not reset).
+    // Tap Catalog tab again — per-branch stack is preserved, so we land
+    // back on CategoriesListScreen (not the launcher).
     await tester.tap(find.text('Catalog'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));

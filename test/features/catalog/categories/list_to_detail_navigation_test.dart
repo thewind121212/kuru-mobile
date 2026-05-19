@@ -80,6 +80,10 @@ void main() {
     // Switch to the Catalog tab (index 1 in the bottom nav).
     await tester.tap(find.text('Catalog'));
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    // Catalog tab now lands on CatalogLauncherScreen. Drill into Categories.
+    await tester.tap(find.text('Categories'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
     // The category row should now be visible.
