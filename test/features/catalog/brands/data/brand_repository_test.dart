@@ -149,11 +149,8 @@ void main() {
 
     test('returns UnknownException on null body', () async {
       when(() => api.getBrandById(brandId: any(named: 'brandId'))).thenAnswer(
-        (_) async => Response(
-          requestOptions: RequestOptions(),
-          statusCode: 200,
-          data: null,
-        ),
+        (_) async =>
+            Response(requestOptions: RequestOptions(), statusCode: 200),
       );
 
       final result = await repo.getById('b1');

@@ -15,9 +15,9 @@ class BrandRepository {
 
   static const int _overviewLimit = 200;
 
-  /// Fetches the first page of brands (limit=200). Discards pagination meta —
-  /// the list screen treats this as load-all and filters client-side. Re-evaluate
-  /// when any real org passes ~150 brands.
+  /// Fetches the first page of brands (limit=200). Discards pagination meta;
+  /// the list screen treats this as load-all and filters client-side.
+  /// Re-evaluate when any real org passes ~150 brands.
   Future<ApiResult<List<gen.BrandOverviewItem>>> getOverview() async {
     try {
       final res = await _api.getBrandOverview(page: 1, limit: _overviewLimit);
