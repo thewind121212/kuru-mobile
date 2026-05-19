@@ -31,7 +31,7 @@ class _FixedOrgController extends CurrentOrgIdController {
 }
 
 void main() {
-  testWidgets('tapping a row pushes the placeholder detail screen', (
+  testWidgets('tapping a row pushes the category detail screen', (
     tester,
   ) async {
     const fakeUser = UserInfo(
@@ -109,7 +109,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    // The placeholder detail body should be rendered.
-    expect(find.text('Detail view coming soon'), findsOneWidget);
+    // The real CategoryDetailScreen renders the category name in the AppBar.
+    expect(find.text('Electronics'), findsWidgets);
   });
 }

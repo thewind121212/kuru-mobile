@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
@@ -77,11 +79,12 @@ void main() {
             categoryRepositoryProvider.overrideWithValue(fake),
             categoryOverviewProvider.overrideWith((ref) async => [cat]),
           ],
-          child: const MaterialApp(
+          child: MaterialApp(
+            theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            locale: Locale('en'),
-            home: CategoriesListScreen(),
+            locale: const Locale('en'),
+            home: const CategoriesListScreen(),
           ),
         ),
       );
@@ -99,7 +102,9 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
 
       // The Name field is pre-filled with 'Old name'. Replace it.
-      final field = find.byType(TextField).first;
+      // TextField[0] is the list screen's KSearchBar; the sheet's name
+      // KTextField is TextField[1].
+      final field = find.byType(TextField).at(1);
       await tester.tap(field);
       await tester.pump();
       (tester.widget(field) as TextField).controller!.clear();
@@ -108,8 +113,12 @@ void main() {
 
       // Tap Save.
       await tester.tap(find.text('Save'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump(); // process tap + setState(_busy=true)
+      await tester.pump(); // flush async microtasks from _submit()
+      await tester.pump(); // flush invalidate + setState(_busy=false)
+      await tester.pump(
+        const Duration(milliseconds: 300),
+      ); // sheet close animation
 
       expect(capturedId, 'cat-1');
       expect(capturedReq?.name, 'New name');

@@ -67,10 +67,11 @@ void main() {
             ],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: CategoryDetailScreen(categoryId: 'root'),
+          home: const CategoryDetailScreen(categoryId: 'root'),
         ),
       ),
     );

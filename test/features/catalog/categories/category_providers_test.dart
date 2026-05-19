@@ -29,7 +29,16 @@ class _FakeCategoryRepo implements CategoryRepository {
   @override
   Future<ApiResult<gen.CategoryResponse>> getById(String id) async {
     onGetById?.call(id);
-    return ApiResult.success(gen.CategoryResponse((b) => b..categoryId = id));
+    return ApiResult.success(
+      gen.CategoryResponse(
+        (b) => b
+          ..categoryId = id
+          ..orgId = 'org-1'
+          ..itemCount = 0
+          ..totalValue = 0
+          ..lowStockCount = 0,
+      ),
+    );
   }
 
   @override

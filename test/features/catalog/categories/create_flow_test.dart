@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
@@ -57,11 +59,12 @@ void main() {
           categoryRepositoryProvider.overrideWithValue(fake),
           categoryOverviewProvider.overrideWith((ref) async => []),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: Locale('en'),
-          home: CategoriesListScreen(),
+          locale: const Locale('en'),
+          home: const CategoriesListScreen(),
         ),
       ),
     );
@@ -74,14 +77,19 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));
 
-    // Fill the Name field — first TextField in the open sheet.
-    await tester.enterText(find.byType(TextField).first, 'Electronics');
+    // Fill the Name field. The list screen's KSearchBar is TextField[0];
+    // the sheet's name KTextField is TextField[1].
+    await tester.enterText(find.byType(TextField).at(1), 'Electronics');
     await tester.pump();
 
     // Tap the Save CTA (KModalSheet footer).
     await tester.tap(find.text('Save'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(); // process tap + setState(_busy=true)
+    await tester.pump(); // flush async microtasks from _submit()
+    await tester.pump(); // flush invalidate + setState(_busy=false)
+    await tester.pump(
+      const Duration(milliseconds: 300),
+    ); // sheet close animation
 
     expect(captured?.name, 'Electronics');
     expect(captured?.layer, '1');

@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
@@ -62,10 +64,11 @@ void main() {
           categoryRepositoryProvider.overrideWithValue(fake),
           categoryOverviewProvider.overrideWith((ref) async => [cat]),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: CategoriesListScreen(),
+          home: const CategoriesListScreen(),
         ),
       ),
     );
