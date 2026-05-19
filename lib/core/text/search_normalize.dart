@@ -1,96 +1,46 @@
-/// Lowercase + NFD-decompose + strip combining marks + đ→d.
+/// Lowercase + map Vietnamese precomposed characters to their base ASCII
+/// letters + đ→d.
 ///
 /// Ports the web FE's `normalizeForSearch`
 /// (../gen-barcode/fe/src/components/category-module/MainCategory.tsx:43-51).
-/// Used to make 'dien' match 'Điện tử' in category search.
+/// Used to make 'dien' match 'Điện tử' or 'nuoc' match 'Nước' in search.
+///
+/// Implementation note: the original approach (NFD decompose + strip combining
+/// marks U+0300-U+036F) failed because text editors save source files in NFC,
+/// so the table values were precomposed chars identical to the keys — making
+/// _toNfd a no-op. The fix maps each Vietnamese precomposed char directly to
+/// its base ASCII letter, which is simpler and always correct.
 String normalizeForSearch(String input) {
   final trimmed = input.trim();
   if (trimmed.isEmpty) return '';
   final lower = trimmed.toLowerCase();
-  final decomposed = _toNfd(lower);
-  // Strip Unicode combining marks (range U+0300-U+036F).
-  final stripped = decomposed.replaceAll(RegExp('[̀-ͯ]'), '');
-  // đ is not handled by NFD — replace explicitly.
-  return stripped.replaceAll('đ', 'd');
+  final buf = StringBuffer();
+  for (final ch in lower.runes) {
+    final s = String.fromCharCode(ch);
+    buf.write(_kBaseMap[s] ?? s);
+  }
+  // đ is not in the map (it lowercases from Đ to đ, both outside Latin-1).
+  return buf.toString().replaceAll('đ', 'd');
 }
 
-/// Manual NFD decomposition for the Vietnamese-relevant precomposed
-/// characters. Dart's String has no built-in NFD; this lookup covers the
-/// vowels + tone marks we actually need for category-name search. ASCII
-/// characters pass through unchanged.
-String _toNfd(String input) {
-  const table = {
-    'à': 'à',
-    'á': 'á',
-    'ả': 'ả',
-    'ã': 'ã',
-    'ạ': 'ạ',
-    'ă': 'ă',
-    'ằ': 'ằ',
-    'ắ': 'ắ',
-    'ẳ': 'ẳ',
-    'ẵ': 'ẵ',
-    'ặ': 'ặ',
-    'â': 'â',
-    'ầ': 'ầ',
-    'ấ': 'ấ',
-    'ẩ': 'ẩ',
-    'ẫ': 'ẫ',
-    'ậ': 'ậ',
-    'è': 'è',
-    'é': 'é',
-    'ẻ': 'ẻ',
-    'ẽ': 'ẽ',
-    'ẹ': 'ẹ',
-    'ê': 'ê',
-    'ề': 'ề',
-    'ế': 'ế',
-    'ể': 'ể',
-    'ễ': 'ễ',
-    'ệ': 'ệ',
-    'ì': 'ì',
-    'í': 'í',
-    'ỉ': 'ỉ',
-    'ĩ': 'ĩ',
-    'ị': 'ị',
-    'ò': 'ò',
-    'ó': 'ó',
-    'ỏ': 'ỏ',
-    'õ': 'õ',
-    'ọ': 'ọ',
-    'ô': 'ô',
-    'ồ': 'ồ',
-    'ố': 'ố',
-    'ổ': 'ổ',
-    'ỗ': 'ỗ',
-    'ộ': 'ộ',
-    'ơ': 'ơ',
-    'ờ': 'ờ',
-    'ớ': 'ớ',
-    'ở': 'ở',
-    'ỡ': 'ỡ',
-    'ợ': 'ợ',
-    'ù': 'ù',
-    'ú': 'ú',
-    'ủ': 'ủ',
-    'ũ': 'ũ',
-    'ụ': 'ụ',
-    'ư': 'ư',
-    'ừ': 'ừ',
-    'ứ': 'ứ',
-    'ử': 'ử',
-    'ữ': 'ữ',
-    'ự': 'ự',
-    'ỳ': 'ỳ',
-    'ý': 'ý',
-    'ỷ': 'ỷ',
-    'ỹ': 'ỹ',
-    'ỵ': 'ỵ',
-  };
-  final buf = StringBuffer();
-  for (final ch in input.runes) {
-    final s = String.fromCharCode(ch);
-    buf.write(table[s] ?? s);
-  }
-  return buf.toString();
-}
+/// Maps every Vietnamese precomposed character to its base ASCII letter.
+const _kBaseMap = <String, String>{
+  // a-based
+  'à': 'a', 'á': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
+  'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
+  'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
+  // e-based
+  'è': 'e', 'é': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e',
+  'ê': 'e', 'ề': 'e', 'ế': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e',
+  // i-based
+  'ì': 'i', 'í': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
+  // o-based
+  'ò': 'o', 'ó': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o',
+  'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o',
+  'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o',
+  // u-based
+  'ù': 'u', 'ú': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u',
+  'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u',
+  // y-based
+  'ỳ': 'y', 'ý': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
+};

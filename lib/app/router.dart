@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
+import 'package:kuru_mobile/features/catalog/brands/brands_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/catalog_launcher_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/category_detail_screen.dart';
@@ -114,7 +115,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                       ),
                     ],
                   ),
-                  // /catalog/brands is added once BrandsListScreen ships.
+                  GoRoute(
+                    path: 'brands',
+                    builder: (_, __) => const BrandsListScreen(),
+                  ),
                 ],
               ),
             ],
