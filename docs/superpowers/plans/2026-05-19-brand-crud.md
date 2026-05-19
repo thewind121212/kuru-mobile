@@ -16,7 +16,8 @@
 - Read `CLAUDE.md` end-to-end. The BE contract, the `x-org-id` interceptor wiring, and the test gotchas (`pumpAndSettle()` ban on KSpinner/KSkeleton screens, `appBootstrapProvider` overrides) are non-negotiable.
 - Read `.claude/skills/openapi-codegen/SKILL.md`. The dart-dio language-version override fix is automated in `tool/codegen.sh` but if it breaks you'll need this skill.
 - Read `.claude/skills/mobile-design/SKILL.md`. Glass widgets live in `lib/design/widgets/` (auth only), flat widgets in `lib/design/core/` (everything else — this work).
-- After every task: run `flutter analyze` (MUST exit 0 — info lints fail CI). For widget changes, also run `flutter test`. Both must pass before committing.
+- After every task: run `flutter analyze` (MUST exit 0 — info lints fail CI).
+- **Test runner:** `flutter test` and `dart test` are **hard-blocked** by a PreToolUse Bash hook. Use the `mcp__plugin_vgv-ai-flutter-plugin_very-good-cli__test` MCP tool with `directory: /Users/kotomiichinose/Projects/kuru-mobile`. **It has no single-file filter** — it runs the whole tree. Steps below that say `Run: flutter test path/...` are abbreviations; actually run the MCP tool against the whole suite, then grep the output for the new test names you just added. Expect a non-zero exit code (~69) because `lib/api/*/test/` contains openapi-generator stubs that always fail — the relevant signal is whether YOUR feature tests appear as `+N -0`.
 
 ---
 
