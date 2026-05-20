@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -52,6 +54,13 @@ class _AvatarPickerBody extends ConsumerStatefulWidget {
   final String? initialSeed;
   @override
   ConsumerState<_AvatarPickerBody> createState() => _AvatarPickerBodyState();
+}
+
+String _randomSeed() {
+  final r = Random();
+  // Short alphanumeric seed — enough variety for dicebear's renderer.
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  return List.generate(10, (_) => alphabet[r.nextInt(alphabet.length)]).join();
 }
 
 class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
@@ -150,17 +159,28 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
           if (_tabs.index == 1 && _style != null)
             Padding(
               padding: const EdgeInsets.all(12),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: () => Navigator.of(context).pop(
-                    AvatarSelection(
-                      style: _style,
-                      seed: _seed ?? widget.currentName,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => setState(() => _seed = _randomSeed()),
+                      icon: const Icon(Icons.casino_outlined),
+                      label: const Text('Đổi ngẫu nhiên'),
                     ),
                   ),
-                  child: const Text('Dùng kiểu này'),
-                ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () => Navigator.of(context).pop(
+                        AvatarSelection(
+                          style: _style,
+                          seed: _seed ?? widget.currentName,
+                        ),
+                      ),
+                      child: const Text('Dùng kiểu này'),
+                    ),
+                  ),
+                ],
               ),
             ),
         ],
@@ -203,8 +223,15 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
         final selected = _style == s;
         return GestureDetector(
           onTap: () => setState(() {
-            _style = s;
-            _seed ??= widget.currentName;
+            if (selected) {
+              // Re-roll: every subsequent tap on the already-selected tile
+              // generates a fresh random seed so the user can shuffle
+              // through variations of the same style.
+              _seed = _randomSeed();
+            } else {
+              _style = s;
+              _seed = _randomSeed();
+            }
           }),
           child: Container(
             decoration: BoxDecoration(

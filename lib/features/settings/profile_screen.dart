@@ -27,14 +27,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   bool _saving = false;
   bool _initialized = false;
 
+  // Snapshot of the hydrated UserInfo so the Save button can stay
+  // disabled until the user actually changes something.
+  String _baselineName = '';
+  String? _baselineAvatarStyle;
+  String? _baselineAvatarSeed;
+
   @override
   void initState() {
     super.initState();
     _nameCtrl.addListener(() {
-      if (_nameError != null && mounted) {
-        setState(() => _nameError = null);
+      if (mounted) {
+        setState(() {
+          if (_nameError != null) _nameError = null;
+        });
       }
     });
+  }
+
+  bool get _isDirty {
+    if (_nameCtrl.text.trim() != _baselineName) return true;
+    if (_avatarStyle != _baselineAvatarStyle) return true;
+    if (_avatarSeed != _baselineAvatarSeed) return true;
+    return false;
   }
 
   @override
@@ -45,9 +60,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   void _hydrate(UserInfo user) {
     if (_initialized) return;
-    _nameCtrl.text = user.name ?? '';
-    _avatarStyle = user.avatarStyle;
-    _avatarSeed = user.avatarSeed;
+    _baselineName = user.name ?? '';
+    _baselineAvatarStyle = user.avatarStyle;
+    _baselineAvatarSeed = user.avatarSeed;
+    _nameCtrl.text = _baselineName;
+    _avatarStyle = _baselineAvatarStyle;
+    _avatarSeed = _baselineAvatarSeed;
     _initialized = true;
   }
 
@@ -168,7 +186,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
             const SizedBox(height: 24),
             KPrimaryBtn(
               fullWidth: true,
-              onPressed: _saving ? null : _save,
+              onPressed: (_saving || !_isDirty) ? null : _save,
               child: _saving
                   ? const SizedBox(
                       width: 18,
