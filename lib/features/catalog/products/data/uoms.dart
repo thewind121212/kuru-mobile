@@ -14,7 +14,7 @@ class Uom {
   final String type;
 }
 
-// Name preserved as UPPER_SNAKE_CASE to match the web source-of-truth (grep parity).
+// UPPER_SNAKE_CASE preserved to grep-match the web source-of-truth.
 // ignore: constant_identifier_names
 const List<Uom> AVAILABLE_UOMS = [
   // counting

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/supertokens_setup.dart';
 import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -33,6 +34,7 @@ class ProductListNotifier
 
   @override
   Future<ProductListPage> build(ProductListFilter arg) async {
+    ref.watch(currentOrgIdProvider);
     _page = 1;
     _accum = [];
     final repo = ref.watch(productRepositoryProvider);
@@ -77,6 +79,7 @@ final productByIdProvider = FutureProvider.family<ProductDetail, String>((
   ref,
   id,
 ) async {
+  ref.watch(currentOrgIdProvider);
   final repo = ref.watch(productRepositoryProvider);
   return repo.getById(id).unwrap();
 });
