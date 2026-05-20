@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
@@ -158,6 +160,47 @@ void main() {
       final r = await repo.getSecurityStatus();
       expect((r as ApiSuccess<SecurityStatus>).data.totpEnabled, isTrue);
       expect(r.data.recoveryCodesRemaining, 7);
+    });
+  });
+
+  group('uploadAvatar', () {
+    test('posts multipart with userId + avatar', () async {
+      when(
+        () => dio.post<Map<String, dynamic>>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => Response<Map<String, dynamic>>(
+          requestOptions: RequestOptions(path: '/'),
+          statusCode: 201,
+          data: {
+            'success': true,
+            'data': {'key': 'user-avatar/abc.webp'},
+          },
+        ),
+      );
+      final tmp = await File(
+        '${Directory.systemTemp.path}/avatar-test-${DateTime.now().microsecondsSinceEpoch}.png',
+      ).create();
+      addTearDown(() async {
+        if (tmp.existsSync()) await tmp.delete();
+      });
+      await tmp.writeAsBytes([1, 2, 3]);
+      final result = await repo.uploadAvatar(file: tmp, userId: 'u-1');
+      expect((result as ApiSuccess<String>).data, 'user-avatar/abc.webp');
+      final captured =
+          verify(
+                () => dio.post<Map<String, dynamic>>(
+                  '/api/v1/store/UploadUserAvatar',
+                  data: captureAny(named: 'data'),
+                ),
+              ).captured.single
+              as FormData;
+      final userIdField = captured.fields.firstWhere(
+        (e) => e.key == 'userId',
+        orElse: () => const MapEntry('', ''),
+      );
+      expect(userIdField.value, 'u-1');
+      expect(captured.files, hasLength(1));
+      expect(captured.files.first.key, 'avatar');
     });
   });
 }
