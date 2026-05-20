@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_mobile/app/router.dart';
 import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/core/i18n/locale_controller.dart';
 import 'package:toastification/toastification.dart';
 
 class KuruApp extends ConsumerWidget {
@@ -12,6 +13,7 @@ class KuruApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final palette = ref.watch(themeControllerProvider);
     final router = ref.watch(routerProvider);
+    final locale = ref.watch(localeControllerProvider);
     return ToastificationWrapper(
       child: MaterialApp.router(
         title: 'Simplestore',
@@ -20,7 +22,7 @@ class KuruApp extends ConsumerWidget {
         darkTheme: buildKuruTheme(palette, Brightness.dark),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        locale: const Locale('vi'),
+        locale: locale,
         routerConfig: router,
       ),
     );
