@@ -92,5 +92,11 @@
 		</array>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Đăng nhập nhanh bằng FaceID</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Chọn ảnh đại diện</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Chụp ảnh đại diện</string>
 	</dict>
 </plist>
