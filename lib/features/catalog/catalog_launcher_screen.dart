@@ -63,7 +63,7 @@ class CatalogLauncherScreen extends StatelessWidget {
                     iconFg: const Color(0xFF6366F1),
                     title: 'Sản phẩm',
                     subtitle: 'Quản lý kho hàng',
-                    onTap: () => context.push('/catalog/products'),
+                    onTap: () => context.go('/catalog/products'),
                   ),
                   const SizedBox(height: 12),
                   _LauncherCard(
