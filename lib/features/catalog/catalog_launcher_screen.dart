@@ -5,7 +5,6 @@ import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
-import 'package:kuru_mobile/design/core/layout/k_page_header.dart';
 
 /// Landing screen for the Catalog bottom-nav branch.
 ///
@@ -17,40 +16,66 @@ class CatalogLauncherScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = kuruColors(context);
     final l = AppLocalizations.of(context);
     return Scaffold(
+      backgroundColor: c.pageBg,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+          padding: const EdgeInsets.only(bottom: 96),
           children: [
-            KPageHeader(title: l.catalogHubTitle),
-            const SizedBox(height: 16),
-            _LauncherCard(
-              icon: TablerIcons.layout_grid,
-              title: l.catalogHubCategoriesTitle,
-              subtitle: l.catalogHubCategoriesSub,
-              onTap: () => context.go('/catalog/categories'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 12, 24, 18),
+              child: Text(
+                l.catalogHubTitle,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
-            _LauncherCard(
-              icon: TablerIcons.shopping_bag,
-              title: l.catalogHubBrandsTitle,
-              subtitle: l.catalogHubBrandsSub,
-              onTap: () => context.go('/catalog/brands'),
-            ),
-            const SizedBox(height: 12),
-            _LauncherCard(
-              icon: TablerIcons.truck,
-              title: l.catalogHubDistributorsTitle,
-              subtitle: l.catalogHubComingSoon,
-              disabled: true,
-            ),
-            const SizedBox(height: 12),
-            _LauncherCard(
-              icon: TablerIcons.receipt_tax,
-              title: l.catalogHubTaxTitle,
-              subtitle: l.catalogHubComingSoon,
-              disabled: true,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                children: [
+                  _LauncherCard(
+                    icon: TablerIcons.layout_grid,
+                    iconBg: const Color(0xFFEEF0FF),
+                    iconFg: const Color(0xFF6366F1),
+                    title: l.catalogHubCategoriesTitle,
+                    subtitle: l.catalogHubCategoriesSub,
+                    onTap: () => context.go('/catalog/categories'),
+                  ),
+                  const SizedBox(height: 12),
+                  _LauncherCard(
+                    icon: TablerIcons.shopping_bag,
+                    iconBg: const Color(0xFFFEF6E5),
+                    iconFg: const Color(0xFFD97706),
+                    title: l.catalogHubBrandsTitle,
+                    subtitle: l.catalogHubBrandsSub,
+                    onTap: () => context.go('/catalog/brands'),
+                  ),
+                  const SizedBox(height: 12),
+                  _LauncherCard(
+                    icon: TablerIcons.truck,
+                    iconBg: const Color(0xFFE6F7F0),
+                    iconFg: const Color(0xFF10B981),
+                    title: l.catalogHubDistributorsTitle,
+                    subtitle: l.catalogHubComingSoon,
+                    disabled: true,
+                  ),
+                  const SizedBox(height: 12),
+                  _LauncherCard(
+                    icon: TablerIcons.receipt_tax,
+                    iconBg: const Color(0xFFF1ECFB),
+                    iconFg: const Color(0xFF8B5CF6),
+                    title: l.catalogHubTaxTitle,
+                    subtitle: l.catalogHubComingSoon,
+                    disabled: true,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -62,6 +87,8 @@ class CatalogLauncherScreen extends StatelessWidget {
 class _LauncherCard extends StatelessWidget {
   const _LauncherCard({
     required this.icon,
+    required this.iconBg,
+    required this.iconFg,
     required this.title,
     required this.subtitle,
     this.onTap,
@@ -69,6 +96,8 @@ class _LauncherCard extends StatelessWidget {
   });
 
   final IconData icon;
+  final Color iconBg;
+  final Color iconFg;
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
@@ -78,40 +107,38 @@ class _LauncherCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = kuruColors(context);
     return Opacity(
-      opacity: disabled ? 0.55 : 1.0,
+      opacity: disabled ? 0.55 : 1,
       child: Material(
         color: c.surfaceElev,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         child: InkWell(
           onTap: disabled ? null : onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              border: Border.all(color: c.border),
-              borderRadius: BorderRadius.circular(16),
-            ),
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.all(18),
             child: Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 52,
+                  height: 52,
                   decoration: BoxDecoration(
-                    color: c.accent100,
+                    color: iconBg,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(icon, size: 30, color: c.accent300),
+                  alignment: Alignment.center,
+                  child: Icon(icon, size: 26, color: iconFg),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w700,
+                          color: c.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),

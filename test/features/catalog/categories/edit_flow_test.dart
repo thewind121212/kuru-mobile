@@ -12,6 +12,7 @@ import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/data/category_repository.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:toastification/toastification.dart';
 
 class _FakeRepo implements CategoryRepository {
   _FakeRepo({this.onUpdate});
@@ -79,12 +80,14 @@ void main() {
             categoryRepositoryProvider.overrideWithValue(fake),
             categoryOverviewProvider.overrideWith((ref) async => [cat]),
           ],
-          child: MaterialApp(
-            theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            locale: const Locale('en'),
-            home: const CategoriesListScreen(),
+          child: ToastificationWrapper(
+            child: MaterialApp(
+              theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+              locale: const Locale('en'),
+              home: const CategoriesListScreen(),
+            ),
           ),
         ),
       );
@@ -124,6 +127,8 @@ void main() {
       expect(capturedReq?.name, 'New name');
       expect(capturedReq?.layer, '1');
       expect(capturedReq?.status, 'ACTIVE');
+      // Drain toastification 4s auto-close timer before disposal.
+      await tester.pump(const Duration(seconds: 5));
     },
   );
 }

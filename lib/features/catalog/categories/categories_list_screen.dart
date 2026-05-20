@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -66,21 +67,17 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                   );
                   if (!context.mounted) return;
                   if (saved ?? false) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(l.categoryNotifySaved)),
-                    );
+                    KNotify.success(context, l.categoryNotifySaved);
                   }
                 },
               ),
-              const SizedBox(height: 12),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                 child: KSearchBar(
                   hint: l.categorySearchHint,
                   onChanged: (q) => setState(() => _searchQuery = q),
                 ),
               ),
-              const SizedBox(height: 12),
               Expanded(
                 child: ref
                     .watch(categoryOverviewProvider)
@@ -99,11 +96,7 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
                               );
                               if (!context.mounted) return;
                               if (saved ?? false) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(l.categoryNotifySaved),
-                                  ),
-                                );
+                                KNotify.success(context, l.categoryNotifySaved);
                               }
                             },
                           );
@@ -183,9 +176,10 @@ class _CategoriesListScreenState extends ConsumerState<CategoriesListScreen> {
 /// Centered header for the Catalog tab — title + optional total-count line
 /// + a trailing "+" [KIconBtn] that opens the Create Root category sheet.
 ///
-/// Deliberately does NOT use `KPageHeader` because Categories wants a
-/// transparent, centred treatment with no description and the total count
-/// surfaced under the title (kuru-web parity).
+/// iOS-style large header per
+/// `docs/superpowers/specs/2026-05-20-ui-style-guide.md` §3.1. Left-aligned
+/// 32sp/800w title with the total count as a muted subtitle, plus a
+/// trailing `+` icon button.
 class _CategoriesHeader extends StatelessWidget {
   const _CategoriesHeader({
     required this.title,
@@ -199,41 +193,38 @@ class _CategoriesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = Theme.of(context).textTheme;
+    final c = kuruColors(context);
     final l = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: Stack(
-        alignment: Alignment.center,
+      padding: const EdgeInsets.fromLTRB(24, 12, 16, 18),
+      child: Row(
         children: [
-          Column(
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: c.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              if (totalCount != null) ...[
-                const SizedBox(height: 2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  l.categoryTotalCount(totalCount!),
-                  textAlign: TextAlign.center,
-                  style: c.bodySmall?.copyWith(
-                    color: Theme.of(
-                      context,
-                    ).textTheme.bodySmall?.color?.withValues(alpha: 0.65),
+                  title,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.8,
                   ),
                 ),
+                if (totalCount != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    l.categoryTotalCount(totalCount!),
+                    style: TextStyle(fontSize: 13, color: c.textMuted),
+                  ),
+                ],
               ],
-            ],
-          ),
-          Positioned(
-            right: 0,
-            child: KIconBtn(
-              icon: const Icon(TablerIcons.plus),
-              tooltip: l.categoryCreateTitle,
-              onPressed: onCreate,
             ),
+          ),
+          KIconBtn(
+            icon: const Icon(TablerIcons.plus),
+            tooltip: l.categoryCreateTitle,
+            onPressed: onCreate,
           ),
         ],
       ),
@@ -296,9 +287,7 @@ class _CategoryCardItem extends ConsumerWidget {
           mode: EditCategory(category: category),
         );
         if ((saved ?? false) && context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l.categoryNotifySaved)));
+          KNotify.success(context, l.categoryNotifySaved);
         }
       case CategoryAction.addSubcategory:
         final saved = await showCreateEditCategorySheet(
@@ -310,9 +299,7 @@ class _CategoryCardItem extends ConsumerWidget {
           ),
         );
         if ((saved ?? false) && context.mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l.categoryNotifySaved)));
+          KNotify.success(context, l.categoryNotifySaved);
         }
       case CategoryAction.delete:
         await _confirmAndDelete(context, ref);
@@ -347,15 +334,13 @@ class _CategoryCardItem extends ConsumerWidget {
       if (parentId != null && parentId != nilUuid) {
         ref.invalidate(categoryByIdProvider(parentId));
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l.categoryNotifyDeleted)));
+      KNotify.success(context, l.categoryNotifyDeleted);
     } else if (failure != null) {
       // Surface the BE-rejected reason verbatim (e.g. "category has children").
       final msg = failure is BadRequestException
           ? (failure! as BadRequestException).message
           : l.categoryNotifyServer;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      KNotify.warning(context, msg);
     }
   }
 

@@ -12,6 +12,7 @@ import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/data/category_repository.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:toastification/toastification.dart';
 
 class _FakeRepo implements CategoryRepository {
   List<String>? removed;
@@ -64,11 +65,13 @@ void main() {
           categoryRepositoryProvider.overrideWithValue(fake),
           categoryOverviewProvider.overrideWith((ref) async => [cat]),
         ],
-        child: MaterialApp(
-          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const CategoriesListScreen(),
+        child: ToastificationWrapper(
+          child: MaterialApp(
+            theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const CategoriesListScreen(),
+          ),
         ),
       ),
     );
@@ -91,5 +94,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     expect(fake.removed, ['cat-1']);
+    // Drain toastification 4s auto-close timer before disposal.
+    await tester.pump(const Duration(seconds: 5));
   });
 }

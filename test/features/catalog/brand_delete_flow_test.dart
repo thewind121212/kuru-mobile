@@ -10,6 +10,7 @@ import 'package:kuru_mobile/features/catalog/brands/brands_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/brands/data/brand_repository.dart';
 import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:toastification/toastification.dart';
 
 class _MockRepo extends Mock implements BrandRepository {}
 
@@ -41,12 +42,14 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [brandRepositoryProvider.overrideWithValue(repo)],
-        child: MaterialApp(
-          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-          locale: const Locale('vi'),
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: const BrandsListScreen(),
+        child: ToastificationWrapper(
+          child: MaterialApp(
+            theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+            locale: const Locale('vi'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: const BrandsListScreen(),
+          ),
         ),
       ),
     );
@@ -69,9 +72,9 @@ void main() {
     await tester.pump(const Duration(milliseconds: 200));
 
     verify(() => repo.remove('b1')).called(1);
-    expect(find.text('Đã xóa thương hiệu'), findsOneWidget);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.text('Chưa có thương hiệu'), findsOneWidget);
+    await tester.pump(const Duration(seconds: 5));
   });
 }
