@@ -14,7 +14,11 @@ import 'package:kuru_mobile/features/main_shell/main_shell.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
 import 'package:kuru_mobile/features/org_picker/org_picker_screen.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
-import 'package:kuru_mobile/features/settings/settings_stub_screen.dart';
+import 'package:kuru_mobile/features/settings/appearance_screen.dart';
+import 'package:kuru_mobile/features/settings/profile_screen.dart';
+import 'package:kuru_mobile/features/settings/security_screen.dart';
+import 'package:kuru_mobile/features/settings/settings_home_screen.dart';
+import 'package:kuru_mobile/features/settings/store_screen.dart';
 import 'package:kuru_mobile/features/splash/splash_screen.dart'
     show SplashScreen, splashGateProvider;
 import 'package:kuru_mobile/features/totp/recovery_code_screen.dart';
@@ -128,7 +132,25 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/settings',
-                builder: (_, __) => const SettingsStubScreen(),
+                builder: (_, __) => const SettingsHomeScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'profile',
+                    builder: (_, __) => const ProfileScreen(),
+                  ),
+                  GoRoute(
+                    path: 'security',
+                    builder: (_, __) => const SecurityScreen(),
+                  ),
+                  GoRoute(
+                    path: 'store',
+                    builder: (_, __) => const StoreScreen(),
+                  ),
+                  GoRoute(
+                    path: 'appearance',
+                    builder: (_, __) => const AppearanceScreen(),
+                  ),
+                ],
               ),
             ],
           ),
