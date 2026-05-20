@@ -1,7 +1,14 @@
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
+import 'package:kuru_mobile/core/network/api_exception.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/profile/profile_providers.dart';
 import 'package:kuru_mobile/design/core/catalog/k_avatar.dart';
 import 'package:kuru_mobile/design/core/modal/k_modal_sheet.dart';
 
@@ -55,19 +62,17 @@ class _AvatarPickerBody extends ConsumerStatefulWidget {
 
 String _randomSeed() {
   final r = Random();
-  // Short alphanumeric seed — enough variety for dicebear's renderer.
   const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
   return List.generate(10, (_) => alphabet[r.nextInt(alphabet.length)]).join();
 }
 
 class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
     with SingleTickerProviderStateMixin {
-  // Upload tab disabled until BE binds /UploadUserAvatar (the multer
-  // helper exists in be/core/file-service/user-avatar.ts but no route
-  // wires it). Restore the tab + image_picker deps when BE ships it.
-  late final TabController _tabs = TabController(length: 2, vsync: this);
+  late final TabController _tabs = TabController(length: 3, vsync: this);
   String? _style;
   String? _seed;
+  File? _pickedFile;
+  bool _uploading = false;
 
   @override
   void initState() {
@@ -85,6 +90,55 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
     super.dispose();
   }
 
+  Future<void> _pickFromGallery() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+      maxWidth: 1024,
+    );
+    if (picked == null) return;
+    setState(() => _pickedFile = File(picked.path));
+  }
+
+  Future<void> _uploadAndApply() async {
+    final file = _pickedFile;
+    final bootstrap = ref.read(appBootstrapProvider);
+    final user = bootstrap.maybeWhen(
+      data: (b) => b is BootstrapAuthed ? b.user : null,
+      orElse: () => null,
+    );
+    final userId = (user?.orgInfos.isNotEmpty ?? false)
+        ? user!.orgInfos.first.id
+        : null;
+    if (file == null) return;
+    if (userId == null) return;
+    setState(() => _uploading = true);
+    final result = await ref
+        .read(profileRepositoryProvider)
+        .uploadAvatar(file: file, userId: userId);
+    if (!mounted) return;
+    setState(() => _uploading = false);
+    switch (result) {
+      case ApiSuccess<String>():
+        ref.invalidate(appBootstrapProvider);
+        if (!context.mounted) return;
+        Navigator.of(
+          context,
+        ).pop(const AvatarSelection(style: 'upload', seed: null));
+      case ApiFailure<String>(:final err):
+        if (err is BadRequestException) {
+          KNotify.warning(context, err.message);
+        } else {
+          KNotify.networkError(
+            context,
+            'Tải ảnh thất bại',
+            onRetry: _uploadAndApply,
+          );
+        }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -96,12 +150,13 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
             tabs: const [
               Tab(text: 'Chữ cái'),
               Tab(text: 'Hình vẽ'),
+              Tab(text: 'Tải lên'),
             ],
           ),
           Expanded(
             child: TabBarView(
               controller: _tabs,
-              children: [_initialsTab(), _dicebearTab()],
+              children: [_initialsTab(), _dicebearTab(), _uploadTab()],
             ),
           ),
           if (_tabs.index == 1)
@@ -171,9 +226,6 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
       itemBuilder: (_, i) {
         final s = _dicebearStyles[i];
         final selected = _style == s.id;
-        // Every tile shares the same _seed so a single "Đổi ngẫu nhiên"
-        // tap repaints every preview at once. Selecting a tile is a
-        // pure style swap; the seed never changes from tapping.
         final tileSeed = _seed ?? widget.currentName;
         return GestureDetector(
           onTap: () {
@@ -201,9 +253,6 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
                       width: 64,
                       height: 64,
                       child: KAvatar(
-                        // ValueKey forces a fresh Element + ImageStream
-                        // whenever the seed changes so a reroll really
-                        // refetches the new dicebear URL.
                         key: ValueKey('${s.id}-$tileSeed'),
                         name: widget.currentName,
                         size: 64,
@@ -225,6 +274,46 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
           ),
         );
       },
+    );
+  }
+
+  Widget _uploadTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const SizedBox(height: 8),
+          GestureDetector(
+            onTap: _pickFromGallery,
+            child: Container(
+              width: 140,
+              height: 140,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              ),
+              alignment: Alignment.center,
+              child: _pickedFile == null
+                  ? const Icon(Icons.add_a_photo, size: 36)
+                  : ClipOval(
+                      child: Image.file(
+                        _pickedFile!,
+                        width: 140,
+                        height: 140,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          FilledButton(
+            onPressed: _pickedFile == null || _uploading
+                ? null
+                : _uploadAndApply,
+            child: _uploading ? const Text('Đang tải…') : const Text('Lưu ảnh'),
+          ),
+        ],
+      ),
     );
   }
 }
