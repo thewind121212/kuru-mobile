@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/core/env/env.dart';
 
 class KAvatar extends StatelessWidget {
   const KAvatar({
@@ -36,10 +37,24 @@ class KAvatar extends StatelessWidget {
     return 'https://api.dicebear.com/9.x/$avatarStyle/png?seed=$seed';
   }
 
+  /// Build the full S3/MinIO URL for an uploaded avatar.
+  ///
+  /// BE persists the S3 key (`<userId>/<userId>.<ext>`) in `avatar_url`,
+  /// NOT a fully-qualified URL. Mirror the web's helper
+  /// (`getUploadedAvatarUrl` in fe/src/core-design/utils/avatar.ts):
+  /// `${IMAGE_BASE_URL}/user-avatar/${key}`. If the BE ever returns an
+  /// absolute URL (http(s)://…) we pass it through unchanged.
+  String? _uploadedUrl() {
+    final key = avatarUrl;
+    if (key == null || key.isEmpty) return null;
+    if (key.startsWith('http://') || key.startsWith('https://')) return key;
+    return '${Env.imageBaseUrl}/user-avatar/$key';
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final url = avatarStyle == 'upload' ? avatarUrl : _dicebearUrl();
+    final url = avatarStyle == 'upload' ? _uploadedUrl() : _dicebearUrl();
     final initials = _initialsFor(name);
 
     return ClipOval(
