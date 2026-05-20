@@ -5,12 +5,16 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/env/env.dart';
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
+import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/design/core/catalog/k_settings_row.dart';
 import 'package:kuru_mobile/design/core/layout/k_settings_section.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
+import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/create_edit_product_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_archive_dialog.dart';
@@ -63,7 +67,7 @@ class ProductDetailScreen extends ConsumerWidget {
               // needs a resolved [ProductDetail] to hand to the edit sheet.
               onPressed: async.maybeWhen(
                 data: (p) =>
-                    () => _openActionMenu(context, p),
+                    () => _openActionMenu(context, ref, p),
                 orElse: () => null,
               ),
             ),
@@ -79,18 +83,25 @@ class ProductDetailScreen extends ConsumerWidget {
 
   Future<void> _openActionMenu(
     BuildContext context,
+    WidgetRef ref,
     ProductDetail detail,
   ) async {
     final picked = await showKActionSheet<String>(
       context: context,
       title: 'Tác vụ',
-      actions: const [
-        KActionItem(
+      actions: [
+        const KActionItem(
           id: 'edit',
           label: 'Sửa thông tin',
           icon: TablerIcons.pencil,
         ),
-        KActionItem(
+        if (detail.status == ProductStatus.archived)
+          const KActionItem(
+            id: 'reactivate',
+            label: 'Buôn bán lại',
+            icon: TablerIcons.refresh,
+          ),
+        const KActionItem(
           id: 'archive',
           label: 'Ngừng kinh doanh',
           icon: TablerIcons.archive,
@@ -102,6 +113,20 @@ class ProductDetailScreen extends ConsumerWidget {
     switch (picked) {
       case 'edit':
         await showCreateEditProductSheet(context, initial: detail);
+      case 'reactivate':
+        final repo = ref.read(productRepositoryProvider);
+        final result = await repo.updateInfo(
+          UpdateProductInfoBody(productId: detail.id, status: 'ACTIVE'),
+        );
+        if (!context.mounted) return;
+        switch (result) {
+          case ApiSuccess():
+            KNotify.success(context, 'Đã mở bán lại');
+            ref.invalidate(productByIdProvider(detail.id));
+            ref.invalidate(productListProvider);
+          case ApiFailure(:final err):
+            KNotify.warning(context, err.message);
+        }
       case 'archive':
         final ok = await showProductArchiveDialog(
           context,

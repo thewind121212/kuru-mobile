@@ -62,4 +62,19 @@ void main() {
     await t.pump();
     expect(find.byTooltip('Tác vụ'), findsNothing);
   });
+
+  testWidgets('Buôn bán lại visible when ARCHIVED + canWrite', (t) async {
+    final archived = _detail().copyWith(status: ProductStatus.archived);
+    await t.pumpWidget(
+      _app([
+        productByIdProvider('p-1').overrideWith((_) => archived),
+        canWriteProductsProvider.overrideWithValue(true),
+      ]),
+    );
+    await t.pump();
+    // Open the action menu
+    await t.tap(find.byTooltip('Tác vụ'));
+    await t.pumpAndSettle();
+    expect(find.text('Buôn bán lại'), findsOneWidget);
+  });
 }
