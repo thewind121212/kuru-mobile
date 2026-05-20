@@ -18,12 +18,16 @@ class AvatarSelection {
   final String? seed;
 }
 
-const _dicebearStyles = <String>[
-  'fun-emoji',
-  'lorelei-line',
-  'miniavs',
-  'open-peeps',
-  'thumbs',
+// Canonical list — mirrors kuru-web's `AVATAR_STYLES` in
+// fe/src/core-design/utils/avatar.ts so a profile picked on the web
+// renders consistently in the mobile app and vice versa.
+const _dicebearStyles = <({String id, String label})>[
+  (id: 'fun-emoji', label: 'Fun Emoji'),
+  (id: 'thumbs', label: 'Thumbs'),
+  (id: 'pixel-art', label: 'Pixel Art'),
+  (id: 'bottts', label: 'Bottts'),
+  (id: 'shapes', label: 'Shapes'),
+  (id: 'adventurer', label: 'Adventure'),
 ];
 
 Future<AvatarSelection?> showAvatarPickerSheet(
@@ -75,7 +79,10 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
   void initState() {
     super.initState();
     _style = widget.initialStyle;
-    _seed = widget.initialSeed;
+    // Default the seed to the user's display name so the very first
+    // render is deterministic; the reroll button replaces it with a
+    // random key, which then refreshes every tile at once.
+    _seed = widget.initialSeed ?? widget.currentName;
     _tabs.addListener(() {
       if (mounted) setState(() {});
     });
@@ -220,21 +227,15 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
       itemCount: _dicebearStyles.length,
       itemBuilder: (_, i) {
         final s = _dicebearStyles[i];
-        final selected = _style == s;
-        // First tap on a style → select with a stable name-derived seed
-        // so the preview is deterministic for this user. Tapping the
-        // already-selected tile is a no-op; the footer "Đổi ngẫu nhiên"
-        // button is the only re-roll affordance.
-        final tileSeed = selected
-            ? (_seed ?? widget.currentName)
-            : widget.currentName;
+        final selected = _style == s.id;
+        // Every tile shares the same _seed so a single "Đổi ngẫu nhiên"
+        // tap repaints every preview at once. Selecting a tile is a
+        // pure style swap; the seed never changes from tapping.
+        final tileSeed = _seed ?? widget.currentName;
         return GestureDetector(
           onTap: () {
             if (selected) return;
-            setState(() {
-              _style = s;
-              _seed = widget.currentName;
-            });
+            setState(() => _style = s.id);
           },
           child: Container(
             decoration: BoxDecoration(
@@ -257,12 +258,13 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
                       width: 64,
                       height: 64,
                       child: KAvatar(
-                        // ValueKey forces a fresh Element + ImageStream when
-                        // the seed changes so re-rolls always refetch.
-                        key: ValueKey('$s-$tileSeed'),
+                        // ValueKey forces a fresh Element + ImageStream
+                        // whenever the seed changes so a reroll really
+                        // refetches the new dicebear URL.
+                        key: ValueKey('${s.id}-$tileSeed'),
                         name: widget.currentName,
                         size: 64,
-                        avatarStyle: s,
+                        avatarStyle: s.id,
                         avatarSeed: tileSeed,
                       ),
                     ),
@@ -270,7 +272,7 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  s,
+                  s.label,
                   style: const TextStyle(fontSize: 11),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
