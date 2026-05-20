@@ -48,6 +48,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
   void _onSearchChanged() {
     _debounce?.cancel();
     _debounce = Timer(const Duration(milliseconds: 300), () {
+      if (!mounted) return;
       setState(() => _filter = _filter.copyWith(search: _searchCtrl.text));
     });
   }
