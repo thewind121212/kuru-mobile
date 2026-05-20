@@ -94,6 +94,9 @@ ref.invalidate(appBootstrapProvider);
 
 ```
 lib/
+├── api/                — GENERATED dart-dio clients (committed; see `tool/codegen.sh` +
+│   │                     `.claude/skills/openapi-codegen/SKILL.md`)
+│   └── category/       — kuru_category_api sub-package (path-dep from main pubspec)
 ├── app/                — KuruApp + router + theme (4 palettes)
 ├── core/
 │   ├── auth/           — AuthRepository, providers, BootstrapResult sealed class,
@@ -104,6 +107,8 @@ lib/
 │   ├── logging/        — single `log` instance via package:logger
 │   ├── network/        — dio_client (org-id + logging + error-mapping interceptors)
 │   │                     + sealed ApiResult<T> + typed ApiException hierarchy
+│   │                     (401 → UnauthorizedException, 403 → ForbiddenException)
+│   ├── text/           — pure text helpers (e.g. `normalizeForSearch` — NFD + đ→d)
 │   └── validators/     — isValidEmail (TDD, WHATWG HTML5 regex)
 ├── design/
 │   ├── auth/           — AuthBackdrop (3 drifting orbs), AuthLogo (glow + sparkles)
@@ -154,6 +159,8 @@ lib/design/core/
 **Demo screen safety:** `CoreDesignDemoScreen` is double-tap-logo on Login (`kDebugMode` guard). `kDebugMode` is a compile-time `const bool` — in release builds the branch becomes dead code and the tree-shaker drops the import + class. Verify with `flutter build ios --release --analyze-size` and confirm `core_design_demo_screen.dart` is absent from the size report. If it ever shows up, switch to a stub-on-release pattern.
 
 **Before doing any UI work in this repo:** read `.claude/skills/mobile-design/SKILL.md` — it documents naming conventions, analyzer trip-wires (the ones implementer subagents kept hitting), test patterns (when not to use `pumpAndSettle`), and theme tokens. The Claude `Skill` tool can be invoked with `mobile-design` to load it on demand.
+
+**Before regenerating or adding a new openapi module:** read `.claude/skills/openapi-codegen/SKILL.md`. Covers `tool/codegen.sh`, the `tool/openapi-patches/` workflow, and the canonical fix for the dart-dio "language version override has to be the same in the library and its part(s)" error (which cost an hour of debugging to land the first time). Triggers automatically when running codegen or debugging build errors mentioning files in `lib/api/`. The Claude `Skill` tool loads it with `openapi-codegen`.
 
 **Native plugins after `pubspec` changes** — adding any plugin with native code (e.g. `super_context_menu`'s Rust binary) requires:
 ```bash

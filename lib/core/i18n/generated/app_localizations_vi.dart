@@ -271,4 +271,314 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get orgPickerNote =>
       'Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt.';
+
+  @override
+  String get navHome => 'Trang chủ';
+
+  @override
+  String get navCatalog => 'Danh mục';
+
+  @override
+  String get navSettings => 'Cài đặt';
+
+  @override
+  String get posOpenTooltip => 'Mở thu ngân';
+
+  @override
+  String get posComingSoon => 'Thu ngân sắp ra mắt';
+
+  @override
+  String get settingsPlaceholder => 'Cài đặt sắp ra mắt';
+
+  @override
+  String get categoryTitle => 'Danh mục';
+
+  @override
+  String get categorySubtitle => 'Quản lý phân loại sản phẩm';
+
+  @override
+  String get categorySearchHint => 'Tìm danh mục...';
+
+  @override
+  String get categoryEmptyTitle => 'Chưa có danh mục';
+
+  @override
+  String get categoryEmptyBody => 'Tạo danh mục đầu tiên để sắp xếp sản phẩm.';
+
+  @override
+  String get categoryEmptyAction => 'Tạo danh mục đầu tiên';
+
+  @override
+  String get categoryTabMain => 'Chính';
+
+  @override
+  String get categoryTabSub => 'Phụ';
+
+  @override
+  String categorySubCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count danh mục con',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String categoryItemCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sản phẩm',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryLoadError => 'Không tải được danh mục';
+
+  @override
+  String get categoryLoadRetry => 'Thử lại';
+
+  @override
+  String get categoryDetailPlaceholder => 'Chi tiết sắp ra mắt';
+
+  @override
+  String get categoryStatSubCategories => 'Phụ';
+
+  @override
+  String get categoryStatItems => 'Sản phẩm';
+
+  @override
+  String get categoryStatValue => 'Giá trị';
+
+  @override
+  String categoryLowStockBadge(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sắp hết',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String categoryTotalCount(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count danh mục',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryCreateTitle => 'Danh mục mới';
+
+  @override
+  String get categoryCreateSubcategoryTitle => 'Danh mục con mới';
+
+  @override
+  String get categoryEditTitle => 'Sửa danh mục';
+
+  @override
+  String get categoryFieldName => 'Tên';
+
+  @override
+  String get categoryFieldNameHint => 'VD: Điện tử';
+
+  @override
+  String get categoryFieldDescription => 'Mô tả';
+
+  @override
+  String get categoryFieldDescriptionHint => 'Ghi chú ngắn (tuỳ chọn)';
+
+  @override
+  String get categoryFieldStatus => 'Trạng thái';
+
+  @override
+  String get categoryFieldIcon => 'Biểu tượng';
+
+  @override
+  String get categoryFieldColor => 'Màu';
+
+  @override
+  String get categoryFieldParent => 'Danh mục cha';
+
+  @override
+  String get categoryStatusActive => 'Đang hoạt động';
+
+  @override
+  String get categoryStatusInactive => 'Ngừng';
+
+  @override
+  String get categoryStatusArchived => 'Lưu trữ';
+
+  @override
+  String get categorySaveCta => 'Lưu';
+
+  @override
+  String get categorySavingCta => 'Đang lưu…';
+
+  @override
+  String get categoryActionEdit => 'Sửa';
+
+  @override
+  String get categoryActionDelete => 'Xoá';
+
+  @override
+  String get categoryActionAddSubcategory => 'Thêm danh mục con';
+
+  @override
+  String get categoryDeleteConfirmTitle => 'Xoá danh mục?';
+
+  @override
+  String categoryDeleteConfirmBody(Object name) {
+    return '$name sẽ bị xoá. Không thể hoàn tác.';
+  }
+
+  @override
+  String get categoryDeleteConfirmCta => 'Xoá';
+
+  @override
+  String get categoryNotifySaved => 'Đã lưu danh mục';
+
+  @override
+  String get categoryNotifyDeleted => 'Đã xoá danh mục';
+
+  @override
+  String get categoryNotifyNetwork => 'Không kết nối được máy chủ. Thử lại.';
+
+  @override
+  String get categoryNotifyServer => 'Đã có lỗi xảy ra. Thử lại sau.';
+
+  @override
+  String get categoryNotifyForbidden =>
+      'Bạn không có quyền thực hiện thao tác này.';
+
+  @override
+  String get categoryNotifyRateLimited =>
+      'Chậm lại nhé — thử lại sau giây lát.';
+
+  @override
+  String get categoryMaxLayerReached => 'Đã đạt độ sâu tối đa';
+
+  @override
+  String categoryDetailSubcategoriesHeader(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Danh mục con ($count)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get categoryDetailNoSubcategories => 'Chưa có danh mục con';
+
+  @override
+  String get catalogHubTitle => 'Danh mục sản phẩm';
+
+  @override
+  String get catalogHubCategoriesTitle => 'Danh mục';
+
+  @override
+  String get catalogHubCategoriesSub => 'Tổ chức sản phẩm theo nhóm';
+
+  @override
+  String get catalogHubBrandsTitle => 'Thương hiệu';
+
+  @override
+  String get catalogHubBrandsSub => 'Quản lý các nhà sản xuất';
+
+  @override
+  String get catalogHubDistributorsTitle => 'Nhà phân phối';
+
+  @override
+  String get catalogHubTaxTitle => 'Thuế';
+
+  @override
+  String get catalogHubComingSoon => 'Sắp có';
+
+  @override
+  String get brandTitle => 'Thương hiệu';
+
+  @override
+  String brandTotalCount(num count) {
+    return '$count thương hiệu';
+  }
+
+  @override
+  String get brandSearchHint => 'Tìm thương hiệu...';
+
+  @override
+  String brandStatProducts(num count) {
+    return '$count sản phẩm';
+  }
+
+  @override
+  String get brandEmptyTitle => 'Chưa có thương hiệu';
+
+  @override
+  String get brandEmptyBody =>
+      'Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất.';
+
+  @override
+  String get brandEmptyAction => 'Tạo thương hiệu đầu tiên';
+
+  @override
+  String get brandLoadError => 'Không tải được danh sách thương hiệu';
+
+  @override
+  String get brandLoadRetry => 'Thử lại';
+
+  @override
+  String get brandCreateTitle => 'Tạo thương hiệu';
+
+  @override
+  String get brandEditTitle => 'Chỉnh sửa thương hiệu';
+
+  @override
+  String get brandFieldNameLabel => 'Tên thương hiệu *';
+
+  @override
+  String get brandFieldNameHint => 'VD: Bosch, Makita, Stanley';
+
+  @override
+  String get brandFieldNameRequired => 'Tên thương hiệu là bắt buộc';
+
+  @override
+  String get brandCreateCta => 'Tạo';
+
+  @override
+  String get brandEditCta => 'Cập nhật';
+
+  @override
+  String get brandDeleteConfirmTitle => 'Xóa thương hiệu?';
+
+  @override
+  String brandDeleteConfirmBody(String name) {
+    return 'Hành động không thể hoàn tác. $name sẽ bị xóa.';
+  }
+
+  @override
+  String get brandDeleteConfirmCta => 'Xóa';
+
+  @override
+  String get brandNotifySaved => 'Đã lưu thương hiệu';
+
+  @override
+  String get brandNotifyDeleted => 'Đã xóa thương hiệu';
+
+  @override
+  String get brandNotifyServer => 'Đã có lỗi xảy ra. Thử lại sau.';
+
+  @override
+  String get brandNotifyNetwork => 'Không kết nối được máy chủ. Thử lại.';
+
+  @override
+  String get brandActionEdit => 'Chỉnh sửa';
+
+  @override
+  String get brandActionDelete => 'Xóa';
 }

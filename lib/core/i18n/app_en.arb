@@ -104,5 +104,123 @@
     }
   },
   "orgPickerCreateNew": "Create new organization",
-  "orgPickerNote": "Each organization is an isolated data space. You can switch any time from Settings."
+  "orgPickerNote": "Each organization is an isolated data space. You can switch any time from Settings.",
+
+  "navHome": "Home",
+  "navCatalog": "Catalog",
+  "navSettings": "Settings",
+  "posOpenTooltip": "Open POS",
+  "posComingSoon": "POS coming soon",
+
+  "settingsPlaceholder": "Settings coming soon",
+
+  "categoryTitle": "Categories",
+  "categorySubtitle": "Manage product classifications",
+  "categorySearchHint": "Search categories...",
+  "categoryEmptyTitle": "No categories yet",
+  "categoryEmptyBody": "Create your first category to organize products.",
+  "categoryEmptyAction": "Create first category",
+  "categoryTabMain": "Main",
+  "categoryTabSub": "Sub",
+  "categorySubCount": "{count, plural, one{{count} subcategory} other{{count} subcategories}}",
+  "@categorySubCount": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryItemCount": "{count, plural, one{{count} item} other{{count} items}}",
+  "@categoryItemCount": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryLoadError": "Couldn't load categories",
+  "categoryLoadRetry": "Retry",
+  "categoryDetailPlaceholder": "Detail view coming soon",
+  "categoryStatSubCategories": "Sub",
+  "categoryStatItems": "Items",
+  "categoryStatValue": "Value",
+  "categoryLowStockBadge": "{count, plural, one{{count} low stock} other{{count} low stock}}",
+  "@categoryLowStockBadge": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryTotalCount": "{count, plural, one{{count} category} other{{count} categories}}",
+  "@categoryTotalCount": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryCreateTitle": "New category",
+  "categoryCreateSubcategoryTitle": "New subcategory",
+  "categoryEditTitle": "Edit category",
+  "categoryFieldName": "Name",
+  "categoryFieldNameHint": "e.g. Electronics",
+  "categoryFieldDescription": "Description",
+  "categoryFieldDescriptionHint": "Short notes (optional)",
+  "categoryFieldStatus": "Status",
+  "categoryFieldIcon": "Icon",
+  "categoryFieldColor": "Color",
+  "categoryFieldParent": "Parent",
+  "categoryStatusActive": "Active",
+  "categoryStatusInactive": "Inactive",
+  "categoryStatusArchived": "Archived",
+  "categorySaveCta": "Save",
+  "categorySavingCta": "Saving…",
+  "categoryActionEdit": "Edit",
+  "categoryActionDelete": "Delete",
+  "categoryActionAddSubcategory": "Add subcategory",
+  "categoryDeleteConfirmTitle": "Delete category?",
+  "categoryDeleteConfirmBody": "{name} will be removed. This cannot be undone.",
+  "@categoryDeleteConfirmBody": {
+    "placeholders": {"name": {"type": "Object"}}
+  },
+  "categoryDeleteConfirmCta": "Delete",
+  "categoryNotifySaved": "Category saved",
+  "categoryNotifyDeleted": "Category deleted",
+  "categoryNotifyNetwork": "Couldn't reach the server. Try again.",
+  "categoryNotifyServer": "Something went wrong. Try again later.",
+  "categoryNotifyForbidden": "You don't have permission to do that.",
+  "categoryNotifyRateLimited": "Slow down — try again in a moment.",
+  "categoryMaxLayerReached": "Max nesting depth reached",
+  "categoryDetailSubcategoriesHeader": "{count, plural, one{Subcategory ({count})} other{Subcategories ({count})}}",
+  "@categoryDetailSubcategoriesHeader": {
+    "placeholders": {"count": {"type": "num"}}
+  },
+  "categoryDetailNoSubcategories": "No subcategories yet",
+
+  "catalogHubTitle": "Catalog",
+  "catalogHubCategoriesTitle": "Categories",
+  "catalogHubCategoriesSub": "Organize products by category",
+  "catalogHubBrandsTitle": "Brands",
+  "catalogHubBrandsSub": "Manage manufacturers",
+  "catalogHubDistributorsTitle": "Distributors",
+  "catalogHubTaxTitle": "Tax",
+  "catalogHubComingSoon": "Coming soon",
+
+  "brandTitle": "Brands",
+  "brandTotalCount": "{count, plural, one{# brand} other{# brands}}",
+  "@brandTotalCount": { "placeholders": { "count": { "type": "num" } } },
+  "brandSearchHint": "Search brands...",
+  "brandStatProducts": "{count, plural, one{# product} other{# products}}",
+  "@brandStatProducts": { "placeholders": { "count": { "type": "num" } } },
+  "brandEmptyTitle": "No brands yet",
+  "brandEmptyBody": "Create your first brand to group products by manufacturer.",
+  "brandEmptyAction": "Create first brand",
+  "brandLoadError": "Could not load brands",
+  "brandLoadRetry": "Retry",
+
+  "brandCreateTitle": "Create brand",
+  "brandEditTitle": "Edit brand",
+  "brandFieldNameLabel": "Name *",
+  "brandFieldNameHint": "e.g. Bosch, Makita, Stanley",
+  "brandFieldNameRequired": "Name is required",
+  "brandCreateCta": "Create",
+  "brandEditCta": "Update",
+
+  "brandDeleteConfirmTitle": "Delete brand?",
+  "brandDeleteConfirmBody": "Cannot be undone. {name} will be deleted.",
+  "@brandDeleteConfirmBody": { "placeholders": { "name": { "type": "String" } } },
+  "brandDeleteConfirmCta": "Delete",
+
+  "brandNotifySaved": "Brand saved",
+  "brandNotifyDeleted": "Brand deleted",
+  "brandNotifyServer": "Something went wrong. Try again later.",
+  "brandNotifyNetwork": "Couldn't reach the server. Try again.",
+
+  "brandActionEdit": "Edit",
+  "brandActionDelete": "Delete"
 }

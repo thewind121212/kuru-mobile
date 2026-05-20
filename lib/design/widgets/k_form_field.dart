@@ -45,11 +45,19 @@ class KFormField extends StatefulWidget {
 
 class _KFormFieldState extends State<KFormField> {
   late bool _revealed;
+  late final FocusNode _focusNode;
 
   @override
   void initState() {
     super.initState();
     _revealed = false;
+    _focusNode = FocusNode();
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -71,13 +79,21 @@ class _KFormFieldState extends State<KFormField> {
           borderWidth: hasError ? 1.5 : null,
           child: Row(
             children: [
+              // Leading icon + label are wrapped in their own focus-on-tap
+              // areas so a tap there focuses the TextField. The eye
+              // IconButton stays outside this wrapper to avoid a gesture
+              // arena fight that caused the keyboard to flicker.
               if (widget.icon != null) ...[
-                IconTheme(
-                  data: IconThemeData(
-                    color: hasError ? c.danger : c.textMuted,
-                    size: 18,
+                GestureDetector(
+                  onTap: _focusNode.requestFocus,
+                  behavior: HitTestBehavior.opaque,
+                  child: IconTheme(
+                    data: IconThemeData(
+                      color: hasError ? c.danger : c.textMuted,
+                      size: 18,
+                    ),
+                    child: widget.icon!,
                   ),
-                  child: widget.icon!,
                 ),
                 const SizedBox(width: 10),
               ],
@@ -86,17 +102,22 @@ class _KFormFieldState extends State<KFormField> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      widget.label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: hasError ? c.danger : c.textMuted,
-                        letterSpacing: 0.5,
+                    GestureDetector(
+                      onTap: _focusNode.requestFocus,
+                      behavior: HitTestBehavior.opaque,
+                      child: Text(
+                        widget.label,
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: hasError ? c.danger : c.textMuted,
+                          letterSpacing: 0.5,
+                        ),
                       ),
                     ),
                     TextField(
                       controller: widget.controller,
+                      focusNode: _focusNode,
                       obscureText: effectivelyObscured,
                       keyboardType: widget.keyboardType,
                       autofillHints: widget.autofillHints,
@@ -152,11 +173,7 @@ class _KFormFieldState extends State<KFormField> {
                   padding: const EdgeInsets.fromLTRB(6, 4, 6, 0),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 12,
-                        color: c.danger,
-                      ),
+                      Icon(Icons.error_outline, size: 12, color: c.danger),
                       const SizedBox(width: 4),
                       Flexible(
                         child: Text(

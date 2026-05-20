@@ -52,8 +52,20 @@ dependencies:
   flutter_tabler_icons: ^1.43.0
 
   # Native iOS/Android context menus — paired with KPopupMenu, sits
-  # alongside KActionSheet for bottom-sheet-vs-popup choice per use case
-  super_context_menu: ^0.9.1
+  # alongside KActionSheet for bottom-sheet-vs-popup choice per use case.
+  # TEMPORARILY REMOVED 2026-05-18 — its Rust binding is the prime suspect
+  # for the splash-crash on iOS 26 devices (built for iOS 17.5 but linked
+  # at 14.0 per build warnings). KPopupMenu stubbed in k_popup_menu.dart.
+  # Restore once we have an iOS 26 build OR rule it out via crash log.
+  # super_context_menu: ^0.9.1
+
+  # Required by dart-dio generated clients (Categories v0.4.0+)
+  built_value: ^8.9.2
+  built_collection: ^5.1.1
+  kuru_category_api:
+    path: lib/api/category
+  kuru_brand_api:
+    path: lib/api/brand
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +81,9 @@ dev_dependencies:
   # after changing the configs below.
   flutter_launcher_icons: ^0.14.1
   flutter_native_splash: ^2.4.6
+  openapi_generator_cli: ^6.1.0
+  built_value_generator: ^8.10.1
+  mocktail: ^1.0.5
 
 flutter:
   uses-material-design: true

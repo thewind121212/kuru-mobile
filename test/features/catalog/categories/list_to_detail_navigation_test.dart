@@ -1,0 +1,115 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/app/router.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
+import 'package:kuru_mobile/core/auth/org_info.dart';
+import 'package:kuru_mobile/core/auth/user_info.dart';
+import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:kuru_mobile/features/splash/splash_screen.dart';
+
+/// Minimal notifier that always says "onboarding seen" — no SharedPrefs needed.
+class _SeenNotifier extends OnboardingSeenController {
+  @override
+  bool build() => true;
+}
+
+/// Returns a fixed org-id from build() without mutating state, preventing the
+/// LateInitializationError that occurs when the setter fires notifyListeners()
+/// before the GoRouter element is fully mounted.
+class _FixedOrgController extends CurrentOrgIdController {
+  _FixedOrgController(this._orgId);
+  final String _orgId;
+
+  @override
+  String? build() => _orgId;
+}
+
+void main() {
+  testWidgets('tapping a row pushes the category detail screen', (
+    tester,
+  ) async {
+    const fakeUser = UserInfo(
+      email: 'test@x.com',
+      orgInfos: <OrgInfo>[
+        OrgInfo(id: 'org-x', name: 'Test Org', role: 'Chủ sở hữu'),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          // Override splash gate so bootstrap resolves immediately to authed.
+          splashGateProvider.overrideWith(
+            (ref) async => const BootstrapAuthed(fakeUser),
+          ),
+          // Override currentOrgIdProvider so router sees a selected org and
+          // doesn't redirect to /org-picker. Uses a subclass that returns the
+          // value from build() to avoid a LateInitializationError in GoRouter.
+          currentOrgIdProvider.overrideWith(() => _FixedOrgController('org-x')),
+          // Onboarding already seen — no SharedPrefs needed.
+          onboardingSeenProvider.overrideWith(_SeenNotifier.new),
+          // Provide test category data, bypassing the real HTTP client.
+          categoryOverviewProvider.overrideWith(
+            (ref) async => [
+              gen.CategoryResponse(
+                (b) => b
+                  ..categoryId = 'cat-1'
+                  ..name = 'Electronics'
+                  ..layer = '1'
+                  ..orgId = 'org-x'
+                  ..itemCount = 0
+                  ..totalValue = 0
+                  ..lowStockCount = 0,
+              ),
+            ],
+          ),
+        ],
+        child: Consumer(
+          builder: (ctx, ref, _) {
+            final router = ref.watch(routerProvider);
+            return MaterialApp.router(
+              routerConfig: router,
+              theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+              locale: const Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            );
+          },
+        ),
+      ),
+    );
+
+    // Advance through splash → redirect → /home.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+
+    // Switch to the Catalog tab (index 1 in the bottom nav).
+    await tester.tap(find.text('Catalog'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    // Catalog tab now lands on CatalogLauncherScreen. Drill into Categories.
+    await tester.tap(find.text('Categories'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    // The category row should now be visible.
+    expect(find.text('Electronics'), findsOneWidget);
+
+    // Tap the row — should push /catalog/categories/cat-1.
+    await tester.tap(find.text('Electronics'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // The real CategoryDetailScreen renders the category name in the AppBar.
+    expect(find.text('Electronics'), findsWidgets);
+  });
+}

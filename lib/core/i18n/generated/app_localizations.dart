@@ -583,6 +583,534 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Mỗi tổ chức là một không gian dữ liệu riêng biệt. Bạn có thể chuyển đổi bất kỳ lúc nào trong Cài đặt.'**
   String get orgPickerNote;
+
+  /// No description provided for @navHome.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trang chủ'**
+  String get navHome;
+
+  /// No description provided for @navCatalog.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục'**
+  String get navCatalog;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt'**
+  String get navSettings;
+
+  /// No description provided for @posOpenTooltip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở thu ngân'**
+  String get posOpenTooltip;
+
+  /// No description provided for @posComingSoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu ngân sắp ra mắt'**
+  String get posComingSoon;
+
+  /// No description provided for @settingsPlaceholder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cài đặt sắp ra mắt'**
+  String get settingsPlaceholder;
+
+  /// No description provided for @categoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục'**
+  String get categoryTitle;
+
+  /// No description provided for @categorySubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý phân loại sản phẩm'**
+  String get categorySubtitle;
+
+  /// No description provided for @categorySearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm danh mục...'**
+  String get categorySearchHint;
+
+  /// No description provided for @categoryEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có danh mục'**
+  String get categoryEmptyTitle;
+
+  /// No description provided for @categoryEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo danh mục đầu tiên để sắp xếp sản phẩm.'**
+  String get categoryEmptyBody;
+
+  /// No description provided for @categoryEmptyAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo danh mục đầu tiên'**
+  String get categoryEmptyAction;
+
+  /// No description provided for @categoryTabMain.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chính'**
+  String get categoryTabMain;
+
+  /// No description provided for @categoryTabSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ'**
+  String get categoryTabSub;
+
+  /// No description provided for @categorySubCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} danh mục con}}'**
+  String categorySubCount(num count);
+
+  /// No description provided for @categoryItemCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} sản phẩm}}'**
+  String categoryItemCount(num count);
+
+  /// No description provided for @categoryLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh mục'**
+  String get categoryLoadError;
+
+  /// No description provided for @categoryLoadRetry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử lại'**
+  String get categoryLoadRetry;
+
+  /// No description provided for @categoryDetailPlaceholder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết sắp ra mắt'**
+  String get categoryDetailPlaceholder;
+
+  /// No description provided for @categoryStatSubCategories.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phụ'**
+  String get categoryStatSubCategories;
+
+  /// No description provided for @categoryStatItems.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sản phẩm'**
+  String get categoryStatItems;
+
+  /// No description provided for @categoryStatValue.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá trị'**
+  String get categoryStatValue;
+
+  /// No description provided for @categoryLowStockBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} sắp hết}}'**
+  String categoryLowStockBadge(num count);
+
+  /// No description provided for @categoryTotalCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{{count} danh mục}}'**
+  String categoryTotalCount(num count);
+
+  /// No description provided for @categoryCreateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục mới'**
+  String get categoryCreateTitle;
+
+  /// No description provided for @categoryCreateSubcategoryTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục con mới'**
+  String get categoryCreateSubcategoryTitle;
+
+  /// No description provided for @categoryEditTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa danh mục'**
+  String get categoryEditTitle;
+
+  /// No description provided for @categoryFieldName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên'**
+  String get categoryFieldName;
+
+  /// No description provided for @categoryFieldNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Điện tử'**
+  String get categoryFieldNameHint;
+
+  /// No description provided for @categoryFieldDescription.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mô tả'**
+  String get categoryFieldDescription;
+
+  /// No description provided for @categoryFieldDescriptionHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú ngắn (tuỳ chọn)'**
+  String get categoryFieldDescriptionHint;
+
+  /// No description provided for @categoryFieldStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái'**
+  String get categoryFieldStatus;
+
+  /// No description provided for @categoryFieldIcon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Biểu tượng'**
+  String get categoryFieldIcon;
+
+  /// No description provided for @categoryFieldColor.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màu'**
+  String get categoryFieldColor;
+
+  /// No description provided for @categoryFieldParent.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục cha'**
+  String get categoryFieldParent;
+
+  /// No description provided for @categoryStatusActive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang hoạt động'**
+  String get categoryStatusActive;
+
+  /// No description provided for @categoryStatusInactive.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ngừng'**
+  String get categoryStatusInactive;
+
+  /// No description provided for @categoryStatusArchived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu trữ'**
+  String get categoryStatusArchived;
+
+  /// No description provided for @categorySaveCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu'**
+  String get categorySaveCta;
+
+  /// No description provided for @categorySavingCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang lưu…'**
+  String get categorySavingCta;
+
+  /// No description provided for @categoryActionEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa'**
+  String get categoryActionEdit;
+
+  /// No description provided for @categoryActionDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá'**
+  String get categoryActionDelete;
+
+  /// No description provided for @categoryActionAddSubcategory.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm danh mục con'**
+  String get categoryActionAddSubcategory;
+
+  /// No description provided for @categoryDeleteConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá danh mục?'**
+  String get categoryDeleteConfirmTitle;
+
+  /// No description provided for @categoryDeleteConfirmBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'{name} sẽ bị xoá. Không thể hoàn tác.'**
+  String categoryDeleteConfirmBody(Object name);
+
+  /// No description provided for @categoryDeleteConfirmCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xoá'**
+  String get categoryDeleteConfirmCta;
+
+  /// No description provided for @categoryNotifySaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu danh mục'**
+  String get categoryNotifySaved;
+
+  /// No description provided for @categoryNotifyDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xoá danh mục'**
+  String get categoryNotifyDeleted;
+
+  /// No description provided for @categoryNotifyNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được máy chủ. Thử lại.'**
+  String get categoryNotifyNetwork;
+
+  /// No description provided for @categoryNotifyServer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có lỗi xảy ra. Thử lại sau.'**
+  String get categoryNotifyServer;
+
+  /// No description provided for @categoryNotifyForbidden.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn không có quyền thực hiện thao tác này.'**
+  String get categoryNotifyForbidden;
+
+  /// No description provided for @categoryNotifyRateLimited.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chậm lại nhé — thử lại sau giây lát.'**
+  String get categoryNotifyRateLimited;
+
+  /// No description provided for @categoryMaxLayerReached.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã đạt độ sâu tối đa'**
+  String get categoryMaxLayerReached;
+
+  /// No description provided for @categoryDetailSubcategoriesHeader.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count, plural, other{Danh mục con ({count})}}'**
+  String categoryDetailSubcategoriesHeader(num count);
+
+  /// No description provided for @categoryDetailNoSubcategories.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có danh mục con'**
+  String get categoryDetailNoSubcategories;
+
+  /// No description provided for @catalogHubTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục sản phẩm'**
+  String get catalogHubTitle;
+
+  /// No description provided for @catalogHubCategoriesTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Danh mục'**
+  String get catalogHubCategoriesTitle;
+
+  /// No description provided for @catalogHubCategoriesSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổ chức sản phẩm theo nhóm'**
+  String get catalogHubCategoriesSub;
+
+  /// No description provided for @catalogHubBrandsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thương hiệu'**
+  String get catalogHubBrandsTitle;
+
+  /// No description provided for @catalogHubBrandsSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý các nhà sản xuất'**
+  String get catalogHubBrandsSub;
+
+  /// No description provided for @catalogHubDistributorsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhà phân phối'**
+  String get catalogHubDistributorsTitle;
+
+  /// No description provided for @catalogHubTaxTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế'**
+  String get catalogHubTaxTitle;
+
+  /// No description provided for @catalogHubComingSoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sắp có'**
+  String get catalogHubComingSoon;
+
+  /// No description provided for @brandTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thương hiệu'**
+  String get brandTitle;
+
+  /// No description provided for @brandTotalCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} thương hiệu'**
+  String brandTotalCount(num count);
+
+  /// No description provided for @brandSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm thương hiệu...'**
+  String get brandSearchHint;
+
+  /// No description provided for @brandStatProducts.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} sản phẩm'**
+  String brandStatProducts(num count);
+
+  /// No description provided for @brandEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thương hiệu'**
+  String get brandEmptyTitle;
+
+  /// No description provided for @brandEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo thương hiệu đầu tiên để gom sản phẩm theo nhà sản xuất.'**
+  String get brandEmptyBody;
+
+  /// No description provided for @brandEmptyAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo thương hiệu đầu tiên'**
+  String get brandEmptyAction;
+
+  /// No description provided for @brandLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được danh sách thương hiệu'**
+  String get brandLoadError;
+
+  /// No description provided for @brandLoadRetry.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thử lại'**
+  String get brandLoadRetry;
+
+  /// No description provided for @brandCreateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo thương hiệu'**
+  String get brandCreateTitle;
+
+  /// No description provided for @brandEditTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa thương hiệu'**
+  String get brandEditTitle;
+
+  /// No description provided for @brandFieldNameLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên thương hiệu *'**
+  String get brandFieldNameLabel;
+
+  /// No description provided for @brandFieldNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Bosch, Makita, Stanley'**
+  String get brandFieldNameHint;
+
+  /// No description provided for @brandFieldNameRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên thương hiệu là bắt buộc'**
+  String get brandFieldNameRequired;
+
+  /// No description provided for @brandCreateCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo'**
+  String get brandCreateCta;
+
+  /// No description provided for @brandEditCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật'**
+  String get brandEditCta;
+
+  /// No description provided for @brandDeleteConfirmTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa thương hiệu?'**
+  String get brandDeleteConfirmTitle;
+
+  /// No description provided for @brandDeleteConfirmBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hành động không thể hoàn tác. {name} sẽ bị xóa.'**
+  String brandDeleteConfirmBody(String name);
+
+  /// No description provided for @brandDeleteConfirmCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa'**
+  String get brandDeleteConfirmCta;
+
+  /// No description provided for @brandNotifySaved.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu thương hiệu'**
+  String get brandNotifySaved;
+
+  /// No description provided for @brandNotifyDeleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã xóa thương hiệu'**
+  String get brandNotifyDeleted;
+
+  /// No description provided for @brandNotifyServer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã có lỗi xảy ra. Thử lại sau.'**
+  String get brandNotifyServer;
+
+  /// No description provided for @brandNotifyNetwork.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không kết nối được máy chủ. Thử lại.'**
+  String get brandNotifyNetwork;
+
+  /// No description provided for @brandActionEdit.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh sửa'**
+  String get brandActionEdit;
+
+  /// No description provided for @brandActionDelete.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa'**
+  String get brandActionDelete;
 }
 
 class _AppLocalizationsDelegate

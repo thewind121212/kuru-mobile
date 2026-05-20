@@ -15,7 +15,6 @@ import 'package:kuru_mobile/design/auth/auth_backdrop.dart';
 import 'package:kuru_mobile/design/auth/auth_logo.dart';
 import 'package:kuru_mobile/design/widgets/k_form_field.dart';
 import 'package:kuru_mobile/design/widgets/k_primary_btn.dart';
-import 'package:kuru_mobile/features/demo/core_design_demo_screen.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -67,10 +66,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final emailError = email.isEmpty
         ? l.validationEmailRequired
         : !isValidEmail(email)
-            ? l.validationInvalidEmail
-            : null;
-    final passwordError =
-        password.isEmpty ? l.validationPasswordRequired : null;
+        ? l.validationInvalidEmail
+        : null;
+    final passwordError = password.isEmpty
+        ? l.validationPasswordRequired
+        : null;
     if (emailError != null || passwordError != null) {
       setState(() {
         _emailError = emailError;
@@ -120,111 +120,110 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final c = kuruColors(context);
     final l = AppLocalizations.of(context);
     return Scaffold(
-      body: Stack(
-        children: [
-          const AuthBackdrop(),
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: Center(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            GestureDetector(
-                              onLongPress: _devReplayOnboarding,
-                              onDoubleTap: kDebugMode
-                                  ? () => Navigator.of(context).push(
-                                        MaterialPageRoute<void>(
-                                          builder: (_) =>
-                                              const CoreDesignDemoScreen(),
-                                        ),
-                                      )
-                                  : null,
-                              behavior: HitTestBehavior.opaque,
-                              child: const AuthLogo(),
-                            ),
-                            const SizedBox(height: 18),
-                            Text(
-                              l.loginTitle,
-                              style: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -0.9,
-                                color: c.textPrimary,
-                                height: 1.05,
+      // Tap anywhere outside a text field to dismiss the keyboard. Inner
+      // GestureDetectors (logo long-press, register footer) win the
+      // gesture arena over this outer one, so they still work.
+      body: GestureDetector(
+        onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+        behavior: HitTestBehavior.opaque,
+        child: Stack(
+          children: [
+            const AuthBackdrop(),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 32, 24, 24),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              GestureDetector(
+                                onLongPress: _devReplayOnboarding,
+                                behavior: HitTestBehavior.opaque,
+                                child: const AuthLogo(),
                               ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              l.loginSubtitle,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: c.textMuted,
+                              const SizedBox(height: 18),
+                              Text(
+                                l.loginTitle,
+                                style: TextStyle(
+                                  fontSize: 30,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.9,
+                                  color: c.textPrimary,
+                                  height: 1.05,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 28),
-                            KFormField(
-                              label: l.fieldEmail,
-                              controller: _email,
-                              icon: const Icon(Icons.mail_outline),
-                              keyboardType: TextInputType.emailAddress,
-                              autofillHints: const [AutofillHints.email],
-                              textInputAction: TextInputAction.next,
-                              errorText: _emailError,
-                            ),
-                            const SizedBox(height: 12),
-                            KFormField(
-                              label: l.fieldPassword,
-                              controller: _password,
-                              icon: const Icon(Icons.lock_outline),
-                              obscureText: true,
-                              autofillHints: const [AutofillHints.password],
-                              textInputAction: TextInputAction.done,
-                              onSubmitted: (_) => _submit(),
-                              errorText: _credentialError,
-                            ),
-                            const SizedBox(height: 12),
-                            KPrimaryBtn(
-                              fullWidth: true,
-                              icon: const Icon(Icons.arrow_outward),
-                              onPressed: _submitting ? null : _submit,
-                              child: Text(l.loginCta),
-                            ),
-                          ],
+                              const SizedBox(height: 6),
+                              Text(
+                                l.loginSubtitle,
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: c.textMuted,
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              KFormField(
+                                label: l.fieldEmail,
+                                controller: _email,
+                                icon: const Icon(Icons.mail_outline),
+                                keyboardType: TextInputType.emailAddress,
+                                autofillHints: const [AutofillHints.email],
+                                textInputAction: TextInputAction.next,
+                                errorText: _emailError,
+                              ),
+                              const SizedBox(height: 12),
+                              KFormField(
+                                label: l.fieldPassword,
+                                controller: _password,
+                                icon: const Icon(Icons.lock_outline),
+                                obscureText: true,
+                                autofillHints: const [AutofillHints.password],
+                                textInputAction: TextInputAction.done,
+                                onSubmitted: (_) => _submit(),
+                                errorText: _credentialError,
+                              ),
+                              const SizedBox(height: 12),
+                              KPrimaryBtn(
+                                fullWidth: true,
+                                icon: const Icon(Icons.arrow_outward),
+                                onPressed: _submitting ? null : _submit,
+                                child: Text(l.loginCta),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  GestureDetector(
-                    onTap: () => context.go('/register'),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '${l.loginFooterNoAccount} ',
-                          style: TextStyle(fontSize: 13, color: c.textMuted),
-                        ),
-                        Text(
-                          l.loginFooterRegister,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: c.primary,
-                            fontWeight: FontWeight.w600,
+                    GestureDetector(
+                      onTap: () => context.go('/register'),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            '${l.loginFooterNoAccount} ',
+                            style: TextStyle(fontSize: 13, color: c.textMuted),
                           ),
-                        ),
-                      ],
+                          Text(
+                            l.loginFooterRegister,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: c.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
