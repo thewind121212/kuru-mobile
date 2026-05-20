@@ -81,42 +81,37 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
+    final appBar = AppBar(
+      backgroundColor: c.pageBg,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      centerTitle: true,
+      leading: const BackButton(),
+      title: Text(
+        'Cửa hàng',
+        style: TextStyle(
+          fontSize: 17,
+          fontWeight: FontWeight.w700,
+          color: c.textPrimary,
+        ),
+      ),
+    );
     if (_loading) {
       return Scaffold(
         backgroundColor: c.pageBg,
-        appBar: AppBar(
-          backgroundColor: c.pageBg,
-          elevation: 0,
-          leading: const BackButton(),
-        ),
+        appBar: appBar,
         body: const Center(child: CircularProgressIndicator()),
       );
     }
     final tzLabel = _selectedTz == null ? '' : _labelFor(_selectedTz!);
     return Scaffold(
       backgroundColor: c.pageBg,
-      appBar: AppBar(
-        backgroundColor: c.pageBg,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        leading: const BackButton(),
-      ),
+      appBar: appBar,
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 32),
+          padding: const EdgeInsets.only(top: 12, bottom: 32),
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 4, 24, 18),
-              child: Text(
-                'Cửa hàng',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
-                ),
-              ),
-            ),
             KSettingsSection(
               header: 'Cấu hình',
               children: [

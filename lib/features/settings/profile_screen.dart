@@ -101,24 +101,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         backgroundColor: c.pageBg,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: true,
         leading: const BackButton(),
+        title: Text(
+          'Hồ sơ',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: c.textPrimary,
+          ),
+        ),
       ),
       body: SafeArea(
         top: false,
         child: ListView(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(8, 4, 8, 18),
-              child: Text(
-                'Hồ sơ',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
-                ),
-              ),
-            ),
+            const SizedBox(height: 12),
             Center(
               child: Column(
                 children: [

@@ -19,24 +19,22 @@ class AppearanceScreen extends ConsumerWidget {
         backgroundColor: c.pageBg,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: true,
         leading: const BackButton(),
+        title: Text(
+          'Giao diện',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: c.textPrimary,
+          ),
+        ),
       ),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 32),
+          padding: const EdgeInsets.only(top: 16, bottom: 32),
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 4, 24, 22),
-              child: Text(
-                'Giao diện',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
-                ),
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
               child: Text(

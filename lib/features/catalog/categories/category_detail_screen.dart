@@ -15,11 +15,6 @@ import 'package:kuru_mobile/features/catalog/categories/widgets/category_tree.da
 const _nilUuid = '00000000-0000-0000-0000-000000000000';
 
 /// Walks up the parent chain from [fromId] to the top-most ancestor.
-///
-/// Mirrors kuru-web's `selectedRootCategoryId` derivation in
-/// `NestedCategoriesView`: the detail screen always renders the subtree
-/// starting from the focused category's root, with the focused row
-/// auto-expanded via [CategoryTree]'s ancestor-path logic.
 String _topAncestorId(List<gen.CategoryResponse> all, String fromId) {
   final byId = <String, gen.CategoryResponse>{
     for (final c in all)
@@ -53,7 +48,16 @@ class CategoryDetailScreen extends ConsumerWidget {
         backgroundColor: c.pageBg,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: true,
         leading: const BackButton(),
+        title: Text(
+          focused?.name ?? '',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: c.textPrimary,
+          ),
+        ),
       ),
       body: SafeArea(
         top: false,
@@ -71,26 +75,12 @@ class CategoryDetailScreen extends ConsumerWidget {
           data: (allCategories) {
             final rootId = _topAncestorId(allCategories, categoryId);
             return ListView(
-              padding: const EdgeInsets.only(bottom: 32),
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
               children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 4, 24, 18),
-                  child: Text(
-                    focused?.name ?? '',
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.8,
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: CategoryTree(
-                    allCategories: allCategories,
-                    rootId: rootId,
-                    focusedId: categoryId,
-                  ),
+                CategoryTree(
+                  allCategories: allCategories,
+                  rootId: rootId,
+                  focusedId: categoryId,
                 ),
               ],
             );
@@ -107,27 +97,15 @@ class _DetailSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.only(bottom: 32),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
       children: const [
-        Padding(
-          padding: EdgeInsets.fromLTRB(24, 4, 24, 18),
-          child: SizedBox(height: 40, child: KSkeleton(height: 40)),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              KSkeleton(height: 56),
-              SizedBox(height: 8),
-              KSkeleton(height: 56),
-              SizedBox(height: 8),
-              KSkeleton(height: 56),
-              SizedBox(height: 8),
-              KSkeleton(height: 56),
-            ],
-          ),
-        ),
+        KSkeleton(height: 56),
+        SizedBox(height: 8),
+        KSkeleton(height: 56),
+        SizedBox(height: 8),
+        KSkeleton(height: 56),
+        SizedBox(height: 8),
+        KSkeleton(height: 56),
       ],
     );
   }

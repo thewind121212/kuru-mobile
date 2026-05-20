@@ -85,24 +85,24 @@ Pick semantic associations:
 
 ### 3.1 Screen template
 
-Every settings-style content screen follows this skeleton:
+**Two patterns — pick by stack depth:**
+
+- **Tab-root screen** (Settings home, Catalog launcher, Brands list, Categories list, Home overview) — use the inline 32sp/800w title at the top of the body, **no AppBar** (or AppBar with no title; only used for status-bar padding). Adopts the iOS "Large Title" idiom.
+- **Pushed detail screen** (Profile, Security, Store, Appearance, Category detail, any other screen reached by `context.push`) — use a Material AppBar with `centerTitle: true`, `backgroundColor: c.pageBg`, `elevation: 0`, `scrolledUnderElevation: 0`, and `title: Text(name, style: 17/700, color: c.textPrimary)`. **Do not render an inline 32sp title in the body.**
+
+Rationale: matches iOS HIG. Root = large landmark title (orients user inside a tab). Pushed child = compact centered title (back arrow on the left does most of the orienting).
+
+#### Tab-root template
 
 ```dart
 return Scaffold(
   backgroundColor: c.pageBg,
-  appBar: AppBar(
-    backgroundColor: c.pageBg,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    leading: const BackButton(),  // omit on top-level tab screens
-  ),
   body: SafeArea(
-    top: false,                   // AppBar already handles top inset
     child: ListView(
       padding: const EdgeInsets.only(bottom: 32),
       children: [
         const Padding(
-          padding: EdgeInsets.fromLTRB(24, 4, 24, 18),
+          padding: EdgeInsets.fromLTRB(24, 12, 24, 18),
           child: Text(
             'Screen title',
             style: TextStyle(
@@ -119,7 +119,39 @@ return Scaffold(
 );
 ```
 
-For the home-of-a-tab screen (no back button), drop `leading: BackButton()` and use `KPageHeader('Title')` ONLY if a heading row with trailing actions is needed; otherwise prefer the inline-text title above.
+#### Pushed detail template
+
+Every pushed content screen follows this skeleton:
+
+```dart
+return Scaffold(
+  backgroundColor: c.pageBg,
+  appBar: AppBar(
+    backgroundColor: c.pageBg,
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    centerTitle: true,
+    leading: const BackButton(),
+    title: Text(
+      'Screen title',
+      style: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w700,
+        color: c.textPrimary,
+      ),
+    ),
+  ),
+  body: SafeArea(
+    top: false,                   // AppBar already handles top inset
+    child: ListView(
+      padding: const EdgeInsets.only(top: 12, bottom: 32),
+      children: [
+        // ... KSettingsSection / sub-content. NO inline 32sp title here.
+      ],
+    ),
+  ),
+);
+```
 
 ### 3.2 Section card (`KSettingsSection`)
 

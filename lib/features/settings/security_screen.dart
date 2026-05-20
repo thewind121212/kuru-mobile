@@ -32,24 +32,22 @@ class SecurityScreen extends ConsumerWidget {
         backgroundColor: c.pageBg,
         elevation: 0,
         scrolledUnderElevation: 0,
+        centerTitle: true,
         leading: const BackButton(),
+        title: Text(
+          'Bảo mật',
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w700,
+            color: c.textPrimary,
+          ),
+        ),
       ),
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 32),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(24, 4, 24, 18),
-              child: Text(
-                'Bảo mật',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: -0.8,
-                ),
-              ),
-            ),
             KSettingsSection(
               header: 'Tài khoản',
               children: [
