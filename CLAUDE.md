@@ -148,6 +148,8 @@ lib/design/core/
 
 **When to use which aesthetic:** auth/onboarding screens use the GLASS widgets in `lib/design/widgets/`. Every other screen (Catalog, Settings, future Home overview, POS, …) uses FLAT widgets in `lib/design/core/`. Don't mix on one screen.
 
+**Canonical content-screen UI bible:** `docs/superpowers/specs/2026-05-20-ui-style-guide.md`. The Settings module (`lib/features/settings/`) is the reference implementation as of `v0.4.0-settings-biometric` — large iOS-style titles, soft pastel icon tints, 18-radius group cards with no outer border, hairline dividers indented past the leading icon, sentence-case section headers OUTSIDE the card. Any new or refactored content screen MUST match the bible; the catalog screens (`brands/`, `categories/`) and `lib/core/feedback/k_notify.dart` will be retrofitted to it.
+
 **Modal helpers** — pick by use case:
 - `showKModalSheet<T>(...)` — create/edit forms, pickers. Params: `disableConfirm`, `showCancel`, `loadingBody`, `enableDrag`.
 - `showKConfirmDialog(...)` — centered AlertDialog for delete/sign-out confirms. Pass `onConfirm: () async {...}` and the dialog stays open with a spinner during await.
