@@ -25,6 +25,11 @@ GoRouter _routerHarness() {
             builder: (_, __) =>
                 const Scaffold(body: Center(child: Text('BRANDS_HIT'))),
           ),
+          GoRoute(
+            path: 'products',
+            builder: (_, __) =>
+                const Scaffold(body: Center(child: Text('PRODUCTS_HIT'))),
+          ),
         ],
       ),
     ],
@@ -45,16 +50,17 @@ Widget _harness() {
 }
 
 void main() {
-  testWidgets('renders 4 cards (2 live + 2 disabled)', (tester) async {
+  testWidgets('renders 4 cards (3 live + 1 disabled)', (tester) async {
     await tester.pumpWidget(_harness());
     await tester.pump();
 
     expect(find.text('Categories'), findsOneWidget);
     expect(find.text('Brands'), findsOneWidget);
-    expect(find.text('Distributors'), findsOneWidget);
+    // Products tile (hardcoded VI string per spec §11).
+    expect(find.text('Sản phẩm'), findsOneWidget);
     expect(find.text('Tax'), findsOneWidget);
-    // Two "Coming soon" subtitles (Distributors + Tax).
-    expect(find.text('Coming soon'), findsNWidgets(2));
+    // Only Tax remains as the disabled "Coming soon" tile.
+    expect(find.text('Coming soon'), findsOneWidget);
   });
 
   testWidgets('tap Categories card → navigates to /catalog/categories', (
@@ -81,16 +87,30 @@ void main() {
     expect(find.text('BRANDS_HIT'), findsOneWidget);
   });
 
-  testWidgets('tap disabled Distributors card → no navigation', (tester) async {
+  testWidgets('tap Products card → navigates to /catalog/products', (
+    tester,
+  ) async {
     await tester.pumpWidget(_harness());
     await tester.pump();
 
-    await tester.tap(find.text('Distributors'));
+    await tester.tap(find.text('Sản phẩm'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    // Still on the launcher — the other 3 titles remain visible.
+    expect(find.text('PRODUCTS_HIT'), findsOneWidget);
+  });
+
+  testWidgets('tap disabled Tax card → no navigation', (tester) async {
+    await tester.pumpWidget(_harness());
+    await tester.pump();
+
+    await tester.tap(find.text('Tax'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    // Still on the launcher — the other live titles remain visible.
     expect(find.text('Categories'), findsOneWidget);
     expect(find.text('Brands'), findsOneWidget);
+    expect(find.text('Sản phẩm'), findsOneWidget);
   });
 }
