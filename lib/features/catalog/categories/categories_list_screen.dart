@@ -211,13 +211,23 @@ class _CategoriesHeader extends StatelessWidget {
                     letterSpacing: -0.8,
                   ),
                 ),
-                if (totalCount != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    l.categoryTotalCount(totalCount!),
-                    style: TextStyle(fontSize: 13, color: c.textMuted),
-                  ),
-                ],
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 16,
+                  child: totalCount == null
+                      ? const Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: 80,
+                            height: 12,
+                            child: KSkeleton(height: 12),
+                          ),
+                        )
+                      : Text(
+                          l.categoryTotalCount(totalCount!),
+                          style: TextStyle(fontSize: 13, color: c.textMuted),
+                        ),
+                ),
               ],
             ),
           ),

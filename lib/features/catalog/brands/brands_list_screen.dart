@@ -119,13 +119,23 @@ class _BrandsHeader extends StatelessWidget {
                     letterSpacing: -0.8,
                   ),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle!,
-                    style: TextStyle(fontSize: 13, color: c.textMuted),
-                  ),
-                ],
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 16,
+                  child: subtitle == null
+                      ? const Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: 80,
+                            height: 12,
+                            child: KSkeleton(height: 12),
+                          ),
+                        )
+                      : Text(
+                          subtitle!,
+                          style: TextStyle(fontSize: 13, color: c.textMuted),
+                        ),
+                ),
               ],
             ),
           ),
