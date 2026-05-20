@@ -238,14 +238,6 @@ class _Body extends ConsumerWidget {
             header: 'Tồn kho',
             children: [
               KSettingsRow(
-                leadingIcon: TablerIcons.box,
-                iconBackground: const Color(0xFFEEF0FF),
-                iconColor: const Color(0xFF6366F1),
-                label: 'Hiện có',
-                trailingText: fmtQty(detail.totalQtyImported),
-                showChevron: false,
-              ),
-              KSettingsRow(
                 leadingIcon: TablerIcons.alert_triangle,
                 iconBackground: const Color(0xFFFEF6E5),
                 iconColor: const Color(0xFFD97706),
