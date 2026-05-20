@@ -221,20 +221,19 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
       itemBuilder: (_, i) {
         final s = _dicebearStyles[i];
         final selected = _style == s;
+        // Every tap (first OR repeat) generates a fresh seed so the user
+        // can mash a tile to shuffle through variations. The explicit
+        // "Đổi ngẫu nhiên" footer button is the discoverable affordance;
+        // tap-to-reroll is the bonus power-user shortcut.
+        final tileSeed = selected ? (_seed ?? widget.currentName) : s;
         return GestureDetector(
           onTap: () => setState(() {
-            if (selected) {
-              // Re-roll: every subsequent tap on the already-selected tile
-              // generates a fresh random seed so the user can shuffle
-              // through variations of the same style.
-              _seed = _randomSeed();
-            } else {
-              _style = s;
-              _seed = _randomSeed();
-            }
+            _style = s;
+            _seed = _randomSeed();
           }),
           child: Container(
             decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: selected
@@ -248,16 +247,26 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Expanded(
-                  child: KAvatar(
-                    name: widget.currentName,
-                    size: 60,
-                    avatarStyle: s,
-                    avatarSeed: _seed ?? widget.currentName,
+                  child: Center(
+                    child: SizedBox(
+                      width: 64,
+                      height: 64,
+                      child: KAvatar(
+                        // ValueKey forces a fresh Element + ImageStream when
+                        // the seed changes so re-rolls always refetch.
+                        key: ValueKey('$s-$tileSeed'),
+                        name: widget.currentName,
+                        size: 64,
+                        avatarStyle: s,
+                        avatarSeed: tileSeed,
+                      ),
+                    ),
                   ),
                 ),
+                const SizedBox(height: 6),
                 Text(
                   s,
-                  style: const TextStyle(fontSize: 10),
+                  style: const TextStyle(fontSize: 11),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
