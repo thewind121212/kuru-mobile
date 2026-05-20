@@ -221,16 +221,21 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
       itemBuilder: (_, i) {
         final s = _dicebearStyles[i];
         final selected = _style == s;
-        // Every tap (first OR repeat) generates a fresh seed so the user
-        // can mash a tile to shuffle through variations. The explicit
-        // "Đổi ngẫu nhiên" footer button is the discoverable affordance;
-        // tap-to-reroll is the bonus power-user shortcut.
-        final tileSeed = selected ? (_seed ?? widget.currentName) : s;
+        // First tap on a style → select with a stable name-derived seed
+        // so the preview is deterministic for this user. Tapping the
+        // already-selected tile is a no-op; the footer "Đổi ngẫu nhiên"
+        // button is the only re-roll affordance.
+        final tileSeed = selected
+            ? (_seed ?? widget.currentName)
+            : widget.currentName;
         return GestureDetector(
-          onTap: () => setState(() {
-            _style = s;
-            _seed = _randomSeed();
-          }),
+          onTap: () {
+            if (selected) return;
+            setState(() {
+              _style = s;
+              _seed = widget.currentName;
+            });
+          },
           child: Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
