@@ -275,22 +275,13 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
     final hasChildren = children.isNotEmpty;
     final isFocused = widget.isFocused;
 
-    // Focused (the entered category) gets an accent halo + ring. Other
-    // nodes are neutral.
+    // Focused (the entered category) gets a 2px accent border + a soft
+    // tinted background. No box shadow — the halo behind the card was
+    // a radial smear that looked muddy on the default indigo palette.
     final cardBg = isFocused ? c.accent50 : c.surfaceElev;
     final focusBorder = isFocused
-        ? Border.all(color: c.accent400, width: 1.5)
+        ? Border.all(color: c.accent400, width: 2)
         : null;
-    final boxShadow = isFocused
-        ? [
-            BoxShadow(
-              color: c.accent300.withValues(alpha: 0.35),
-              blurRadius: 14,
-              spreadRadius: 1,
-              offset: const Offset(0, 2),
-            ),
-          ]
-        : <BoxShadow>[];
 
     // Row itself is NOT tappable. Only the chevron (its own InkWell) and
     // the kebab toggle behavior — row tap does nothing, per UX.
@@ -302,7 +293,6 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
         decoration: BoxDecoration(
           border: focusBorder,
           borderRadius: BorderRadius.circular(14),
-          boxShadow: boxShadow,
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
