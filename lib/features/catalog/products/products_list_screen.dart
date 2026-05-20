@@ -12,6 +12,7 @@ import 'package:kuru_mobile/features/catalog/categories/providers/category_provi
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/category_brand_picker_sheet.dart';
+import 'package:kuru_mobile/features/catalog/products/widgets/create_edit_product_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_card.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_filter_bar.dart';
 
@@ -183,8 +184,16 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
                           if (canWrite) ...[
                             const SizedBox(height: 16),
                             FilledButton(
-                              onPressed: () {
-                                // TODO(plan-task-19): open create sheet
+                              onPressed: () async {
+                                final newId = await showCreateEditProductSheet(
+                                  context,
+                                );
+                                if (!context.mounted) return;
+                                if (newId != null) {
+                                  unawaited(
+                                    context.push('/catalog/products/$newId'),
+                                  );
+                                }
                               },
                               child: const Text('Tạo sản phẩm'),
                             ),
@@ -221,8 +230,12 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
       ),
       floatingActionButton: canWrite
           ? FloatingActionButton.extended(
-              onPressed: () {
-                // TODO(plan-task-19): open create sheet
+              onPressed: () async {
+                final newId = await showCreateEditProductSheet(context);
+                if (!context.mounted) return;
+                if (newId != null) {
+                  unawaited(context.push('/catalog/products/$newId'));
+                }
               },
               icon: const Icon(TablerIcons.plus),
               label: const Text('Tạo sản phẩm'),

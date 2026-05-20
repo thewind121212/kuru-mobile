@@ -12,6 +12,7 @@ import 'package:kuru_mobile/features/catalog/categories/providers/category_provi
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
+import 'package:kuru_mobile/features/catalog/products/widgets/create_edit_product_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_archive_dialog.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_status_badge.dart';
 
@@ -58,7 +59,13 @@ class ProductDetailScreen extends ConsumerWidget {
             IconButton(
               tooltip: 'Tác vụ',
               icon: const Icon(TablerIcons.dots_vertical),
-              onPressed: () => _openActionMenu(context),
+              // Only enabled once the detail has loaded — the action sheet
+              // needs a resolved [ProductDetail] to hand to the edit sheet.
+              onPressed: async.maybeWhen(
+                data: (p) =>
+                    () => _openActionMenu(context, p),
+                orElse: () => null,
+              ),
             ),
         ],
       ),
@@ -70,7 +77,10 @@ class ProductDetailScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _openActionMenu(BuildContext context) async {
+  Future<void> _openActionMenu(
+    BuildContext context,
+    ProductDetail detail,
+  ) async {
     final picked = await showKActionSheet<String>(
       context: context,
       title: 'Tác vụ',
@@ -91,8 +101,7 @@ class ProductDetailScreen extends ConsumerWidget {
     if (picked == null || !context.mounted) return;
     switch (picked) {
       case 'edit':
-        // TODO(plan-task-19): open edit sheet
-        break;
+        await showCreateEditProductSheet(context, initial: detail);
       case 'archive':
         final ok = await showProductArchiveDialog(
           context,
