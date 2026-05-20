@@ -153,23 +153,35 @@ class ProductRepository {
 
 ### 5.2 Models
 
-**`ProductSummary`** (freezed) — list-row shape:
+**`ProductSummary`** (freezed) — list-row shape (mirrors `GetProductOverviewResponse.products[*]` per `product.service.ts:423-446`):
 ```
-id, name, imageUrl?, status (ProductStatus enum),
-baseUnitCode, sellPrice (num), currentStock (num), demandStock (num),
-categoryName?, brandId?, brandName?, variantCount (int)
+id, name, imageUrl (String — BE returns "" not null per service.ts:427; treat empty as missing),
+status (ProductStatus enum),
+baseUnitCode,
+sellPricePerUnit (num — note: list endpoint uses this name, NOT sellPrice),
+currentStock (num), demandStock (num),
+categoryName? (BE field is `category`, denormalized),
+brandId?, brandName?, variantCount (int)
 ```
 
-**`ProductDetail`** (freezed) — GetProductById shape, all of ProductSummary plus:
+**`ProductDetail`** (freezed) — `GetProductById` shape (`product.d.ts:115-145`):
 ```
-categoryId?, distributorId?, description?, baseUnitLabel?,
+id, name, imageUrl (String, may be "" — treat empty as missing),
+status, baseUnitCode, baseUnitLabel?,
+sellPrice (num — note: detail endpoint returns `sellPrice` NOT `sellPricePerUnit`),
 exportPrice?, importPrice?,
-avgCost (num), totalCostValue (num), totalQtyImported (num)
+categoryId?, distributorId?, brandId?, brandName?,
+description?,
+demandStock (num), avgCost (num), totalCostValue (num), totalQtyImported (num)
 ```
+
+> **Detail-screen denormalization gap:** `GetProductById` returns `categoryId` but NOT a category name. The detail screen resolves `categoryId → categoryName` by reading `categoryOverviewProvider` (already loaded for the picker). When `categoryId == null` OR lookup misses, render "—".  Brand denormalization works server-side (`brandName?` is returned). Distributor name is not surfaced in v1 (field unused on detail).
 
 `umos`, `barcodes`, `stocks`, `variants` arrays parsed as `List<dynamic>` and ignored in v1.
 
 **`ProductListPage`** (freezed): `items: List<ProductSummary>, page, limit, totalProducts`. Computed getter `hasMore = items.length == limit && page * limit < totalProducts`.
+
+**`ProductListFilter`** (freezed): `({String? search, String? categoryId, String? brandId})`. Used as the family key for `productListProvider`. Equality + hash defined by freezed so changing any field invalidates the provider.
 
 **`ProductStatus`** enum: `active, inactive, archived` (camelCase Dart, wire is uppercase `ACTIVE/INACTIVE/ARCHIVED`).
 
@@ -186,10 +198,15 @@ ProductRepository productRepository(Ref ref) =>
 
 @riverpod
 class ProductList extends _$ProductList {
-  // family on (search, categoryId?, brandId?)
+  // family-keyed on ProductListFilter (see §5.2)
+  // State holds the accumulated ProductListPage across pages.
+  //   build(filter) → fetches page 1, returns initial page
+  //   loadMore()    → fetches next page, returns a new ProductListPage whose
+  //                    .items = old.items + newPage.items, .page = newPage.page
+  //                    no-op when state.hasMore == false
   @override
   Future<ProductListPage> build(ProductListFilter filter) async { ... }
-  Future<void> loadMore() async { ... }       // appends pages
+  Future<void> loadMore() async { ... }
 }
 
 @riverpod
@@ -197,10 +214,21 @@ Future<ProductDetail> productById(Ref ref, String id) async { ... }
 
 @riverpod
 bool canWriteProducts(Ref ref) {
-  final perms = ref.watch(resolvedPermissionsProvider);
-  return perms.anyStorePerm.contains('product.write');
+  final permsAsync = ref.watch(myPermissionsProvider);
+  return permsAsync.maybeWhen(
+    data: (p) => p.orgPerms.contains('product.write'),
+    orElse: () => false,
+  );
 }
 ```
+
+Provider name notes (verified against existing code):
+- `myPermissionsProvider` lives at `lib/core/permissions/permissions_providers.dart` (NOT `resolvedPermissionsProvider`)
+- `ResolvedPermissions.orgPerms: List<String>` — `product.write` is in BE's `permission.catalog.ts:70` `orgPerms` set
+- Category list = `categoryOverviewProvider` at `lib/features/catalog/categories/providers/category_providers.dart` (NOT `categoryListProvider`)
+- Brand list = `brandOverviewProvider` at `lib/features/catalog/brands/providers/brand_providers.dart` (NOT `brandListProvider`)
+- All `*Overview` providers are `FutureProvider`, return `List<gen.*Response>`, and watch `currentOrgIdProvider` for auto-invalidation on org switch
+- Mobile catalog brands/categories currently do NOT gate writes by permission; `canWriteProductsProvider` is the first such check on mobile. Existing approach in Settings uses `p.isOwner` for OWNER-only flows.
 
 After Create/Update success: `ref.invalidate(productListProvider)` + `ref.invalidate(productByIdProvider(id))`.
 
@@ -270,7 +298,9 @@ Floating action (bottom-right, 16r 16b inset):
 
 ```
 leading: 44sq rounded-10 container
-  - if imageUrl: NetworkImage('${Env.imageBaseUrl}/product-avatar/${imageUrl}'),
+  - hasImage = imageUrl != null && imageUrl.isNotEmpty
+    (BE returns empty string when missing — see service.ts:427)
+  - if hasImage: NetworkImage('${Env.imageBaseUrl}/product-avatar/${imageUrl}'),
     BoxFit.cover, errorBuilder → fallback
   - fallback: TablerIcons.package on slate tint (icon 22, fg slate-500)
 
@@ -309,7 +339,8 @@ Body ListView, padding top:12 bottom:32:
 
 1. Hero block (no card, 16h inset):
    - 220h container, 18-radius:
-     • if imageUrl: NetworkImage same URL pattern, BoxFit.cover,
+     • hasImage = imageUrl != null && imageUrl.isNotEmpty
+     • if hasImage: NetworkImage same URL pattern, BoxFit.cover,
        errorBuilder → centered TablerIcons.package
      • else: centered TablerIcons.package, slate tint
    - 16vp gap
@@ -319,7 +350,8 @@ Body ListView, padding top:12 bottom:32:
 
 2. KSettingsSection 'Phân loại':
    - KSettingsRow leading violet-tint folder, 'Danh mục',
-       trailingText: categoryName ?? '—'
+       trailingText: resolveCategoryName(categoryId) ?? '—'
+       (lookup via categoryOverviewProvider — detail BE response omits categoryName)
    - KSettingsRow leading blue-tint tag, 'Thương hiệu',
        trailingText: brandName ?? '—'
    - KSettingsRow leading slate-tint scale, 'Đơn vị',
@@ -390,7 +422,7 @@ Repository explicit-null vs omit: `UpdateProductInfoBody` field set uses `JsonOp
 
 ### 7.5 `category_brand_picker_sheet.dart`
 
-Reusable feature-local widget. Modes: `category` (uses `categoryListProvider`) or `brand` (uses `brandListProvider`). Same shell:
+Reusable feature-local widget. Modes: `category` (reads `categoryOverviewProvider`) or `brand` (reads `brandOverviewProvider`). Same shell:
 
 ```
 KModalSheet(
@@ -487,7 +519,7 @@ Target: ~35-45 new tests. Run via `mcp__plugin_vgv-ai-flutter-plugin_dart__run_t
 
 ## 10. Risks + unknowns
 
-1. **Currency input (`KCurrencyField`)** — user-supplied component. Spec assumes API surface: `value: int?, onChanged: (int?) => void, errorText: String?, label: String, suffix: 'đ', keyboardType: TextInputType.number`. Implementation plan blocks Phase A submit on component availability.
+1. **Currency input (`KCurrencyField`)** — user-supplied component. Spec assumes API surface: `value: int?, onChanged: (int?) => void, errorText: String?, label: String, suffix: 'đ', keyboardType: TextInputType.number`. **Phase A gating order** for the plan: (i) codegen + models + repository + tests on those, (ii) list screen + detail screen (read-only, no currency *input*; currency *display* uses `intl.NumberFormat.currency`), (iii) wait for user-supplied component, (iv) create/edit sheet + tests. Read-only surfaces ship without the dependency.
 2. **Brand/Category picker scaling** — if a single org's brand list grows past ~200 items the in-sheet local filter still works but initial fetch may be slow. `brandListProvider` already fetches all; revisit pagination only if real users hit the wall.
 3. **OpenAPI/DTO drift** — Create + Update have field mismatches (§3). Hand-build request maps in the repository; do not pass generated request types through. Spec covers this; CLAUDE.md note codifies for future endpoints.
 4. **Image render fallback** — NetworkImage errorBuilder must always render the package icon, not the broken-image glyph. Cover with widget test (mock NetworkImage error).
@@ -500,7 +532,8 @@ Target: ~35-45 new tests. Run via `mcp__plugin_vgv-ai-flutter-plugin_dart__run_t
 - Internal barcode is BE bookkeeping; never rendered.
 - KActionSheet is used only for the unit picker (≤30 items, no search). Category + Brand pickers use the searchable modal-sheet pattern (§7.5).
 - Single-select for category + brand filter chips in v1 (no multi-select chips even though BE accepts arrays).
-- Currency display formatting on read screens uses `intl` package (`NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0)`).
+- Currency display formatting on read screens uses `intl` package (`NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0)`). `intl 0.20.2` already in `pubspec.yaml`, pinned to match what `flutter_localizations` vendors.
+- Sources of denormalized names on list vs detail: list endpoint returns `category` (string name) and `brandName`. Detail endpoint returns only `categoryId` + `brandName`. Detail screen looks category name up via `categoryOverviewProvider`.
 
 ## 12. References
 
