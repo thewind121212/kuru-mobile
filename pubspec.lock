@@ -683,6 +683,13 @@ packages:
       relative: true
     source: path
     version: "0.4.0"
+  kuru_product_api:
+    dependency: "direct main"
+    description:
+      path: "lib/api/product"
+      relative: true
+    source: path
+    version: "0.4.0"
   leak_tracker:
     dependency: transitive
     description:

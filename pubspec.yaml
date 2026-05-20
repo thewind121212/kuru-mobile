@@ -69,6 +69,8 @@ dependencies:
     path: lib/api/category
   kuru_brand_api:
     path: lib/api/brand
+  kuru_product_api:
+    path: lib/api/product
 
 dev_dependencies:
   flutter_test:
