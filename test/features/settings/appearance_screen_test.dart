@@ -57,6 +57,6 @@ void main() {
     await tester.pump();
     await tester.tap(find.byKey(const ValueKey('locale.en')));
     await tester.pump(const Duration(milliseconds: 50));
-    expect(container.read(localeControllerProvider).languageCode, 'en');
+    expect(container.read(localeControllerProvider)?.languageCode, 'en');
   });
 }
