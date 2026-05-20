@@ -43,7 +43,7 @@ void main() {
     );
     final result = await repo.getMyPermissions('org-1');
     expect(result, isA<ApiSuccess<ResolvedPermissions>>());
-    expect((result as ApiSuccess).data.isOwner, isTrue);
+    expect((result as ApiSuccess<ResolvedPermissions>).data.isOwner, isTrue);
   });
 
   test('401 -> UnauthorizedException', () async {

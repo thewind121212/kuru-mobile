@@ -22,12 +22,12 @@ enum OrgRole {
 
 @freezed
 class ResolvedPermissions with _$ResolvedPermissions {
-  const ResolvedPermissions._();
-
   const factory ResolvedPermissions({
     required OrgRole orgRole,
     @Default(<String>[]) List<String> orgPerms,
   }) = _ResolvedPermissions;
+
+  const ResolvedPermissions._();
 
   factory ResolvedPermissions.fromJson(Map<String, dynamic> json) {
     return ResolvedPermissions(
