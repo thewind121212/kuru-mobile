@@ -185,6 +185,97 @@ void main() {
     verify(() => repo.create(any())).called(1);
   });
 
+  testWidgets('Phase B — create with pricing trio + demandStock sends all '
+      'fields', (t) async {
+    final repo = _MockRepo();
+    when(
+      () => repo.create(any()),
+    ).thenAnswer((_) async => ApiResult.success('new-id'));
+
+    final key = GlobalKey<CreateEditProductSheetBodyState>();
+    await t.pumpWidget(_wrapBody(repo: repo, formKey: key));
+    await t.pump();
+
+    // Name (KTextField) is the first TextField in the tree; the demandStock
+    // KTextField sits after the three KCurrencyField triggers + Mô tả.
+    await t.enterText(find.byType(TextField).first, 'Trà sữa');
+    key.currentState!.debugSetSellPrice(15000);
+    key.currentState!.debugSetImportPrice(8000);
+    key.currentState!.debugSetExportPrice(12000);
+    await t.pump();
+
+    // Tồn tối thiểu — second TextField (name is first, demand is the only
+    // other plain TextField rendered in create mode; KTextarea renders its
+    // own TextField too, but appears after demandStock in the form order).
+    final tfs = find.byType(TextField);
+    // Order: 0 = name, 1 = demandStock, 2 = description (Mô tả).
+    await t.enterText(tfs.at(1), '10');
+    await t.pump();
+
+    expect(_saveEnabled(t), isTrue);
+
+    await t.tap(find.widgetWithText(FilledButton, 'Lưu'));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 50));
+
+    final captured =
+        verify(() => repo.create(captureAny())).captured.single
+            as CreateProductBody;
+    expect(captured.name, 'Trà sữa');
+    expect(captured.sellPrice, 15000);
+    expect(captured.importPrice, 8000);
+    expect(captured.exportPrice, 12000);
+    expect(captured.demandStock, 10);
+    // Status defaults to ACTIVE in create mode.
+    expect(captured.status, 'ACTIVE');
+    await t.pump(const Duration(seconds: 5));
+  });
+
+  testWidgets('Phase B — edit toggles status ACTIVE → INACTIVE and sends '
+      'only that field', (t) async {
+    final repo = _MockRepo();
+    when(
+      () => repo.updateInfo(any()),
+    ).thenAnswer((_) async => ApiResult<void>.success(null));
+
+    final key = GlobalKey<CreateEditProductSheetBodyState>();
+    await t.pumpWidget(
+      _wrapBody(repo: repo, formKey: key, initial: _existing()),
+    );
+    await t.pump();
+
+    // SwitchListTile sits at the bottom of the form, often outside the
+    // 600pt test viewport — flip via the @visibleForTesting hook instead
+    // of scrolling.
+    key.currentState!.debugSetIsActive(value: false);
+    await t.pump();
+
+    expect(_saveEnabled(t), isTrue);
+
+    await t.tap(find.widgetWithText(FilledButton, 'Lưu'));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 50));
+
+    final captured =
+        verify(() => repo.updateInfo(captureAny())).captured.single
+            as UpdateProductInfoBody;
+    expect(captured.productId, 'p-1');
+    expect(captured.status, 'INACTIVE');
+    // All other fields must be untouched.
+    expect(captured.name, isNull);
+    expect(captured.sellPrice, isNull);
+    expect(captured.baseUnitCode, isNull);
+    expect(captured.categoryId, isNull);
+    expect(captured.brandId, isNull);
+    expect(captured.description, isNull);
+    expect(captured.importPrice, isNull);
+    expect(captured.exportPrice, isNull);
+    expect(captured.demandStock, isNull);
+    // PATCH wire-shape: only productId + status keys present.
+    expect(captured.toJson().keys, unorderedEquals(['productId', 'status']));
+    await t.pump(const Duration(seconds: 5));
+  });
+
   testWidgets('edit — clearing a previously-set category emits '
       'JsonOptional.clear()', (t) async {
     final repo = _MockRepo();

@@ -21,6 +21,7 @@ import 'package:kuru_mobile/features/catalog/categories/providers/category_provi
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/category_brand_picker_sheet.dart';
@@ -74,6 +75,7 @@ class CreateEditProductSheetBodyState
     extends ConsumerState<CreateEditProductSheetBody> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _descCtrl;
+  late final TextEditingController _demandStockCtrl;
 
   // Working form state — all nullable so we can model "no value".
   String? _categoryId;
@@ -82,6 +84,12 @@ class CreateEditProductSheetBodyState
   String? _brandName;
   late String _baseUnitCode;
   int? _sellPrice;
+  int? _importPrice;
+  int? _exportPrice;
+  // Edit-only ACTIVE/INACTIVE toggle. Create mode forces ACTIVE (the BE
+  // default); ARCHIVED is never set from this sheet — it lives behind the
+  // dedicated "Ngừng kinh doanh" dialog.
+  bool _isActive = true;
 
   String? _nameError;
   bool _submitting = false;
@@ -94,6 +102,10 @@ class CreateEditProductSheetBodyState
   late String _baselineBaseUnitCode;
   late int? _baselineSellPrice;
   late String _baselineDesc;
+  late int? _baselineImportPrice;
+  late int? _baselineExportPrice;
+  late String _baselineDemandStock;
+  late bool _baselineIsActive;
 
   @override
   void initState() {
@@ -106,6 +118,14 @@ class CreateEditProductSheetBodyState
     _brandName = p?.brandName;
     _baseUnitCode = p?.baseUnitCode ?? 'each';
     _sellPrice = p?.sellPrice.toInt();
+    _importPrice = p?.importPrice?.toInt();
+    _exportPrice = p?.exportPrice?.toInt();
+    // demandStock == 0 is the BE's "unset" sentinel — render as empty.
+    final demandSeed = p?.demandStock == null || p!.demandStock == 0
+        ? ''
+        : p.demandStock.toInt().toString();
+    _demandStockCtrl = TextEditingController(text: demandSeed);
+    _isActive = p == null || p.status == ProductStatus.active;
 
     _baselineName = _nameCtrl.text;
     _baselineCategoryId = _categoryId;
@@ -113,9 +133,14 @@ class CreateEditProductSheetBodyState
     _baselineBaseUnitCode = _baseUnitCode;
     _baselineSellPrice = _sellPrice;
     _baselineDesc = _descCtrl.text;
+    _baselineImportPrice = _importPrice;
+    _baselineExportPrice = _exportPrice;
+    _baselineDemandStock = _demandStockCtrl.text;
+    _baselineIsActive = _isActive;
 
     _nameCtrl.addListener(_onNameChanged);
     _descCtrl.addListener(_onDescChanged);
+    _demandStockCtrl.addListener(_onDemandStockChanged);
   }
 
   @override
@@ -125,6 +150,9 @@ class CreateEditProductSheetBodyState
       ..dispose();
     _descCtrl
       ..removeListener(_onDescChanged)
+      ..dispose();
+    _demandStockCtrl
+      ..removeListener(_onDemandStockChanged)
       ..dispose();
     super.dispose();
   }
@@ -141,6 +169,11 @@ class CreateEditProductSheetBodyState
     setState(() {});
   }
 
+  void _onDemandStockChanged() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
   // ---------------------------------------------------------------------
   // @visibleForTesting setters — let tests poke values that would normally
   // go through nested bottom sheets (KCurrencyField, category picker, etc).
@@ -150,6 +183,26 @@ class CreateEditProductSheetBodyState
   // through a key is verbose); plain method reads cleaner at call sites.
   // ignore: use_setters_to_change_properties
   void debugSetSellPrice(int? v) => setState(() => _sellPrice = v);
+
+  @visibleForTesting
+  // Same rationale as [debugSetSellPrice] — avoids driving KCurrencyField's
+  // nested num-pad bottom sheet in widget tests.
+  // ignore: use_setters_to_change_properties
+  void debugSetImportPrice(int? v) => setState(() => _importPrice = v);
+
+  @visibleForTesting
+  // Same rationale as [debugSetSellPrice].
+  // ignore: use_setters_to_change_properties
+  void debugSetExportPrice(int? v) => setState(() => _exportPrice = v);
+
+  @visibleForTesting
+  // The status SwitchListTile is the last form row and frequently sits
+  // below the 600-pt test viewport — tests use this hook instead of
+  // scrolling. A named arg keeps the call site readable + avoids the
+  // avoid_positional_boolean_parameters lint.
+  // ignore: use_setters_to_change_properties
+  void debugSetIsActive({required bool value}) =>
+      setState(() => _isActive = value);
 
   @visibleForTesting
   void debugSetCategory(String? id, String? name) => setState(() {
@@ -180,6 +233,13 @@ class CreateEditProductSheetBodyState
     if (_baseUnitCode != _baselineBaseUnitCode) return true;
     if (_sellPrice != _baselineSellPrice) return true;
     if (_descCtrl.text.trim() != _baselineDesc.trim()) return true;
+    if (_importPrice != _baselineImportPrice) return true;
+    if (_exportPrice != _baselineExportPrice) return true;
+    if (_demandStockCtrl.text != _baselineDemandStock) return true;
+    // Status toggle is edit-only. In create mode the baseline matches the
+    // default (ACTIVE) so the comparison is always false; in edit mode it
+    // flags when the user flipped the switch.
+    if (widget.initial != null && _isActive != _baselineIsActive) return true;
     return false;
   }
 
@@ -321,6 +381,7 @@ class CreateEditProductSheetBodyState
     final p = widget.initial;
     if (p == null) {
       final desc = _descCtrl.text.trim();
+      final demandText = _demandStockCtrl.text.trim();
       final body = CreateProductBody(
         name: name,
         baseUnitCode: _baseUnitCode,
@@ -328,6 +389,9 @@ class CreateEditProductSheetBodyState
         categoryId: _categoryId,
         brandId: _brandId,
         description: desc.isEmpty ? null : desc,
+        importPrice: _importPrice,
+        exportPrice: _exportPrice,
+        demandStock: demandText.isEmpty ? null : int.tryParse(demandText),
       );
       final result = await repo.create(body);
       if (!mounted) return;
@@ -385,16 +449,49 @@ class CreateEditProductSheetBodyState
           : JsonOptional.set(desc);
     }
 
+    JsonOptional<num>? importOpt;
+    if (_importPrice != _baselineImportPrice) {
+      importOpt = _importPrice == null
+          ? const JsonOptional<num>.clear()
+          : JsonOptional<num>.set(_importPrice!);
+    }
+    JsonOptional<num>? exportOpt;
+    if (_exportPrice != _baselineExportPrice) {
+      exportOpt = _exportPrice == null
+          ? const JsonOptional<num>.clear()
+          : JsonOptional<num>.set(_exportPrice!);
+    }
+    JsonOptional<num>? demandOpt;
+    final demandText = _demandStockCtrl.text.trim();
+    if (_demandStockCtrl.text != _baselineDemandStock) {
+      final parsed = int.tryParse(demandText);
+      demandOpt = (demandText.isEmpty || parsed == null)
+          ? const JsonOptional<num>.clear()
+          : JsonOptional<num>.set(parsed);
+    }
+
+    // Status is a plain nullable String on the PATCH body — JsonOptional
+    // isn't used because the BE never allows "clear status to null". We
+    // only send 'ACTIVE' / 'INACTIVE' when the user actually flipped the
+    // switch; ARCHIVED never originates from this sheet.
+    final statusOut = _isActive != _baselineIsActive
+        ? (_isActive ? 'ACTIVE' : 'INACTIVE')
+        : null;
+
     return UpdateProductInfoBody(
       productId: p.id,
       name: name == _baselineName.trim() ? null : name,
       sellPrice: _sellPrice == _baselineSellPrice ? null : _sellPrice,
+      status: statusOut,
       baseUnitCode: _baseUnitCode == _baselineBaseUnitCode
           ? null
           : _baseUnitCode,
       categoryId: categoryOpt,
       brandId: brandOpt,
       description: descOpt,
+      importPrice: importOpt,
+      exportPrice: exportOpt,
+      demandStock: demandOpt,
     );
   }
 
@@ -526,6 +623,25 @@ class CreateEditProductSheetBodyState
         onChanged: (v) => setState(() => _sellPrice = v),
       ),
       const SizedBox(height: 12),
+      KCurrencyField(
+        label: 'Giá nhập',
+        value: _importPrice,
+        onChanged: (v) => setState(() => _importPrice = v),
+      ),
+      const SizedBox(height: 12),
+      KCurrencyField(
+        label: 'Giá xuất',
+        value: _exportPrice,
+        onChanged: (v) => setState(() => _exportPrice = v),
+      ),
+      const SizedBox(height: 12),
+      KTextField(
+        label: 'Tồn tối thiểu',
+        controller: _demandStockCtrl,
+        keyboardType: TextInputType.number,
+        placeholder: 'VD: 10',
+      ),
+      const SizedBox(height: 12),
       KTextarea(
         label: 'Mô tả',
         controller: _descCtrl,
@@ -533,6 +649,13 @@ class CreateEditProductSheetBodyState
         maxLines: 4,
         maxLength: 1000,
       ),
+      if (widget.initial != null) ...[
+        const SizedBox(height: 12),
+        _StatusSwitchRow(
+          isActive: _isActive,
+          onChanged: (v) => setState(() => _isActive = v),
+        ),
+      ],
     ],
   );
 
@@ -645,6 +768,55 @@ class _PickerTriggerRow extends StatelessWidget {
               Icon(TablerIcons.chevron_down, size: 18, color: c.textMuted),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Edit-only "Đang bán / Tạm ngưng" toggle. Rendered as a [SwitchListTile]
+/// so the entire row is a single tap target. Wraps a thin border + radius
+/// to match the surrounding KTextField / KCurrencyField visual rhythm.
+class _StatusSwitchRow extends StatelessWidget {
+  const _StatusSwitchRow({required this.isActive, required this.onChanged});
+
+  final bool isActive;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: c.border),
+        ),
+        child: SwitchListTile(
+          value: isActive,
+          onChanged: onChanged,
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+          title: Text(
+            'Trạng thái',
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+          subtitle: Text(
+            isActive ? 'Đang bán' : 'Tạm ngưng',
+            style: TextStyle(
+              color: c.textPrimary,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          activeThumbColor: c.accent600,
         ),
       ),
     );
