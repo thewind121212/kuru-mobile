@@ -18,7 +18,12 @@ class KSettingsSection extends StatelessWidget {
     for (var i = 0; i < children.length; i++) {
       divided.add(children[i]);
       if (i < children.length - 1) {
-        divided.add(Divider(height: 1, thickness: 1, color: c.borderSoft));
+        divided.add(
+          Padding(
+            padding: const EdgeInsets.only(left: 64),
+            child: Divider(height: 1, thickness: 0.5, color: c.borderSoft),
+          ),
+        );
       }
     }
     return Column(
@@ -26,23 +31,23 @@ class KSettingsSection extends StatelessWidget {
       children: [
         if (header.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 14, 20, 6),
+            padding: const EdgeInsets.fromLTRB(24, 22, 24, 10),
             child: Text(
-              header.toUpperCase(),
+              header,
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                color: c.textSecondary,
-                letterSpacing: 0.5,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: c.textMuted,
               ),
             ),
-          ),
+          )
+        else
+          const SizedBox(height: 18),
         Container(
-          margin: const EdgeInsets.symmetric(horizontal: 14),
+          margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
             color: c.surfaceElev,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: c.border),
+            borderRadius: BorderRadius.circular(18),
           ),
           clipBehavior: Clip.antiAlias,
           child: Column(children: divided),

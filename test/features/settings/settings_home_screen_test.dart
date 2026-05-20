@@ -53,7 +53,7 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    expect(find.text('CỬA HÀNG'), findsOneWidget);
+    expect(find.text('Cửa hàng'), findsOneWidget);
   });
 
   testWidgets('STAFF does not see Cửa hàng section', (tester) async {
@@ -76,7 +76,7 @@ void main() {
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    expect(find.text('CỬA HÀNG'), findsNothing);
-    expect(find.text('BẢO MẬT'), findsOneWidget);
+    expect(find.text('Cửa hàng'), findsNothing);
+    expect(find.text('Bảo mật'), findsOneWidget);
   });
 }

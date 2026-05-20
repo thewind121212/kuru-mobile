@@ -29,28 +29,41 @@ class SecurityScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: c.pageBg,
       appBar: AppBar(
-        title: const Text('Bảo mật'),
-        backgroundColor: c.surfaceElev,
+        backgroundColor: c.pageBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: const BackButton(),
       ),
       body: SafeArea(
+        top: false,
         child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.only(bottom: 32),
           children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(24, 4, 24, 18),
+              child: Text(
+                'Bảo mật',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                ),
+              ),
+            ),
             KSettingsSection(
               header: 'Tài khoản',
               children: [
                 KSettingsRow(
                   leadingIcon: Icons.key_outlined,
                   iconBackground: const Color(0xFFEEF0FF),
-                  iconColor: const Color(0xFF4F46E5),
+                  iconColor: const Color(0xFF6366F1),
                   label: 'Đổi mật khẩu',
                   onTap: () => showChangePasswordSheet(context),
                 ),
                 KSettingsRow(
                   leadingIcon: Icons.shield_outlined,
-                  iconBackground: const Color(0xFFFEF3C7),
-                  iconColor: const Color(0xFFB45309),
+                  iconBackground: const Color(0xFFFEF6E5),
+                  iconColor: const Color(0xFFD97706),
                   label: 'Xác thực 2 lớp',
                   trailingText: (user?.totpEnabled ?? false) ? 'Bật' : 'Tắt',
                   onTap: () =>
@@ -58,8 +71,8 @@ class SecurityScreen extends ConsumerWidget {
                 ),
                 KSwitchRow(
                   leadingIcon: Icons.fingerprint,
-                  iconBackground: const Color(0xFFD1FAE5),
-                  iconColor: const Color(0xFF047857),
+                  iconBackground: const Color(0xFFE6F7F0),
+                  iconColor: const Color(0xFF10B981),
                   label: 'FaceID / Vân tay',
                   subtitle: bioOn
                       ? 'Đã bật'

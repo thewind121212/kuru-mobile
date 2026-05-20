@@ -7,6 +7,7 @@ import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/profile/store_settings_repository.dart';
 import 'package:kuru_mobile/design/core/catalog/k_settings_row.dart';
 import 'package:kuru_mobile/design/core/feedback/k_spinner.dart';
+import 'package:kuru_mobile/design/core/layout/k_settings_section.dart';
 import 'package:kuru_mobile/design/widgets/k_primary_btn.dart';
 import 'package:kuru_mobile/features/settings/sheets/timezone_picker_sheet.dart';
 
@@ -84,9 +85,9 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
       return Scaffold(
         backgroundColor: c.pageBg,
         appBar: AppBar(
-          title: const Text('Cửa hàng'),
-          backgroundColor: c.surfaceElev,
+          backgroundColor: c.pageBg,
           elevation: 0,
+          leading: const BackButton(),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -95,34 +96,48 @@ class _StoreScreenState extends ConsumerState<StoreScreen> {
     return Scaffold(
       backgroundColor: c.pageBg,
       appBar: AppBar(
-        title: const Text('Cửa hàng'),
-        backgroundColor: c.surfaceElev,
+        backgroundColor: c.pageBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: const BackButton(),
       ),
       body: SafeArea(
+        top: false,
         child: ListView(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.only(bottom: 32),
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: KSettingsRow(
-                leadingIcon: Icons.public,
-                iconBackground: const Color(0xFFEDE9FE),
-                iconColor: const Color(0xFF6D28D9),
-                label: 'Múi giờ',
-                trailingText: tzLabel,
-                onTap: () async {
-                  final tz = await showTimezonePickerSheet(
-                    context,
-                    current: _selectedTz ?? '',
-                  );
-                  if (tz != null) setState(() => _selectedTz = tz);
-                },
+            const Padding(
+              padding: EdgeInsets.fromLTRB(24, 4, 24, 18),
+              child: Text(
+                'Cửa hàng',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            KSettingsSection(
+              header: 'Cấu hình',
+              children: [
+                KSettingsRow(
+                  leadingIcon: Icons.public,
+                  iconBackground: const Color(0xFFF1ECFB),
+                  iconColor: const Color(0xFF8B5CF6),
+                  label: 'Múi giờ',
+                  trailingText: tzLabel,
+                  onTap: () async {
+                    final tz = await showTimezonePickerSheet(
+                      context,
+                      current: _selectedTz ?? '',
+                    );
+                    if (tz != null) setState(() => _selectedTz = tz);
+                  },
+                ),
+              ],
+            ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.fromLTRB(16, 28, 16, 0),
               child: KPrimaryBtn(
                 fullWidth: true,
                 onPressed:

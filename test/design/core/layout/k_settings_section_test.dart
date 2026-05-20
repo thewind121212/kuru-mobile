@@ -20,7 +20,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('BẢO MẬT'), findsOneWidget);
+    expect(find.text('Bảo mật'), findsOneWidget);
     expect(find.text('Đổi mật khẩu'), findsOneWidget);
     expect(find.text('2FA'), findsOneWidget);
   });

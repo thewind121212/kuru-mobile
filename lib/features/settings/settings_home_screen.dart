@@ -7,7 +7,6 @@ import 'package:kuru_mobile/core/auth/auth_repository.dart';
 import 'package:kuru_mobile/core/auth/biometric_providers.dart';
 import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
 import 'package:kuru_mobile/design/core/catalog/k_settings_row.dart';
-import 'package:kuru_mobile/design/core/layout/k_page_header.dart';
 import 'package:kuru_mobile/design/core/layout/k_settings_hero.dart';
 import 'package:kuru_mobile/design/core/layout/k_settings_section.dart';
 
@@ -40,12 +39,21 @@ class SettingsHomeScreen extends ConsumerWidget {
       backgroundColor: c.pageBg,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 24),
+          padding: const EdgeInsets.only(bottom: 32),
           children: [
-            const KPageHeader(title: 'Cài đặt'),
-            const SizedBox(height: 12),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(24, 12, 24, 18),
+              child: Text(
+                'Cài đặt',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                ),
+              ),
+            ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: KSettingsHero(
                 name: user.name ?? '',
                 email: user.email ?? '',
@@ -62,22 +70,22 @@ class SettingsHomeScreen extends ConsumerWidget {
                 KSettingsRow(
                   leadingIcon: Icons.key_outlined,
                   iconBackground: const Color(0xFFEEF0FF),
-                  iconColor: const Color(0xFF4F46E5),
+                  iconColor: const Color(0xFF6366F1),
                   label: 'Đổi mật khẩu',
                   onTap: () => context.push('/settings/security'),
                 ),
                 KSettingsRow(
                   leadingIcon: Icons.shield_outlined,
-                  iconBackground: const Color(0xFFFEF3C7),
-                  iconColor: const Color(0xFFB45309),
+                  iconBackground: const Color(0xFFFEF6E5),
+                  iconColor: const Color(0xFFD97706),
                   label: 'Xác thực 2 lớp',
                   trailingText: user.totpEnabled ? 'Bật' : 'Tắt',
                   onTap: () => context.push('/settings/security'),
                 ),
                 KSettingsRow(
                   leadingIcon: Icons.fingerprint,
-                  iconBackground: const Color(0xFFD1FAE5),
-                  iconColor: const Color(0xFF047857),
+                  iconBackground: const Color(0xFFE6F7F0),
+                  iconColor: const Color(0xFF10B981),
                   label: 'FaceID / Vân tay',
                   trailingText: bioEnabled.maybeWhen(
                     data: (v) => v ? 'Bật' : 'Tắt',
@@ -93,8 +101,8 @@ class SettingsHomeScreen extends ConsumerWidget {
                 children: [
                   KSettingsRow(
                     leadingIcon: Icons.public,
-                    iconBackground: const Color(0xFFEDE9FE),
-                    iconColor: const Color(0xFF6D28D9),
+                    iconBackground: const Color(0xFFF1ECFB),
+                    iconColor: const Color(0xFF8B5CF6),
                     label: 'Múi giờ',
                     onTap: () => context.push('/settings/store'),
                   ),
@@ -105,28 +113,27 @@ class SettingsHomeScreen extends ConsumerWidget {
               children: [
                 KSettingsRow(
                   leadingIcon: Icons.palette_outlined,
-                  iconBackground: const Color(0xFFD6F5EE),
-                  iconColor: const Color(0xFF0D9488),
+                  iconBackground: const Color(0xFFE6F4F5),
+                  iconColor: const Color(0xFF14B8A6),
                   label: 'Màu chủ đề',
                   onTap: () => context.push('/settings/appearance'),
                 ),
                 KSettingsRow(
                   leadingIcon: Icons.language,
-                  iconBackground: const Color(0xFFE0F2FE),
-                  iconColor: const Color(0xFF0369A1),
+                  iconBackground: const Color(0xFFE7F1FB),
+                  iconColor: const Color(0xFF3B82F6),
                   label: 'Ngôn ngữ',
                   onTap: () => context.push('/settings/appearance'),
                 ),
               ],
             ),
-            const SizedBox(height: 14),
             KSettingsSection(
               header: '',
               children: [
                 KSettingsRow(
                   leadingIcon: Icons.logout,
-                  iconBackground: const Color(0xFFFFE4E6),
-                  iconColor: const Color(0xFFBE123C),
+                  iconBackground: const Color(0xFFFBE9EC),
+                  iconColor: const Color(0xFFE11D48),
                   label: 'Đăng xuất',
                   labelColor: const Color(0xFFDC2626),
                   showChevron: false,

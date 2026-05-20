@@ -98,14 +98,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     return Scaffold(
       backgroundColor: c.pageBg,
       appBar: AppBar(
-        title: const Text('Hồ sơ'),
-        backgroundColor: c.surfaceElev,
+        backgroundColor: c.pageBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: const BackButton(),
       ),
       body: SafeArea(
+        top: false,
         child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(8, 4, 8, 18),
+              child: Text(
+                'Hồ sơ',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                ),
+              ),
+            ),
             Center(
               child: Column(
                 children: [
@@ -128,26 +141,26 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       name: _nameCtrl.text.isEmpty
                           ? (user.name ?? '')
                           : _nameCtrl.text,
-                      size: 96,
+                      size: 104,
                       avatarStyle: _avatarStyle,
                       avatarSeed: _avatarSeed,
                       avatarUrl: user.avatarUrl,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     'Nhấn để đổi ảnh đại diện',
-                    style: TextStyle(color: c.textSecondary, fontSize: 12),
+                    style: TextStyle(color: c.textMuted, fontSize: 13),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     user.email ?? '',
-                    style: TextStyle(color: c.textSecondary, fontSize: 12),
+                    style: TextStyle(color: c.textMuted, fontSize: 13),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
             KFormField(
               controller: _nameCtrl,
               label: 'Tên hiển thị',
@@ -171,6 +184,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ),
             ),
+            const SizedBox(height: 32),
           ],
         ),
       ),

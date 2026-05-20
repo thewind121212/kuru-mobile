@@ -16,68 +16,105 @@ class AppearanceScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: c.pageBg,
       appBar: AppBar(
-        title: const Text('Giao diện'),
-        backgroundColor: c.surfaceElev,
+        backgroundColor: c.pageBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        leading: const BackButton(),
       ),
       body: SafeArea(
+        top: false,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.only(bottom: 32),
           children: [
-            Text(
-              'Màu chủ đề',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: c.textSecondary,
+            const Padding(
+              padding: EdgeInsets.fromLTRB(24, 4, 24, 22),
+              child: Text(
+                'Giao diện',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.8,
+                ),
               ),
             ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 16,
-              runSpacing: 16,
-              children: [
-                for (final p in KuruPalette.values)
-                  _Swatch(
-                    key: ValueKey('palette.${p.name}'),
-                    label: p.label,
-                    color: p.resolve(Brightness.light).primary,
-                    selected: palette == p,
-                    onTap: () => ref
-                        .read(themeControllerProvider.notifier)
-                        .setPalette(p),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 28),
-            Text(
-              'Ngôn ngữ',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: c.textSecondary,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
+              child: Text(
+                'Màu chủ đề',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: c.textMuted,
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            RadioGroup<String>(
-              groupValue: locale.languageCode,
-              onChanged: (v) {
-                if (v == null) return;
-                ref
-                    .read(localeControllerProvider.notifier)
-                    .setLocale(Locale(v));
-              },
-              child: Column(
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                color: c.surfaceElev,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 28,
+                runSpacing: 16,
                 children: [
-                  for (final loc in LocaleController.supported)
-                    RadioListTile<String>(
-                      key: ValueKey('locale.${loc.languageCode}'),
-                      value: loc.languageCode,
-                      title: Text(
-                        loc.languageCode == 'vi' ? 'Tiếng Việt' : 'English',
-                      ),
+                  for (final p in KuruPalette.values)
+                    _Swatch(
+                      key: ValueKey('palette.${p.name}'),
+                      label: p.label,
+                      color: p.resolve(Brightness.light).primary,
+                      selected: palette == p,
+                      onTap: () => ref
+                          .read(themeControllerProvider.notifier)
+                          .setPalette(p),
                     ),
                 ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 10),
+              child: Text(
+                'Ngôn ngữ',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: c.textMuted,
+                ),
+              ),
+            ),
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: c.surfaceElev,
+                borderRadius: BorderRadius.circular(18),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: RadioGroup<String>(
+                groupValue: locale.languageCode,
+                onChanged: (v) {
+                  if (v == null) return;
+                  ref
+                      .read(localeControllerProvider.notifier)
+                      .setLocale(Locale(v));
+                },
+                child: Column(
+                  children: [
+                    for (final loc in LocaleController.supported)
+                      RadioListTile<String>(
+                        key: ValueKey('locale.${loc.languageCode}'),
+                        value: loc.languageCode,
+                        title: Text(
+                          loc.languageCode == 'vi' ? 'Tiếng Việt' : 'English',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -103,33 +140,43 @@ class _Swatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = kuruColors(context);
     return GestureDetector(
       onTap: onTap,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 56,
-            height: 56,
+            width: 60,
+            height: 60,
             decoration: BoxDecoration(
               color: color,
               shape: BoxShape.circle,
               border: Border.all(
-                color: selected
-                    ? Theme.of(context).colorScheme.primary
-                    : Colors.transparent,
+                color: selected ? color : Colors.transparent,
                 width: 3,
               ),
               boxShadow: [
-                BoxShadow(color: color.withValues(alpha: 0.3), blurRadius: 8),
+                if (selected)
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                  ),
               ],
             ),
             child: selected
-                ? const Icon(Icons.check, color: Colors.white)
+                ? const Icon(Icons.check, color: Colors.white, size: 26)
                 : null,
           ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: c.textPrimary,
+            ),
+          ),
         ],
       ),
     );
