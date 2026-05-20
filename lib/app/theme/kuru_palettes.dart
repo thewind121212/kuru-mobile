@@ -40,11 +40,7 @@ class KuruPalettes {
     ambient1: Color(0x299C27B0),
     ambient2: Color(0x245E35B1),
     shadowSm: [
-      BoxShadow(
-        color: Color(0x0F5E35B1),
-        blurRadius: 2,
-        offset: Offset(0, 1),
-      ),
+      BoxShadow(color: Color(0x0F5E35B1), blurRadius: 2, offset: Offset(0, 1)),
       BoxShadow(
         color: Color(0x335E35B1),
         blurRadius: 22,
@@ -182,11 +178,7 @@ class KuruPalettes {
     ambient1: Color(0x264F46E5),
     ambient2: Color(0x212563EB),
     shadowSm: [
-      BoxShadow(
-        color: Color(0x0F2563EB),
-        blurRadius: 2,
-        offset: Offset(0, 1),
-      ),
+      BoxShadow(color: Color(0x0F2563EB), blurRadius: 2, offset: Offset(0, 1)),
       BoxShadow(
         color: Color(0x382563EB),
         blurRadius: 22,
@@ -292,6 +284,13 @@ class KuruPalettes {
 
 /// User-selectable palette family. Brightness is decided by the platform.
 enum KuruPalette { purple, indigo }
+
+extension KuruPaletteLabel on KuruPalette {
+  String get label => switch (this) {
+    KuruPalette.purple => 'Tím',
+    KuruPalette.indigo => 'Chàm',
+  };
+}
 
 extension KuruPaletteX on KuruPalette {
   KuruColors resolve(Brightness brightness) {
