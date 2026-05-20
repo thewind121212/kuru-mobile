@@ -6,10 +6,13 @@ import 'package:kuru_mobile/app/router.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/auth/biometric_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
 import 'package:kuru_mobile/core/auth/org_info.dart';
 import 'package:kuru_mobile/core/auth/user_info.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
+import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
+import 'package:kuru_mobile/core/permissions/resolved_permissions.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/splash/splash_screen.dart';
 
@@ -62,6 +65,13 @@ void main() {
           categoryOverviewProvider.overrideWith(
             (ref) async => <gen.CategoryResponse>[],
           ),
+          // Settings tab now renders the real SettingsHomeScreen, which
+          // depends on these providers.
+          myPermissionsProvider.overrideWith(
+            (ref) async => const ResolvedPermissions(orgRole: OrgRole.staff),
+          ),
+          biometricEnabledProvider.overrideWith((ref) async => false),
+          biometricAvailableProvider.overrideWith((ref) async => false),
         ],
         child: Consumer(
           builder: (ctx, ref, _) {
@@ -102,11 +112,13 @@ void main() {
     // CategoriesListScreen KPageHeader renders the categoryTitle heading.
     expect(find.text('Categories'), findsWidgets);
 
-    // Tap Settings tab (index 2).
+    // Tap Settings tab (index 2). SettingsHomeScreen's KPageHeader shows
+    // 'Cài đặt' (hardcoded VN, not localized).
     await tester.tap(find.text('Settings'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    expect(find.text('Settings coming soon'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.text('Cài đặt'), findsOneWidget);
 
     // Tap Catalog tab again — per-branch stack is preserved, so we land
     // back on CategoriesListScreen (not the launcher).

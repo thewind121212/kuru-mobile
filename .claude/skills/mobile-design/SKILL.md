@@ -7,6 +7,14 @@ description: Use when implementing UI in kuru-mobile (any work in lib/design/, l
 
 This project has a deliberate **two-aesthetic** design system. Knowing which side to use prevents costly rework.
 
+## ⚠️ Read this first when working on content screens
+
+**Canonical UI bible:** `docs/superpowers/specs/2026-05-20-ui-style-guide.md`
+
+Every content-screen UI (Settings, Catalog, Home overview, future product list / POS / etc.) must match the style guide. The Settings module (`lib/features/settings/`) is the reference implementation as of `v0.4.0-settings-biometric`.
+
+Auth/onboarding screens are intentionally different (glass aesthetic) and are out of scope for the bible. Do not retrofit them.
+
 ## The split
 
 ```

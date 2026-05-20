@@ -3,10 +3,9 @@ import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 
 /// A single list row used in catalog screens (brands, categories, etc.).
 ///
-/// Layout: leading slot (40x40 centered) + title (required) + optional
-/// subtitle below, with optional trailing widget (typically an icon
-/// button for context menu). Wraps the whole row in an InkWell so it
-/// can be tapped or long-pressed.
+/// Soft iOS-native look matching `docs/superpowers/specs/2026-05-20-ui-style-guide.md`:
+/// 18-radius elevated surface, no outer border, leading slot is a 40x40
+/// rounded-square that the caller fills (icon tile, color swatch, …).
 class KListRow extends StatelessWidget {
   const KListRow({
     required this.leading,
@@ -30,25 +29,17 @@ class KListRow extends StatelessWidget {
     final c = kuruColors(context);
     return Material(
       color: c.surfaceElev,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
         onLongPress: onLongPress,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            border: Border.all(color: c.border),
-            borderRadius: BorderRadius.circular(12),
-          ),
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           child: Row(
             children: [
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: Center(child: leading),
-              ),
-              const SizedBox(width: 16),
+              SizedBox(width: 40, height: 40, child: Center(child: leading)),
+              const SizedBox(width: 14),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,7 +50,7 @@ class KListRow extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: c.textPrimary,
                       ),
@@ -70,19 +61,13 @@ class KListRow extends StatelessWidget {
                         subtitle!,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: c.textMuted,
-                        ),
+                        style: TextStyle(fontSize: 13, color: c.textMuted),
                       ),
                     ],
                   ],
                 ),
               ),
-              if (trailing != null) ...[
-                const SizedBox(width: 8),
-                trailing!,
-              ],
+              if (trailing != null) ...[const SizedBox(width: 8), trailing!],
             ],
           ),
         ),

@@ -12,9 +12,10 @@ class KCategoryCardStat {
 
 /// A grid-view card for a catalog category.
 ///
-/// Shows a coloured icon, the category name, a row of stat boxes
-/// (e.g. Items / Value), and optional footer bits: a low-stock badge,
-/// a trailing action (typically a text link), and a context menu.
+/// Soft iOS-native look matching
+/// `docs/superpowers/specs/2026-05-20-ui-style-guide.md`: 18-radius
+/// surface, no outer border, 40-rounded-square icon tile (color glyph on
+/// a tinted background), inset stat boxes with no border.
 class KCategoryCard extends StatelessWidget {
   const KCategoryCard({
     required this.icon,
@@ -42,16 +43,12 @@ class KCategoryCard extends StatelessWidget {
     final c = kuruColors(context);
     return Material(
       color: c.surfaceElev,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            border: Border.all(color: c.border),
-            borderRadius: BorderRadius.circular(12),
-          ),
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
@@ -60,25 +57,25 @@ class KCategoryCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: iconBg,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: c.surfaceElev, width: 2),
+                      color: iconBg.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(icon, size: 16, color: Colors.white),
+                    alignment: Alignment.center,
+                    child: Icon(icon, size: 20, color: iconBg),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.only(top: 6),
                       child: Text(
                         name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: c.textPrimary,
                         ),
@@ -88,7 +85,7 @@ class KCategoryCard extends StatelessWidget {
                   if (menu != null) menu!,
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   for (var i = 0; i < stats.length; i++) ...[
@@ -116,26 +113,22 @@ class KCategoryCard extends StatelessWidget {
 
   Widget _statBox(KuruColors c, KCategoryCardStat stat) {
     return Container(
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: c.surfaceHover,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: c.borderSoft),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            stat.label,
-            style: TextStyle(fontSize: 12, color: c.textMuted),
-          ),
+          Text(stat.label, style: TextStyle(fontSize: 12, color: c.textMuted)),
           const SizedBox(height: 2),
           Text(
             stat.value,
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: c.textPrimary,
             ),
           ),

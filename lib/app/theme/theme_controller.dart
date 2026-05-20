@@ -1,18 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/main.dart';
 
-/// Holds the currently selected palette. Default is indigo; users will be
-/// able to switch (purple / indigo, light / dark) from Settings in a later spec.
 class ThemeController extends Notifier<KuruPalette> {
+  static const _key = 'app_palette';
+
   @override
-  KuruPalette build() => KuruPalette.indigo;
+  KuruPalette build() {
+    final code = ref.read(sharedPrefsProvider).getString(_key);
+    for (final p in KuruPalette.values) {
+      if (p.name == code) return p;
+    }
+    return KuruPalette.indigo;
+  }
+
+  Future<void> setPalette(KuruPalette palette) async {
+    await ref.read(sharedPrefsProvider).setString(_key, palette.name);
+    state = palette;
+  }
 }
 
-final themeControllerProvider =
-    NotifierProvider<ThemeController, KuruPalette>(ThemeController.new);
+final themeControllerProvider = NotifierProvider<ThemeController, KuruPalette>(
+  ThemeController.new,
+);
 
-/// Build a Material `ThemeData` for the given palette + brightness.
 ThemeData buildKuruTheme(KuruPalette palette, Brightness brightness) {
   final c = palette.resolve(brightness);
   final scheme = ColorScheme.fromSeed(
@@ -30,9 +42,8 @@ ThemeData buildKuruTheme(KuruPalette palette, Brightness brightness) {
     scaffoldBackgroundColor: c.pageBg,
     extensions: [c],
     fontFamily: '.SF Pro Text',
-    textTheme: ThemeData.from(colorScheme: scheme).textTheme.apply(
-          bodyColor: c.textPrimary,
-          displayColor: c.textPrimary,
-        ),
+    textTheme: ThemeData.from(
+      colorScheme: scheme,
+    ).textTheme.apply(bodyColor: c.textPrimary, displayColor: c.textPrimary),
   );
 }

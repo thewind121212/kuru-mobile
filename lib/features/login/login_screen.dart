@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/auth_repository.dart';
+import 'package:kuru_mobile/core/auth/biometric_providers.dart';
 import 'package:kuru_mobile/core/auth/onboarding_seen_provider.dart';
 import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
@@ -55,6 +56,39 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       ),
     );
     context.go('/onboarding');
+  }
+
+  Future<void> _signInWithBiometric() async {
+    final bio = ref.read(biometricRepositoryProvider);
+    final creds = await bio.unlock();
+    if (!mounted) return;
+    if (creds == null) {
+      KNotify.warning(context, 'Xác thực không thành công');
+      return;
+    }
+    final repo = ref.read(authRepositoryProvider);
+    final result = await repo.signIn(
+      email: creds.email,
+      password: creds.password,
+    );
+    if (!mounted) return;
+    switch (result) {
+      case ApiSuccess<void>():
+        ref.invalidate(appBootstrapProvider);
+      case ApiFailure<void>(:final err):
+        if (err is UnauthorizedException) {
+          await bio.disable();
+          ref.invalidate(biometricEnabledProvider);
+          if (!mounted) return;
+          KNotify.warning(context, 'Vui lòng đăng nhập lại bằng mật khẩu');
+        } else {
+          KNotify.networkError(
+            context,
+            'Đăng nhập thất bại',
+            onRetry: _signInWithBiometric,
+          );
+        }
+    }
   }
 
   Future<void> _submit() async {
@@ -192,6 +226,35 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 icon: const Icon(Icons.arrow_outward),
                                 onPressed: _submitting ? null : _submit,
                                 child: Text(l.loginCta),
+                              ),
+                              Consumer(
+                                builder: (context, ref, _) {
+                                  final enabled = ref
+                                      .watch(biometricEnabledProvider)
+                                      .maybeWhen(
+                                        data: (v) => v,
+                                        orElse: () => false,
+                                      );
+                                  final available = ref
+                                      .watch(biometricAvailableProvider)
+                                      .maybeWhen(
+                                        data: (v) => v,
+                                        orElse: () => false,
+                                      );
+                                  if (!enabled || !available) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: OutlinedButton.icon(
+                                      onPressed: _signInWithBiometric,
+                                      icon: const Icon(Icons.fingerprint),
+                                      label: const Text(
+                                        'Đăng nhập bằng FaceID / Vân tay',
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
                             ],
                           ),

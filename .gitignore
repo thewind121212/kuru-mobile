@@ -86,3 +86,6 @@ secrets/
 # Repo-root reference dumps (screenshots, books, docs we sideload while
 # working on a feature). NOT lib/design/ — that's the design system.
 /design/
+
+# Brainstorm visual companion
+.superpowers/

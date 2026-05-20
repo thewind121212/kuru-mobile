@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -205,9 +206,7 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
         );
         if (!mounted) return;
         if (saved ?? false) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l.categoryNotifySaved)));
+          KNotify.success(context, l.categoryNotifySaved);
         }
       case CategoryAction.addSubcategory:
         final saved = await showCreateEditCategorySheet(
@@ -220,9 +219,7 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
         );
         if (!mounted) return;
         if (saved ?? false) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l.categoryNotifySaved)));
+          KNotify.success(context, l.categoryNotifySaved);
           // Auto-expand so the newly-created child is visible.
           if (!_expanded) {
             setState(() => _expanded = true);
@@ -262,14 +259,12 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
       if (parentId != null && parentId != nilUuid) {
         ref.invalidate(categoryByIdProvider(parentId));
       }
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l.categoryNotifyDeleted)));
+      KNotify.success(context, l.categoryNotifyDeleted);
     } else if (failure != null) {
       final msg = failure is BadRequestException
           ? (failure! as BadRequestException).message
           : l.categoryNotifyServer;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      KNotify.warning(context, msg);
     }
   }
 
@@ -280,31 +275,24 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
     final hasChildren = children.isNotEmpty;
     final isFocused = widget.isFocused;
 
-    // Focused (the entered category) gets an accent halo + ring. Other
-    // nodes are neutral.
+    // Focused (the entered category) gets a 2px accent border + a soft
+    // tinted background. No box shadow — the halo behind the card was
+    // a radial smear that looked muddy on the default indigo palette.
     final cardBg = isFocused ? c.accent50 : c.surfaceElev;
-    final cardBorder = isFocused ? c.accent400 : c.border;
-    final boxShadow = isFocused
-        ? [
-            BoxShadow(
-              color: c.accent100.withValues(alpha: 0.6),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
-          ]
-        : <BoxShadow>[];
+    final focusBorder = isFocused
+        ? Border.all(color: c.accent400, width: 2)
+        : null;
 
     // Row itself is NOT tappable. Only the chevron (its own InkWell) and
     // the kebab toggle behavior — row tap does nothing, per UX.
     final card = Material(
       color: cardBg,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         margin: EdgeInsets.only(left: widget.level * _indentPerLevel),
         decoration: BoxDecoration(
-          border: Border.all(color: cardBorder),
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: boxShadow,
+          border: focusBorder,
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),

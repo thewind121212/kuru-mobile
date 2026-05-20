@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -185,23 +186,17 @@ class _CreateEditBodyState extends ConsumerState<_CreateEditBody> {
         // route to the right field based on err.code.
         setState(() => _nameError = err.message);
       case ForbiddenException():
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l.categoryNotifyForbidden)));
+        KNotify.warning(context, l.categoryNotifyForbidden);
       case UnauthorizedException():
         // 401 — defer to caller; the dio interceptor stack already
         // routes through the auth redirect. Just close the sheet.
         break;
       case NetworkException():
       case TimeoutException():
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l.categoryNotifyNetwork)));
+        KNotify.warning(context, l.categoryNotifyNetwork);
       case ServerException():
       case UnknownException():
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l.categoryNotifyServer)));
+        KNotify.warning(context, l.categoryNotifyServer);
     }
   }
 

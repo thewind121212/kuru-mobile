@@ -1,0 +1,16 @@
+# Exclude the dart-dio sub-packages under lib/api/** from the root
+# build_runner pass. Those packages own their own codegen lifecycle via
+# `tool/codegen.sh` (see .claude/skills/openapi-codegen/SKILL.md) — their
+# .g.dart files are generated inside each sub-package's own `pub get`
+# context with the correct SDK language version and then committed.
+#
+# The root build_runner can't resolve cross-package .g.dart references
+# inside the sub-packages, so without this exclusion CI's
+# `dart run build_runner build --delete-conflicting-outputs` step
+# AssetNotFoundExceptions on every category/brand model and the
+# downstream `git status` clean-check fails.
+targets:
+  $default:
+    sources:
+      exclude:
+        - lib/api/**

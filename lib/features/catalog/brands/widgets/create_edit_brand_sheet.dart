@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kuru_brand_api/kuru_brand_api.dart' as gen;
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -95,7 +96,9 @@ class _BrandFormState extends ConsumerState<_BrandForm> {
     // ApiFailure — handle ALL error types inside the sheet without throwing.
     // KModalSheet._handleConfirm has no try/catch; any throw wedges the busy
     // state forever. BadRequestException → field errorText (sheet stays open).
-    // Network/timeout/server → SnackBar via ScaffoldMessenger.
+    // Network/timeout/server → KNotify.warning so the sheet's busy state
+    // resolves and the user sees a top-right toast instead of a layout-
+    // shifting SnackBar.
     final err = (result as ApiFailure).err;
     if (err is BadRequestException) {
       setState(() => _error = err.message);
@@ -104,9 +107,7 @@ class _BrandFormState extends ConsumerState<_BrandForm> {
           ? err.message
           : l.brandNotifyServer;
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(msg)));
+        KNotify.warning(context, msg);
       }
     }
     return false;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:kuru_brand_api/kuru_brand_api.dart' as gen;
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -37,19 +38,19 @@ class _BrandsListScreenState extends ConsumerState<BrandsListScreen> {
     if (!mounted) return;
     if (saved ?? false) {
       ref.invalidate(brandOverviewProvider);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l.brandNotifySaved)));
+      KNotify.success(context, l.brandNotifySaved);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final c = kuruColors(context);
     final l = AppLocalizations.of(context);
     final overview = ref.watch(brandOverviewProvider);
     final total = overview.maybeWhen(data: (b) => b.length, orElse: () => null);
 
     return Scaffold(
+      backgroundColor: c.pageBg,
       body: GestureDetector(
         onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
         behavior: HitTestBehavior.opaque,
@@ -59,18 +60,16 @@ class _BrandsListScreenState extends ConsumerState<BrandsListScreen> {
             children: [
               _BrandsHeader(
                 title: l.brandTitle,
-                totalCount: total,
+                subtitle: total == null ? null : l.brandTotalCount(total),
                 onCreate: _openCreate,
               ),
-              const SizedBox(height: 12),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                 child: KSearchBar(
                   hint: l.brandSearchHint,
                   onChanged: (q) => setState(() => _query = q),
                 ),
               ),
-              const SizedBox(height: 12),
               Expanded(
                 child: overview.when(
                   loading: () => const _SkeletonList(),
@@ -94,47 +93,56 @@ class _BrandsHeader extends StatelessWidget {
   const _BrandsHeader({
     required this.title,
     required this.onCreate,
-    this.totalCount,
+    this.subtitle,
   });
   final String title;
-  final int? totalCount;
+  final String? subtitle;
   final VoidCallback onCreate;
 
   @override
   Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
+    final c = kuruColors(context);
     final l = AppLocalizations.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-      child: Stack(
-        alignment: Alignment.center,
+      padding: const EdgeInsets.fromLTRB(24, 12, 16, 18),
+      child: Row(
         children: [
-          Column(
-            children: [
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: t.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-              ),
-              if (totalCount != null) ...[
-                const SizedBox(height: 2),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Text(
-                  l.brandTotalCount(totalCount!),
-                  textAlign: TextAlign.center,
-                  style: t.bodySmall?.copyWith(
-                    color: t.bodySmall?.color?.withValues(alpha: 0.65),
+                  title,
+                  style: const TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.8,
                   ),
                 ),
+                const SizedBox(height: 4),
+                SizedBox(
+                  height: 16,
+                  child: subtitle == null
+                      ? const Align(
+                          alignment: Alignment.centerLeft,
+                          child: SizedBox(
+                            width: 80,
+                            height: 12,
+                            child: KSkeleton(height: 12),
+                          ),
+                        )
+                      : Text(
+                          subtitle!,
+                          style: TextStyle(fontSize: 13, color: c.textMuted),
+                        ),
+                ),
               ],
-            ],
-          ),
-          Positioned(
-            right: 0,
-            child: KIconBtn(
-              icon: const Icon(TablerIcons.plus),
-              tooltip: l.brandCreateTitle,
-              onPressed: onCreate,
             ),
+          ),
+          KIconBtn(
+            icon: const Icon(TablerIcons.plus),
+            tooltip: l.brandCreateTitle,
+            onPressed: onCreate,
           ),
         ],
       ),
@@ -181,9 +189,7 @@ class _BrandCardItem extends ConsumerWidget {
         );
         if ((saved ?? false) && context.mounted) {
           ref.invalidate(brandOverviewProvider);
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(l.brandNotifySaved)));
+          KNotify.success(context, l.brandNotifySaved);
         }
       case BrandAction.delete:
         await _confirmAndDelete(context, ref);
@@ -209,14 +215,12 @@ class _BrandCardItem extends ConsumerWidget {
     if (!context.mounted) return;
     if (confirmed ?? false) {
       ref.invalidate(brandOverviewProvider);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l.brandNotifyDeleted)));
+      KNotify.success(context, l.brandNotifyDeleted);
     } else if (failure != null) {
       final msg = failure is BadRequestException
           ? (failure! as BadRequestException).message
           : l.brandNotifyServer;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      KNotify.warning(context, msg);
     }
   }
 
@@ -228,9 +232,7 @@ class _BrandCardItem extends ConsumerWidget {
     );
     if ((saved ?? false) && context.mounted) {
       ref.invalidate(brandOverviewProvider);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l.brandNotifySaved)));
+      KNotify.success(context, l.brandNotifySaved);
     }
   }
 
@@ -247,8 +249,7 @@ class _BrandCardItem extends ConsumerWidget {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: c.surfaceElev,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: c.border),
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
           children: [
