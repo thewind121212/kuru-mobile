@@ -155,6 +155,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       }
                     },
                     child: KAvatar(
+                      // ValueKey forces a fresh Element + ImageStream so
+                      // a new dicebear URL is fetched the moment the user
+                      // picks a different style or seed in the sheet —
+                      // otherwise Image.network keeps the cached image.
+                      key: ValueKey(
+                        '$_avatarStyle-${_avatarSeed ?? ""}-'
+                        '${user.avatarUrl ?? ""}',
+                      ),
                       name: _nameCtrl.text.isEmpty
                           ? (user.name ?? '')
                           : _nameCtrl.text,

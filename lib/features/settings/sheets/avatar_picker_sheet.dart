@@ -1,14 +1,7 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:kuru_mobile/core/auth/auth_providers.dart';
-import 'package:kuru_mobile/core/feedback/k_notify.dart';
-import 'package:kuru_mobile/core/network/api_exception.dart';
-import 'package:kuru_mobile/core/network/api_result.dart';
-import 'package:kuru_mobile/core/profile/profile_providers.dart';
 import 'package:kuru_mobile/design/core/catalog/k_avatar.dart';
 import 'package:kuru_mobile/design/core/modal/k_modal_sheet.dart';
 
@@ -69,19 +62,17 @@ String _randomSeed() {
 
 class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
     with SingleTickerProviderStateMixin {
-  late final TabController _tabs = TabController(length: 3, vsync: this);
+  // Upload tab disabled until BE binds /UploadUserAvatar (the multer
+  // helper exists in be/core/file-service/user-avatar.ts but no route
+  // wires it). Restore the tab + image_picker deps when BE ships it.
+  late final TabController _tabs = TabController(length: 2, vsync: this);
   String? _style;
   String? _seed;
-  File? _pickedFile;
-  bool _uploading = false;
 
   @override
   void initState() {
     super.initState();
     _style = widget.initialStyle;
-    // Default the seed to the user's display name so the very first
-    // render is deterministic; the reroll button replaces it with a
-    // random key, which then refreshes every tile at once.
     _seed = widget.initialSeed ?? widget.currentName;
     _tabs.addListener(() {
       if (mounted) setState(() {});
@@ -92,55 +83,6 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
   void dispose() {
     _tabs.dispose();
     super.dispose();
-  }
-
-  Future<void> _pickFromGallery() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 80,
-      maxWidth: 1024,
-    );
-    if (picked == null) return;
-    setState(() => _pickedFile = File(picked.path));
-  }
-
-  Future<void> _uploadAndApply() async {
-    final file = _pickedFile;
-    final bootstrap = ref.read(appBootstrapProvider);
-    final user = bootstrap.maybeWhen(
-      data: (b) => b is BootstrapAuthed ? b.user : null,
-      orElse: () => null,
-    );
-    final userId = (user?.orgInfos.isNotEmpty ?? false)
-        ? user!.orgInfos.first.id
-        : null;
-    if (file == null) return;
-    if (userId == null) return;
-    setState(() => _uploading = true);
-    final result = await ref
-        .read(profileRepositoryProvider)
-        .uploadAvatar(file: file, userId: userId);
-    if (!mounted) return;
-    setState(() => _uploading = false);
-    switch (result) {
-      case ApiSuccess<String>():
-        ref.invalidate(appBootstrapProvider);
-        if (!context.mounted) return;
-        Navigator.of(
-          context,
-        ).pop(const AvatarSelection(style: 'upload', seed: null));
-      case ApiFailure<String>(:final err):
-        if (err is BadRequestException) {
-          KNotify.warning(context, err.message);
-        } else {
-          KNotify.networkError(
-            context,
-            'Tải ảnh thất bại',
-            onRetry: _uploadAndApply,
-          );
-        }
-    }
   }
 
   @override
@@ -154,16 +96,15 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
             tabs: const [
               Tab(text: 'Chữ cái'),
               Tab(text: 'Hình vẽ'),
-              Tab(text: 'Tải lên'),
             ],
           ),
           Expanded(
             child: TabBarView(
               controller: _tabs,
-              children: [_initialsTab(), _dicebearTab(), _uploadTab()],
+              children: [_initialsTab(), _dicebearTab()],
             ),
           ),
-          if (_tabs.index == 1 && _style != null)
+          if (_tabs.index == 1)
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
@@ -178,12 +119,14 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
                   const SizedBox(width: 8),
                   Expanded(
                     child: FilledButton(
-                      onPressed: () => Navigator.of(context).pop(
-                        AvatarSelection(
-                          style: _style,
-                          seed: _seed ?? widget.currentName,
-                        ),
-                      ),
+                      onPressed: _style == null
+                          ? null
+                          : () => Navigator.of(context).pop(
+                              AvatarSelection(
+                                style: _style,
+                                seed: _seed ?? widget.currentName,
+                              ),
+                            ),
                       child: const Text('Dùng kiểu này'),
                     ),
                   ),
@@ -282,46 +225,6 @@ class _AvatarPickerBodyState extends ConsumerState<_AvatarPickerBody>
           ),
         );
       },
-    );
-  }
-
-  Widget _uploadTab() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          GestureDetector(
-            onTap: _pickFromGallery,
-            child: Container(
-              width: 140,
-              height: 140,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              ),
-              alignment: Alignment.center,
-              child: _pickedFile == null
-                  ? const Icon(Icons.add_a_photo, size: 36)
-                  : ClipOval(
-                      child: Image.file(
-                        _pickedFile!,
-                        width: 140,
-                        height: 140,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          FilledButton(
-            onPressed: _pickedFile == null || _uploading
-                ? null
-                : _uploadAndApply,
-            child: _uploading ? const Text('Đang tải…') : const Text('Lưu ảnh'),
-          ),
-        ],
-      ),
     );
   }
 }
