@@ -278,12 +278,16 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
     // Focused (the entered category) gets an accent halo + ring. Other
     // nodes are neutral.
     final cardBg = isFocused ? c.accent50 : c.surfaceElev;
+    final focusBorder = isFocused
+        ? Border.all(color: c.accent400, width: 1.5)
+        : null;
     final boxShadow = isFocused
         ? [
             BoxShadow(
-              color: c.accent100.withValues(alpha: 0.6),
-              blurRadius: 8,
+              color: c.accent300.withValues(alpha: 0.35),
+              blurRadius: 14,
               spreadRadius: 1,
+              offset: const Offset(0, 2),
             ),
           ]
         : <BoxShadow>[];
@@ -292,10 +296,11 @@ class _TreeNodeState extends ConsumerState<_TreeNode>
     // the kebab toggle behavior — row tap does nothing, per UX.
     final card = Material(
       color: cardBg,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         margin: EdgeInsets.only(left: widget.level * _indentPerLevel),
         decoration: BoxDecoration(
+          border: focusBorder,
           borderRadius: BorderRadius.circular(14),
           boxShadow: boxShadow,
         ),
