@@ -16,7 +16,6 @@ import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
-import 'package:kuru_mobile/features/catalog/products/widgets/create_edit_product_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_archive_dialog.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_status_badge.dart';
 
@@ -112,7 +111,7 @@ class ProductDetailScreen extends ConsumerWidget {
     if (picked == null || !context.mounted) return;
     switch (picked) {
       case 'edit':
-        await showCreateEditProductSheet(context, initial: detail);
+        await context.push('/catalog/products/${detail.id}/edit', extra: detail);
       case 'reactivate':
         final repo = ref.read(productRepositoryProvider);
         final result = await repo.updateInfo(
@@ -165,7 +164,7 @@ class _Body extends ConsumerWidget {
     String fmtQty(num v) => '${v.toInt()} $unitLabel';
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 12, bottom: 32),
+      padding: const EdgeInsets.only(top: 12, bottom: 96),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

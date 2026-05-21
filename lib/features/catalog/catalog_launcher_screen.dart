@@ -21,6 +21,7 @@ class CatalogLauncherScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: c.pageBg,
       body: SafeArea(
+        bottom: false,
         child: ListView(
           padding: const EdgeInsets.only(bottom: 96),
           children: [

@@ -7,7 +7,7 @@ import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
-import 'package:kuru_mobile/features/catalog/products/product_create_screen.dart';
+import 'package:kuru_mobile/features/catalog/products/product_form_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -19,7 +19,7 @@ Widget _app({required _MockRepo repo, required GlobalKey key}) {
     routes: [
       GoRoute(
         path: '/catalog/products/create',
-        builder: (_, __) => ProductCreateScreen(key: key),
+        builder: (_, __) => ProductFormScreen(key: key),
       ),
       GoRoute(
         path: '/catalog/products/:id',

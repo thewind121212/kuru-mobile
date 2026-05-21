@@ -315,6 +315,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
     return Scaffold(
       backgroundColor: c.pageBg,
       body: SafeArea(
+        bottom: false,
         child: RefreshIndicator(
           onRefresh: () async => ref.invalidate(productListProvider(_filter)),
           child: CustomScrollView(

@@ -7,8 +7,9 @@ import 'package:kuru_mobile/features/catalog/brands/brands_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/catalog_launcher_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/categories_list_screen.dart';
 import 'package:kuru_mobile/features/catalog/categories/category_detail_screen.dart';
-import 'package:kuru_mobile/features/catalog/products/product_create_screen.dart';
+import 'package:kuru_mobile/features/catalog/products/product_form_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/product_detail_screen.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/products_list_screen.dart';
 import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
@@ -132,12 +133,18 @@ final routerProvider = Provider<GoRouter>((ref) {
                     routes: [
                       GoRoute(
                         path: 'create',
-                        builder: (_, __) => const ProductCreateScreen(),
+                        builder: (_, __) => const ProductFormScreen(),
                       ),
                       GoRoute(
                         path: ':id',
                         builder: (_, state) => ProductDetailScreen(
                           productId: state.pathParameters['id']!,
+                        ),
+                      ),
+                      GoRoute(
+                        path: ':id/edit',
+                        builder: (_, state) => ProductFormScreen(
+                          initial: state.extra as ProductDetail?,
                         ),
                       ),
                     ],

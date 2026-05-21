@@ -1120,23 +1120,20 @@ class _PickerPill extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           constraints: const BoxConstraints(maxWidth: 220),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: selected ? c.accent500 : c.borderSoft,
-              width: selected ? 1.4 : 1,
+              width: 1,
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (selected) ...[
-                Icon(TablerIcons.check, size: 16, color: c.accent700),
-                const SizedBox(width: 6),
-              ],
               Flexible(
                 child: Text(
                   option.name,
@@ -1188,13 +1185,14 @@ class _PickerRow extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
-        child: Container(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: selected ? c.accent500 : c.borderSoft,
-              width: selected ? 1.4 : 1,
+              width: 1,
             ),
           ),
           child: Row(

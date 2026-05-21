@@ -11,6 +11,7 @@ import 'package:kuru_brand_api/kuru_brand_api.dart' as brand_gen;
 import 'package:kuru_category_api/kuru_category_api.dart' as cat_gen;
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -19,43 +20,90 @@ import 'package:kuru_mobile/design/core/input/k_text_field.dart';
 import 'package:kuru_mobile/design/core/input/k_textarea.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
+import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
+import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/category_brand_picker_sheet.dart';
 
-class ProductCreateScreen extends ConsumerStatefulWidget {
-  const ProductCreateScreen({super.key});
+class ProductFormScreen extends ConsumerStatefulWidget {
+  const ProductFormScreen({this.initial, super.key});
+
+  final ProductDetail? initial;
 
   @override
-  ConsumerState<ProductCreateScreen> createState() =>
-      _ProductCreateScreenState();
+  ConsumerState<ProductFormScreen> createState() => _ProductFormScreenState();
 }
 
-class _ProductCreateScreenState extends ConsumerState<ProductCreateScreen> {
-  final _nameCtrl = TextEditingController();
-  final _demandStockCtrl = TextEditingController();
-  final _descCtrl = TextEditingController();
+class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _demandStockCtrl;
+  late final TextEditingController _descCtrl;
 
   File? _imageFile;
   String? _categoryId;
   String? _categoryName;
   String? _brandId;
   String? _brandName;
-  String _baseUnitCode = 'each';
+  late String _baseUnitCode;
   int? _sellPrice;
   int? _importPrice;
   int? _exportPrice;
+  bool _isActive = true;
+
   String? _nameError;
   String? _priceError;
   bool _submitting = false;
 
+  late String _baselineName;
+  late String? _baselineCategoryId;
+  late String? _baselineBrandId;
+  late String _baselineBaseUnitCode;
+  late int? _baselineSellPrice;
+  late String _baselineDesc;
+  late int? _baselineImportPrice;
+  late int? _baselineExportPrice;
+  late String _baselineDemandStock;
+  late bool _baselineIsActive;
+
   @override
   void initState() {
     super.initState();
+    final p = widget.initial;
+    _nameCtrl = TextEditingController(text: p?.name ?? '');
+    _descCtrl = TextEditingController(text: p?.description ?? '');
+    _categoryId = p?.categoryId;
+    _brandId = p?.brandId;
+    _brandName = p?.brandName;
+    _baseUnitCode = p?.baseUnitCode ?? 'each';
+    _sellPrice = p?.sellPrice.toInt();
+    _importPrice = p?.importPrice?.toInt();
+    _exportPrice = p?.exportPrice?.toInt();
+    
+    final demandSeed = p?.demandStock == null || p!.demandStock == 0
+        ? ''
+        : p.demandStock.toInt().toString();
+    _demandStockCtrl = TextEditingController(text: demandSeed);
+    _isActive = p == null || p.status == ProductStatus.active;
+
+    _baselineName = _nameCtrl.text;
+    _baselineCategoryId = _categoryId;
+    _baselineBrandId = _brandId;
+    _baselineBaseUnitCode = _baseUnitCode;
+    _baselineSellPrice = _sellPrice;
+    _baselineDesc = _descCtrl.text;
+    _baselineImportPrice = _importPrice;
+    _baselineExportPrice = _exportPrice;
+    _baselineDemandStock = _demandStockCtrl.text;
+    _baselineIsActive = _isActive;
+
     _nameCtrl.addListener(_onNameChanged);
     _demandStockCtrl.addListener(_onDemandStockChanged);
+    _descCtrl.addListener(_onDescChanged);
   }
 
   @override
@@ -66,8 +114,14 @@ class _ProductCreateScreenState extends ConsumerState<ProductCreateScreen> {
     _demandStockCtrl
       ..removeListener(_onDemandStockChanged)
       ..dispose();
-    _descCtrl.dispose();
+    _descCtrl
+      ..removeListener(_onDescChanged)
+      ..dispose();
     super.dispose();
+  }
+  
+  void _onDescChanged() {
+    setState(() {});
   }
 
   void _onNameChanged() {
@@ -80,8 +134,25 @@ class _ProductCreateScreenState extends ConsumerState<ProductCreateScreen> {
     setState(() {});
   }
 
+  bool get _isDirty {
+    if (widget.initial == null) return true; // Always dirty in create mode
+    if (_imageFile != null) return true;
+    if (_nameCtrl.text.trim() != _baselineName.trim()) return true;
+    if (_categoryId != _baselineCategoryId) return true;
+    if (_brandId != _baselineBrandId) return true;
+    if (_baseUnitCode != _baselineBaseUnitCode) return true;
+    if (_sellPrice != _baselineSellPrice) return true;
+    if (_descCtrl.text.trim() != _baselineDesc.trim()) return true;
+    if (_importPrice != _baselineImportPrice) return true;
+    if (_exportPrice != _baselineExportPrice) return true;
+    if (_demandStockCtrl.text != _baselineDemandStock) return true;
+    if (widget.initial != null && _isActive != _baselineIsActive) return true;
+    return false;
+  }
+
   bool get _canSubmit =>
       !_submitting &&
+      _isDirty &&
       _nameCtrl.text.trim().isNotEmpty &&
       _sellPrice != null &&
       _sellPrice! > 0;
@@ -231,46 +302,142 @@ class _ProductCreateScreenState extends ConsumerState<ProductCreateScreen> {
     final desc = _descCtrl.text.trim();
     final demandText = _demandStockCtrl.text.trim();
     final repo = ref.read(productRepositoryProvider);
-    final createResult = await repo.create(
-      CreateProductBody(
-        name: name,
-        baseUnitCode: _baseUnitCode,
-        sellPrice: sellPrice,
-        categoryId: _categoryId,
-        brandId: _brandId,
-        description: desc.isEmpty ? null : desc,
-        importPrice: _importPrice,
-        exportPrice: _exportPrice,
-        demandStock: demandText.isEmpty ? null : int.tryParse(demandText),
-      ),
-    );
-    if (!mounted) return;
+    
+    if (widget.initial == null) {
+      final createResult = await repo.create(
+        CreateProductBody(
+          name: name,
+          baseUnitCode: _baseUnitCode,
+          sellPrice: sellPrice,
+          categoryId: _categoryId,
+          brandId: _brandId,
+          description: desc.isEmpty ? null : desc,
+          importPrice: _importPrice,
+          exportPrice: _exportPrice,
+          demandStock: demandText.isEmpty ? null : int.tryParse(demandText),
+        ),
+      );
+      if (!mounted) return;
 
-    switch (createResult) {
-      case ApiSuccess<String>(:final data):
-        final newProductId = data;
-        ref.invalidate(productListProvider);
-        final orgId = ref.read(currentOrgIdProvider);
-        if (_imageFile != null && orgId != null) {
-          final uploadResult = await repo.uploadAvatar(
-            file: _imageFile!,
-            productId: newProductId,
-            orgId: orgId,
-          );
-          if (!mounted) return;
-          switch (uploadResult) {
-            case ApiSuccess<String>():
-              ref.invalidate(productByIdProvider(newProductId));
-            case ApiFailure<String>(:final err):
-              KNotify.warning(context, err.message);
+      switch (createResult) {
+        case ApiSuccess<String>(:final data):
+          final newProductId = data;
+          ref.invalidate(productListProvider);
+          final orgId = ref.read(currentOrgIdProvider);
+          if (_imageFile != null && orgId != null) {
+            final uploadResult = await repo.uploadAvatar(
+              file: _imageFile!,
+              productId: newProductId,
+              orgId: orgId,
+            );
+            if (!mounted) return;
+            switch (uploadResult) {
+              case ApiSuccess<String>():
+                ref.invalidate(productByIdProvider(newProductId));
+              case ApiFailure<String>(:final err):
+                KNotify.warning(context, err.message);
+            }
           }
-        }
-        if (!mounted) return;
-        KNotify.success(context, 'Đã tạo sản phẩm');
-        context.replace('/catalog/products/$newProductId');
-      case ApiFailure<String>(:final err):
-        _handleError(err);
+          if (!mounted) return;
+          KNotify.success(context, 'Đã tạo sản phẩm');
+          context.replace('/catalog/products/$newProductId');
+        case ApiFailure<String>(:final err):
+          _handleError(err);
+      }
+    } else {
+      final p = widget.initial!;
+      final body = _buildUpdateBody(p);
+      final result = await repo.updateInfo(body);
+      if (!mounted) return;
+      switch (result) {
+        case ApiSuccess<void>():
+          final orgId = ref.read(currentOrgIdProvider);
+          if (_imageFile != null && orgId != null) {
+            final uploadResult = await repo.uploadAvatar(
+              file: _imageFile!,
+              productId: p.id,
+              orgId: orgId,
+            );
+            if (!mounted) return;
+            if (uploadResult is ApiFailure<String>) {
+              KNotify.warning(context, uploadResult.err.message);
+            }
+          }
+          if (!mounted) return;
+          KNotify.success(context, 'Đã cập nhật');
+          ref.invalidate(productByIdProvider(p.id));
+          ref.invalidate(productListProvider);
+          context.pop();
+        case ApiFailure<void>(:final err):
+          _handleError(err);
+      }
     }
+  }
+
+  UpdateProductInfoBody _buildUpdateBody(ProductDetail p) {
+    final name = _nameCtrl.text.trim();
+    final desc = _descCtrl.text.trim();
+    final baselineDesc = _baselineDesc.trim();
+
+    JsonOptional<String>? categoryOpt;
+    if (_categoryId != _baselineCategoryId) {
+      categoryOpt = _categoryId == null
+          ? const JsonOptional.clear()
+          : JsonOptional.set(_categoryId!);
+    }
+    JsonOptional<String>? brandOpt;
+    if (_brandId != _baselineBrandId) {
+      brandOpt = _brandId == null
+          ? const JsonOptional.clear()
+          : JsonOptional.set(_brandId!);
+    }
+    JsonOptional<String>? descOpt;
+    if (desc != baselineDesc) {
+      descOpt = desc.isEmpty
+          ? const JsonOptional.clear()
+          : JsonOptional.set(desc);
+    }
+
+    JsonOptional<num>? importOpt;
+    if (_importPrice != _baselineImportPrice) {
+      importOpt = _importPrice == null
+          ? const JsonOptional<num>.clear()
+          : JsonOptional<num>.set(_importPrice!);
+    }
+    JsonOptional<num>? exportOpt;
+    if (_exportPrice != _baselineExportPrice) {
+      exportOpt = _exportPrice == null
+          ? const JsonOptional<num>.clear()
+          : JsonOptional<num>.set(_exportPrice!);
+    }
+    JsonOptional<num>? demandOpt;
+    final demandText = _demandStockCtrl.text.trim();
+    if (_demandStockCtrl.text != _baselineDemandStock) {
+      final parsed = int.tryParse(demandText);
+      demandOpt = (demandText.isEmpty || parsed == null)
+          ? const JsonOptional<num>.clear()
+          : JsonOptional<num>.set(parsed);
+    }
+
+    final statusOut = _isActive != _baselineIsActive
+        ? (_isActive ? 'ACTIVE' : 'INACTIVE')
+        : null;
+
+    return UpdateProductInfoBody(
+      productId: p.id,
+      name: name == _baselineName.trim() ? null : name,
+      sellPrice: _sellPrice == _baselineSellPrice ? null : _sellPrice,
+      status: statusOut,
+      baseUnitCode: _baseUnitCode == _baselineBaseUnitCode
+          ? null
+          : _baseUnitCode,
+      categoryId: categoryOpt,
+      brandId: brandOpt,
+      description: descOpt,
+      importPrice: importOpt,
+      exportPrice: exportOpt,
+      demandStock: demandOpt,
+    );
   }
 
   void _handleError(ApiException err) {
@@ -305,7 +472,7 @@ class _ProductCreateScreenState extends ConsumerState<ProductCreateScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(
-          'Tạo sản phẩm',
+          widget.initial == null ? 'Tạo sản phẩm' : 'Sửa sản phẩm',
           style: TextStyle(
             color: c.textPrimary,
             fontSize: 18,
@@ -324,12 +491,19 @@ class _ProductCreateScreenState extends ConsumerState<ProductCreateScreen> {
                 children: [
                   _ImageIdentityPanel(
                     imageFile: _imageFile,
+                    networkImageUrl: widget.initial?.hasImage == true
+                        ? widget.initial!.imageUrl
+                        : null,
                     name: _nameCtrl.text,
                     unitLabel: unitLabel,
                     onPickImage: _pickImage,
-                    onClearImage: _imageFile == null
+                    onClearImage: _imageFile == null && !(widget.initial?.hasImage == true)
                         ? null
-                        : () => setState(() => _imageFile = null),
+                        : () {
+                            setState(() => _imageFile = null);
+                            // To actually clear the image on backend, it might require a separate API call,
+                            // but for now, we just clear the local selection if any.
+                          },
                   ),
                   const SizedBox(height: 18),
                   _CreateSection(
@@ -443,10 +617,18 @@ class _ProductCreateScreenState extends ConsumerState<ProductCreateScreen> {
                       ),
                     ],
                   ),
+                  if (widget.initial != null) ...[
+                    const SizedBox(height: 18),
+                    _StatusSwitchRow(
+                      isActive: _isActive,
+                      onChanged: (v) => setState(() => _isActive = v),
+                    ),
+                  ],
                 ],
               ),
             ),
             _CreateFooter(
+              isEdit: widget.initial != null,
               enabled: _canSubmit,
               submitting: _submitting,
               onSubmit: _submit,
@@ -465,9 +647,11 @@ class _ImageIdentityPanel extends StatelessWidget {
     required this.unitLabel,
     required this.onPickImage,
     required this.onClearImage,
+    this.networkImageUrl,
   });
 
   final File? imageFile;
+  final String? networkImageUrl;
   final String name;
   final String unitLabel;
   final VoidCallback onPickImage;
@@ -496,16 +680,21 @@ class _ImageIdentityPanel extends StatelessWidget {
                 child: SizedBox(
                   width: 92,
                   height: 92,
-                  child: imageFile == null
-                      ? ColoredBox(
-                          color: c.accent50,
-                          child: Icon(
-                            TablerIcons.photo_plus,
-                            color: c.accent600,
-                            size: 34,
-                          ),
-                        )
-                      : Image.file(imageFile!, fit: BoxFit.cover),
+                  child: imageFile != null
+                      ? Image.file(imageFile!, fit: BoxFit.cover)
+                      : (networkImageUrl != null
+                          ? Image.network(
+                              '${Env.imageBaseUrl}/product-avatar/$networkImageUrl',
+                              fit: BoxFit.cover,
+                            )
+                          : ColoredBox(
+                              color: c.accent50,
+                              child: Icon(
+                                TablerIcons.photo_plus,
+                                color: c.accent600,
+                                size: 34,
+                              ),
+                            )),
                 ),
               ),
               const SizedBox(width: 14),
@@ -809,13 +998,77 @@ class _StockGoalPreview extends StatelessWidget {
   }
 }
 
+class _StatusSwitchRow extends StatelessWidget {
+  const _StatusSwitchRow({required this.isActive, required this.onChanged});
+
+  final bool isActive;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: c.borderSoft),
+        ),
+        child: SwitchListTile(
+          value: isActive,
+          onChanged: onChanged,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          activeThumbColor: Colors.white,
+          activeTrackColor: c.success,
+          inactiveThumbColor: Colors.white,
+          inactiveTrackColor: c.surfaceHover,
+          title: Text(
+            'Trạng thái bán',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w800,
+              color: c.textPrimary,
+            ),
+          ),
+          subtitle: Text(
+            isActive ? 'Đang giao dịch' : 'Tạm ngưng',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: isActive ? c.success : c.textMuted,
+            ),
+          ),
+          secondary: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: isActive ? const Color(0xFFE6F7F0) : c.surfaceHover,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              isActive ? TablerIcons.check : TablerIcons.player_pause,
+              color: isActive ? c.success : c.textMuted,
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _CreateFooter extends StatelessWidget {
   const _CreateFooter({
     required this.enabled,
     required this.submitting,
     required this.onSubmit,
+    this.isEdit = false,
   });
 
+  final bool isEdit;
   final bool enabled;
   final bool submitting;
   final VoidCallback onSubmit;
@@ -844,7 +1097,7 @@ class _CreateFooter extends StatelessWidget {
                   ),
                 )
               : const Icon(TablerIcons.check),
-          label: Text(submitting ? 'Đang tạo' : 'Tạo sản phẩm'),
+          label: Text(submitting ? 'Đang lưu' : (isEdit ? 'Lưu' : 'Tạo sản phẩm')),
           style: FilledButton.styleFrom(
             backgroundColor: c.accent600,
             disabledBackgroundColor: c.accent600.withValues(alpha: 0.38),
