@@ -107,6 +107,14 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
     });
   }
 
+  Future<void> _createProduct() async {
+    final newId = await showCreateEditProductSheet(context);
+    if (!mounted) return;
+    if (newId != null) {
+      unawaited(context.push('/catalog/products/$newId'));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
@@ -122,16 +130,33 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
             controller: _scrollCtrl,
             cacheExtent: 900,
             slivers: [
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.fromLTRB(24, 12, 24, 4),
-                  child: Text(
-                    'Sản phẩm',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.8,
-                    ),
+                  padding: const EdgeInsets.fromLTRB(24, 12, 18, 4),
+                  child: Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Sản phẩm',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.8,
+                          ),
+                        ),
+                      ),
+                      if (canWrite)
+                        FilledButton.icon(
+                          onPressed: _createProduct,
+                          icon: const Icon(TablerIcons.plus),
+                          label: const Text('Tạo'),
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(0, 38),
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),
@@ -200,16 +225,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
                             if (canWrite) ...[
                               const SizedBox(height: 16),
                               FilledButton(
-                                onPressed: () async {
-                                  final newId =
-                                      await showCreateEditProductSheet(context);
-                                  if (!context.mounted) return;
-                                  if (newId != null) {
-                                    unawaited(
-                                      context.push('/catalog/products/$newId'),
-                                    );
-                                  }
-                                },
+                                onPressed: _createProduct,
                                 child: const Text('Tạo sản phẩm'),
                               ),
                             ],
@@ -231,19 +247,6 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
           ),
         ),
       ),
-      floatingActionButton: canWrite
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                final newId = await showCreateEditProductSheet(context);
-                if (!context.mounted) return;
-                if (newId != null) {
-                  unawaited(context.push('/catalog/products/$newId'));
-                }
-              },
-              icon: const Icon(TablerIcons.plus),
-              label: const Text('Tạo sản phẩm'),
-            )
-          : null,
     );
   }
 }
@@ -263,30 +266,33 @@ class _ProductMasonrySliver extends StatelessWidget {
   static const _gap = 6.0;
 
   @override
-  Widget build(BuildContext context) => SliverPadding(
-    padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-    sliver: SliverMasonryGrid.count(
-      crossAxisCount: _columnCountFor(MediaQuery.sizeOf(context).width),
-      mainAxisSpacing: _gap,
-      crossAxisSpacing: _gap,
-      childCount: items.length + (hasMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index >= items.length) {
-          return const Padding(
+  Widget build(BuildContext context) => SliverMainAxisGroup(
+    slivers: [
+      SliverPadding(
+        padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+        sliver: SliverMasonryGrid.count(
+          crossAxisCount: _columnCountFor(MediaQuery.sizeOf(context).width),
+          mainAxisSpacing: _gap,
+          crossAxisSpacing: _gap,
+          childCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return ProductCard(
+              key: ValueKey(item.id),
+              product: item,
+              onTap: () => onProductTap(item),
+            );
+          },
+        ),
+      ),
+      if (hasMore)
+        const SliverToBoxAdapter(
+          child: Padding(
             padding: EdgeInsets.symmetric(vertical: 24),
             child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final item = items[index];
-        return ProductCard(
-          key: ValueKey(item.id),
-          product: item,
-          imageAspectRatio: _imageAspectRatio(item, index),
-          onTap: () => onProductTap(item),
-        );
-      },
-    ),
+          ),
+        ),
+    ],
   );
 
   static int _columnCountFor(double width) => switch (width) {
@@ -294,14 +300,4 @@ class _ProductMasonrySliver extends StatelessWidget {
     >= 700 => 3,
     _ => 2,
   };
-
-  static double _imageAspectRatio(ProductSummary product, int index) {
-    if (!product.hasImage) return 0.95;
-    const ratios = [0.78, 0.9, 1.05, 0.84, 0.98];
-    final seed = product.id.codeUnits.fold<int>(
-      index,
-      (value, unit) => value + unit,
-    );
-    return ratios[seed % ratios.length];
-  }
 }

@@ -39,6 +39,7 @@ Future<T?> showKActionSheet<T>({
     context: context,
     enableDrag: enableDrag,
     backgroundColor: Colors.transparent,
+    useSafeArea: true,
     builder: (ctx) => _KActionSheet<T>(actions: actions, title: title),
   );
 }
@@ -52,7 +53,9 @@ class _KActionSheet<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
+    final maxHeight = MediaQuery.sizeOf(context).height * 0.78;
     return Container(
+      constraints: BoxConstraints(maxHeight: maxHeight),
       decoration: BoxDecoration(
         color: c.surfaceElev,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -87,7 +90,15 @@ class _KActionSheet<T> extends StatelessWidget {
                   ),
                 ),
               ),
-            for (final action in actions) _row(context, c, action),
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true,
+                padding: EdgeInsets.zero,
+                itemCount: actions.length,
+                itemBuilder: (context, index) =>
+                    _row(context, c, actions[index]),
+              ),
+            ),
             const SizedBox(height: 8),
           ],
         ),

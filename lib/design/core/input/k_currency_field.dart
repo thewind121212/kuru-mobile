@@ -39,6 +39,7 @@ class KCurrencyField extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: c.pageBg,
+      useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),

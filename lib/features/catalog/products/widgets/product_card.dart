@@ -76,9 +76,9 @@ class ProductCard extends StatelessWidget {
               ? Image.network(
                   '${Env.imageBaseUrl}/product-avatar/${product.imageUrl}',
                   width: double.infinity,
+                  height: double.infinity,
                   fit: BoxFit.cover,
                   cacheWidth: (width * pixelRatio).round(),
-                  cacheHeight: (imageHeight * pixelRatio).round(),
                   errorBuilder: (_, _, _) => _placeholder(c),
                 )
               : _placeholder(c),

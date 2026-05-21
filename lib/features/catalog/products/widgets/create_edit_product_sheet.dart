@@ -48,6 +48,7 @@ Future<String?> showCreateEditProductSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    useSafeArea: true,
     builder: (ctx) =>
         CreateEditProductSheetBody(initial: initial, title: title),
   );
