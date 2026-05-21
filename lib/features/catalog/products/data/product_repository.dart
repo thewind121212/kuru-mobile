@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:kuru_mobile/core/logging/log.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
@@ -87,6 +89,40 @@ class ProductRepository {
       return ApiResult.success(id);
     } on DioException catch (e) {
       log.w('CreateProduct failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  Future<ApiResult<String>> uploadAvatar({
+    required File file,
+    required String productId,
+    required String orgId,
+  }) async {
+    try {
+      final form = FormData.fromMap(<String, dynamic>{
+        'orgId': orgId,
+        'productId': productId,
+        'avatar': await MultipartFile.fromFile(
+          file.path,
+          filename: file.uri.pathSegments.last,
+        ),
+      });
+      final res = await _dio.post<dynamic>(
+        '/file/UploadProductAvatar',
+        data: form,
+      );
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final key = data['key'] as String?;
+      if (key == null) {
+        return ApiResult.failure(
+          const UnknownException('Missing key from UploadProductAvatar'),
+        );
+      }
+      log.i('UploadProductAvatar ← ${res.statusCode} id=$productId');
+      return ApiResult.success(key);
+    } on DioException catch (e) {
+      log.w('UploadProductAvatar($productId) failed: ${e.message}');
       return ApiResult.failure(_extract(e));
     }
   }

@@ -14,7 +14,6 @@ import 'package:kuru_mobile/features/catalog/products/models/product_list_filter
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/category_brand_picker_sheet.dart';
-import 'package:kuru_mobile/features/catalog/products/widgets/create_edit_product_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_card.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_filter_bar.dart';
 
@@ -108,11 +107,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
   }
 
   Future<void> _createProduct() async {
-    final newId = await showCreateEditProductSheet(context);
-    if (!mounted) return;
-    if (newId != null) {
-      unawaited(context.push('/catalog/products/$newId'));
-    }
+    unawaited(context.push('/catalog/products/create'));
   }
 
   @override
