@@ -13,26 +13,35 @@ part 'get_container_lots_response.g.dart';
 /// GetContainerLotsResponse
 ///
 /// Properties:
-/// * [containerLots] 
+/// * [containerLots]
 @BuiltValue()
-abstract class GetContainerLotsResponse implements Built<GetContainerLotsResponse, GetContainerLotsResponseBuilder> {
+abstract class GetContainerLotsResponse
+    implements
+        Built<GetContainerLotsResponse, GetContainerLotsResponseBuilder> {
   @BuiltValueField(wireName: r'containerLots')
   BuiltList<ContainerLotResponse>? get containerLots;
 
   GetContainerLotsResponse._();
 
-  factory GetContainerLotsResponse([void updates(GetContainerLotsResponseBuilder b)]) = _$GetContainerLotsResponse;
+  factory GetContainerLotsResponse([
+    void updates(GetContainerLotsResponseBuilder b),
+  ]) = _$GetContainerLotsResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetContainerLotsResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetContainerLotsResponse> get serializer => _$GetContainerLotsResponseSerializer();
+  static Serializer<GetContainerLotsResponse> get serializer =>
+      _$GetContainerLotsResponseSerializer();
 }
 
-class _$GetContainerLotsResponseSerializer implements PrimitiveSerializer<GetContainerLotsResponse> {
+class _$GetContainerLotsResponseSerializer
+    implements PrimitiveSerializer<GetContainerLotsResponse> {
   @override
-  final Iterable<Type> types = const [GetContainerLotsResponse, _$GetContainerLotsResponse];
+  final Iterable<Type> types = const [
+    GetContainerLotsResponse,
+    _$GetContainerLotsResponse,
+  ];
 
   @override
   final String wireName = r'GetContainerLotsResponse';
@@ -46,7 +55,9 @@ class _$GetContainerLotsResponseSerializer implements PrimitiveSerializer<GetCon
       yield r'containerLots';
       yield serializers.serialize(
         object.containerLots,
-        specifiedType: const FullType(BuiltList, [FullType(ContainerLotResponse)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(ContainerLotResponse),
+        ]),
       );
     }
   }
@@ -57,7 +68,11 @@ class _$GetContainerLotsResponseSerializer implements PrimitiveSerializer<GetCon
     GetContainerLotsResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -73,10 +88,14 @@ class _$GetContainerLotsResponseSerializer implements PrimitiveSerializer<GetCon
       final value = serializedList[i + 1];
       switch (key) {
         case r'containerLots':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(ContainerLotResponse)]),
-          ) as BuiltList<ContainerLotResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(ContainerLotResponse),
+                    ]),
+                  )
+                  as BuiltList<ContainerLotResponse>;
           result.containerLots.replace(valueDes);
           break;
         default:
@@ -107,4 +126,3 @@ class _$GetContainerLotsResponseSerializer implements PrimitiveSerializer<GetCon
     return result.build();
   }
 }
-

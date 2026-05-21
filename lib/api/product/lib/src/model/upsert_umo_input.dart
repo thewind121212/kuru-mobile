@@ -11,13 +11,14 @@ part 'upsert_umo_input.g.dart';
 /// UpsertUmoInput
 ///
 /// Properties:
-/// * [id] 
-/// * [label] 
-/// * [ratio] 
-/// * [sellPrice] 
-/// * [barcode] 
+/// * [id]
+/// * [label]
+/// * [ratio]
+/// * [sellPrice]
+/// * [barcode]
 @BuiltValue()
-abstract class UpsertUmoInput implements Built<UpsertUmoInput, UpsertUmoInputBuilder> {
+abstract class UpsertUmoInput
+    implements Built<UpsertUmoInput, UpsertUmoInputBuilder> {
   @BuiltValueField(wireName: r'id')
   String? get id;
 
@@ -35,16 +36,19 @@ abstract class UpsertUmoInput implements Built<UpsertUmoInput, UpsertUmoInputBui
 
   UpsertUmoInput._();
 
-  factory UpsertUmoInput([void updates(UpsertUmoInputBuilder b)]) = _$UpsertUmoInput;
+  factory UpsertUmoInput([void updates(UpsertUmoInputBuilder b)]) =
+      _$UpsertUmoInput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpsertUmoInputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpsertUmoInput> get serializer => _$UpsertUmoInputSerializer();
+  static Serializer<UpsertUmoInput> get serializer =>
+      _$UpsertUmoInputSerializer();
 }
 
-class _$UpsertUmoInputSerializer implements PrimitiveSerializer<UpsertUmoInput> {
+class _$UpsertUmoInputSerializer
+    implements PrimitiveSerializer<UpsertUmoInput> {
   @override
   final Iterable<Type> types = const [UpsertUmoInput, _$UpsertUmoInput];
 
@@ -95,7 +99,11 @@ class _$UpsertUmoInputSerializer implements PrimitiveSerializer<UpsertUmoInput> 
     UpsertUmoInput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -111,38 +119,45 @@ class _$UpsertUmoInputSerializer implements PrimitiveSerializer<UpsertUmoInput> 
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'label':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.label = valueDes;
           break;
         case r'ratio':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.ratio = valueDes;
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         case r'barcode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.barcode = valueDes;
           break;
         default:
@@ -173,4 +188,3 @@ class _$UpsertUmoInputSerializer implements PrimitiveSerializer<UpsertUmoInput> 
     return result.build();
   }
 }
-

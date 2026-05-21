@@ -12,11 +12,13 @@ part 'create_container_lots_response.g.dart';
 /// CreateContainerLotsResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
-/// * [createdIds] 
+/// * [success]
+/// * [error]
+/// * [createdIds]
 @BuiltValue()
-abstract class CreateContainerLotsResponse implements Built<CreateContainerLotsResponse, CreateContainerLotsResponseBuilder> {
+abstract class CreateContainerLotsResponse
+    implements
+        Built<CreateContainerLotsResponse, CreateContainerLotsResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +30,25 @@ abstract class CreateContainerLotsResponse implements Built<CreateContainerLotsR
 
   CreateContainerLotsResponse._();
 
-  factory CreateContainerLotsResponse([void updates(CreateContainerLotsResponseBuilder b)]) = _$CreateContainerLotsResponse;
+  factory CreateContainerLotsResponse([
+    void updates(CreateContainerLotsResponseBuilder b),
+  ]) = _$CreateContainerLotsResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateContainerLotsResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateContainerLotsResponse> get serializer => _$CreateContainerLotsResponseSerializer();
+  static Serializer<CreateContainerLotsResponse> get serializer =>
+      _$CreateContainerLotsResponseSerializer();
 }
 
-class _$CreateContainerLotsResponseSerializer implements PrimitiveSerializer<CreateContainerLotsResponse> {
+class _$CreateContainerLotsResponseSerializer
+    implements PrimitiveSerializer<CreateContainerLotsResponse> {
   @override
-  final Iterable<Type> types = const [CreateContainerLotsResponse, _$CreateContainerLotsResponse];
+  final Iterable<Type> types = const [
+    CreateContainerLotsResponse,
+    _$CreateContainerLotsResponse,
+  ];
 
   @override
   final String wireName = r'CreateContainerLotsResponse';
@@ -76,7 +85,11 @@ class _$CreateContainerLotsResponseSerializer implements PrimitiveSerializer<Cre
     CreateContainerLotsResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -92,24 +105,32 @@ class _$CreateContainerLotsResponseSerializer implements PrimitiveSerializer<Cre
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.error = valueDes;
           break;
         case r'createdIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.createdIds.replace(valueDes);
           break;
         default:
@@ -140,4 +161,3 @@ class _$CreateContainerLotsResponseSerializer implements PrimitiveSerializer<Cre
     return result.build();
   }
 }
-

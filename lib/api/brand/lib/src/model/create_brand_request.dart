@@ -11,11 +11,12 @@ part 'create_brand_request.g.dart';
 /// CreateBrandRequest
 ///
 /// Properties:
-/// * [name] 
-/// * [slug] 
-/// * [logoUrl] 
+/// * [name]
+/// * [slug]
+/// * [logoUrl]
 @BuiltValue()
-abstract class CreateBrandRequest implements Built<CreateBrandRequest, CreateBrandRequestBuilder> {
+abstract class CreateBrandRequest
+    implements Built<CreateBrandRequest, CreateBrandRequestBuilder> {
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -27,16 +28,19 @@ abstract class CreateBrandRequest implements Built<CreateBrandRequest, CreateBra
 
   CreateBrandRequest._();
 
-  factory CreateBrandRequest([void updates(CreateBrandRequestBuilder b)]) = _$CreateBrandRequest;
+  factory CreateBrandRequest([void updates(CreateBrandRequestBuilder b)]) =
+      _$CreateBrandRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateBrandRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateBrandRequest> get serializer => _$CreateBrandRequestSerializer();
+  static Serializer<CreateBrandRequest> get serializer =>
+      _$CreateBrandRequestSerializer();
 }
 
-class _$CreateBrandRequestSerializer implements PrimitiveSerializer<CreateBrandRequest> {
+class _$CreateBrandRequestSerializer
+    implements PrimitiveSerializer<CreateBrandRequest> {
   @override
   final Iterable<Type> types = const [CreateBrandRequest, _$CreateBrandRequest];
 
@@ -75,7 +79,11 @@ class _$CreateBrandRequestSerializer implements PrimitiveSerializer<CreateBrandR
     CreateBrandRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -91,24 +99,30 @@ class _$CreateBrandRequestSerializer implements PrimitiveSerializer<CreateBrandR
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'slug':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.slug = valueDes;
           break;
         case r'logoUrl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.logoUrl = valueDes;
           break;
         default:
@@ -139,4 +153,3 @@ class _$CreateBrandRequestSerializer implements PrimitiveSerializer<CreateBrandR
     return result.build();
   }
 }
-

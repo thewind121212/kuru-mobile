@@ -13,11 +13,13 @@ part 'update_product_umos_request.g.dart';
 /// UpdateProductUmosRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [upsertUmos] 
-/// * [removeUmoIds] 
+/// * [productId]
+/// * [upsertUmos]
+/// * [removeUmoIds]
 @BuiltValue()
-abstract class UpdateProductUmosRequest implements Built<UpdateProductUmosRequest, UpdateProductUmosRequestBuilder> {
+abstract class UpdateProductUmosRequest
+    implements
+        Built<UpdateProductUmosRequest, UpdateProductUmosRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -29,18 +31,25 @@ abstract class UpdateProductUmosRequest implements Built<UpdateProductUmosReques
 
   UpdateProductUmosRequest._();
 
-  factory UpdateProductUmosRequest([void updates(UpdateProductUmosRequestBuilder b)]) = _$UpdateProductUmosRequest;
+  factory UpdateProductUmosRequest([
+    void updates(UpdateProductUmosRequestBuilder b),
+  ]) = _$UpdateProductUmosRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductUmosRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductUmosRequest> get serializer => _$UpdateProductUmosRequestSerializer();
+  static Serializer<UpdateProductUmosRequest> get serializer =>
+      _$UpdateProductUmosRequestSerializer();
 }
 
-class _$UpdateProductUmosRequestSerializer implements PrimitiveSerializer<UpdateProductUmosRequest> {
+class _$UpdateProductUmosRequestSerializer
+    implements PrimitiveSerializer<UpdateProductUmosRequest> {
   @override
-  final Iterable<Type> types = const [UpdateProductUmosRequest, _$UpdateProductUmosRequest];
+  final Iterable<Type> types = const [
+    UpdateProductUmosRequest,
+    _$UpdateProductUmosRequest,
+  ];
 
   @override
   final String wireName = r'UpdateProductUmosRequest';
@@ -77,7 +86,11 @@ class _$UpdateProductUmosRequestSerializer implements PrimitiveSerializer<Update
     UpdateProductUmosRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -93,24 +106,34 @@ class _$UpdateProductUmosRequestSerializer implements PrimitiveSerializer<Update
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'upsertUmos':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(UpsertUmoInput)]),
-          ) as BuiltList<UpsertUmoInput>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(UpsertUmoInput),
+                    ]),
+                  )
+                  as BuiltList<UpsertUmoInput>;
           result.upsertUmos.replace(valueDes);
           break;
         case r'removeUmoIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.removeUmoIds.replace(valueDes);
           break;
         default:
@@ -141,4 +164,3 @@ class _$UpdateProductUmosRequestSerializer implements PrimitiveSerializer<Update
     return result.build();
   }
 }
-

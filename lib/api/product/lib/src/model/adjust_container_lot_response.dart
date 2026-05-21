@@ -11,10 +11,12 @@ part 'adjust_container_lot_response.g.dart';
 /// AdjustContainerLotResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
+/// * [success]
+/// * [error]
 @BuiltValue()
-abstract class AdjustContainerLotResponse implements Built<AdjustContainerLotResponse, AdjustContainerLotResponseBuilder> {
+abstract class AdjustContainerLotResponse
+    implements
+        Built<AdjustContainerLotResponse, AdjustContainerLotResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -23,18 +25,25 @@ abstract class AdjustContainerLotResponse implements Built<AdjustContainerLotRes
 
   AdjustContainerLotResponse._();
 
-  factory AdjustContainerLotResponse([void updates(AdjustContainerLotResponseBuilder b)]) = _$AdjustContainerLotResponse;
+  factory AdjustContainerLotResponse([
+    void updates(AdjustContainerLotResponseBuilder b),
+  ]) = _$AdjustContainerLotResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdjustContainerLotResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdjustContainerLotResponse> get serializer => _$AdjustContainerLotResponseSerializer();
+  static Serializer<AdjustContainerLotResponse> get serializer =>
+      _$AdjustContainerLotResponseSerializer();
 }
 
-class _$AdjustContainerLotResponseSerializer implements PrimitiveSerializer<AdjustContainerLotResponse> {
+class _$AdjustContainerLotResponseSerializer
+    implements PrimitiveSerializer<AdjustContainerLotResponse> {
   @override
-  final Iterable<Type> types = const [AdjustContainerLotResponse, _$AdjustContainerLotResponse];
+  final Iterable<Type> types = const [
+    AdjustContainerLotResponse,
+    _$AdjustContainerLotResponse,
+  ];
 
   @override
   final String wireName = r'AdjustContainerLotResponse';
@@ -64,7 +73,11 @@ class _$AdjustContainerLotResponseSerializer implements PrimitiveSerializer<Adju
     AdjustContainerLotResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +93,21 @@ class _$AdjustContainerLotResponseSerializer implements PrimitiveSerializer<Adju
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.error = valueDes;
           break;
         default:
@@ -121,4 +138,3 @@ class _$AdjustContainerLotResponseSerializer implements PrimitiveSerializer<Adju
     return result.build();
   }
 }
-

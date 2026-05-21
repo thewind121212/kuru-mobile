@@ -11,11 +11,16 @@ part 'create_product_variant_response.g.dart';
 /// CreateProductVariantResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
-/// * [variantId] 
+/// * [success]
+/// * [error]
+/// * [variantId]
 @BuiltValue()
-abstract class CreateProductVariantResponse implements Built<CreateProductVariantResponse, CreateProductVariantResponseBuilder> {
+abstract class CreateProductVariantResponse
+    implements
+        Built<
+          CreateProductVariantResponse,
+          CreateProductVariantResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -27,18 +32,25 @@ abstract class CreateProductVariantResponse implements Built<CreateProductVarian
 
   CreateProductVariantResponse._();
 
-  factory CreateProductVariantResponse([void updates(CreateProductVariantResponseBuilder b)]) = _$CreateProductVariantResponse;
+  factory CreateProductVariantResponse([
+    void updates(CreateProductVariantResponseBuilder b),
+  ]) = _$CreateProductVariantResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateProductVariantResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateProductVariantResponse> get serializer => _$CreateProductVariantResponseSerializer();
+  static Serializer<CreateProductVariantResponse> get serializer =>
+      _$CreateProductVariantResponseSerializer();
 }
 
-class _$CreateProductVariantResponseSerializer implements PrimitiveSerializer<CreateProductVariantResponse> {
+class _$CreateProductVariantResponseSerializer
+    implements PrimitiveSerializer<CreateProductVariantResponse> {
   @override
-  final Iterable<Type> types = const [CreateProductVariantResponse, _$CreateProductVariantResponse];
+  final Iterable<Type> types = const [
+    CreateProductVariantResponse,
+    _$CreateProductVariantResponse,
+  ];
 
   @override
   final String wireName = r'CreateProductVariantResponse';
@@ -75,7 +87,11 @@ class _$CreateProductVariantResponseSerializer implements PrimitiveSerializer<Cr
     CreateProductVariantResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -91,24 +107,30 @@ class _$CreateProductVariantResponseSerializer implements PrimitiveSerializer<Cr
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.error = valueDes;
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         default:
@@ -139,4 +161,3 @@ class _$CreateProductVariantResponseSerializer implements PrimitiveSerializer<Cr
     return result.build();
   }
 }
-

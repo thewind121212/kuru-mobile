@@ -11,26 +11,33 @@ part 'create_brand_response.g.dart';
 /// CreateBrandResponse
 ///
 /// Properties:
-/// * [brandId] 
+/// * [brandId]
 @BuiltValue()
-abstract class CreateBrandResponse implements Built<CreateBrandResponse, CreateBrandResponseBuilder> {
+abstract class CreateBrandResponse
+    implements Built<CreateBrandResponse, CreateBrandResponseBuilder> {
   @BuiltValueField(wireName: r'brandId')
   String? get brandId;
 
   CreateBrandResponse._();
 
-  factory CreateBrandResponse([void updates(CreateBrandResponseBuilder b)]) = _$CreateBrandResponse;
+  factory CreateBrandResponse([void updates(CreateBrandResponseBuilder b)]) =
+      _$CreateBrandResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateBrandResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateBrandResponse> get serializer => _$CreateBrandResponseSerializer();
+  static Serializer<CreateBrandResponse> get serializer =>
+      _$CreateBrandResponseSerializer();
 }
 
-class _$CreateBrandResponseSerializer implements PrimitiveSerializer<CreateBrandResponse> {
+class _$CreateBrandResponseSerializer
+    implements PrimitiveSerializer<CreateBrandResponse> {
   @override
-  final Iterable<Type> types = const [CreateBrandResponse, _$CreateBrandResponse];
+  final Iterable<Type> types = const [
+    CreateBrandResponse,
+    _$CreateBrandResponse,
+  ];
 
   @override
   final String wireName = r'CreateBrandResponse';
@@ -55,7 +62,11 @@ class _$CreateBrandResponseSerializer implements PrimitiveSerializer<CreateBrand
     CreateBrandResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +82,12 @@ class _$CreateBrandResponseSerializer implements PrimitiveSerializer<CreateBrand
       final value = serializedList[i + 1];
       switch (key) {
         case r'brandId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.brandId = valueDes;
           break;
         default:
@@ -105,4 +118,3 @@ class _$CreateBrandResponseSerializer implements PrimitiveSerializer<CreateBrand
     return result.build();
   }
 }
-

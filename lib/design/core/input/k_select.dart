@@ -8,11 +8,7 @@ import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 /// One choice in a [KSelect]. `value` is the typed payload returned via
 /// `onChanged`; `label` is the user-facing string; `icon` is optional.
 class KSelectOption<T> {
-  const KSelectOption({
-    required this.value,
-    required this.label,
-    this.icon,
-  });
+  const KSelectOption({required this.value, required this.label, this.icon});
 
   final T value;
   final String label;

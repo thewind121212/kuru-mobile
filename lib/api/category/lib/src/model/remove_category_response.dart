@@ -11,26 +11,34 @@ part 'remove_category_response.g.dart';
 /// RemoveCategoryResponse
 ///
 /// Properties:
-/// * [removedCount] 
+/// * [removedCount]
 @BuiltValue()
-abstract class RemoveCategoryResponse implements Built<RemoveCategoryResponse, RemoveCategoryResponseBuilder> {
+abstract class RemoveCategoryResponse
+    implements Built<RemoveCategoryResponse, RemoveCategoryResponseBuilder> {
   @BuiltValueField(wireName: r'removedCount')
   int get removedCount;
 
   RemoveCategoryResponse._();
 
-  factory RemoveCategoryResponse([void updates(RemoveCategoryResponseBuilder b)]) = _$RemoveCategoryResponse;
+  factory RemoveCategoryResponse([
+    void updates(RemoveCategoryResponseBuilder b),
+  ]) = _$RemoveCategoryResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RemoveCategoryResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RemoveCategoryResponse> get serializer => _$RemoveCategoryResponseSerializer();
+  static Serializer<RemoveCategoryResponse> get serializer =>
+      _$RemoveCategoryResponseSerializer();
 }
 
-class _$RemoveCategoryResponseSerializer implements PrimitiveSerializer<RemoveCategoryResponse> {
+class _$RemoveCategoryResponseSerializer
+    implements PrimitiveSerializer<RemoveCategoryResponse> {
   @override
-  final Iterable<Type> types = const [RemoveCategoryResponse, _$RemoveCategoryResponse];
+  final Iterable<Type> types = const [
+    RemoveCategoryResponse,
+    _$RemoveCategoryResponse,
+  ];
 
   @override
   final String wireName = r'RemoveCategoryResponse';
@@ -53,7 +61,11 @@ class _$RemoveCategoryResponseSerializer implements PrimitiveSerializer<RemoveCa
     RemoveCategoryResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +81,9 @@ class _$RemoveCategoryResponseSerializer implements PrimitiveSerializer<RemoveCa
       final value = serializedList[i + 1];
       switch (key) {
         case r'removedCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.removedCount = valueDes;
           break;
         default:
@@ -103,4 +114,3 @@ class _$RemoveCategoryResponseSerializer implements PrimitiveSerializer<RemoveCa
     return result.build();
   }
 }
-

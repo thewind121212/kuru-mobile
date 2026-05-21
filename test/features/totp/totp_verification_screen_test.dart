@@ -7,8 +7,9 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/totp/totp_verification_screen.dart';
 
 void main() {
-  testWidgets('TotpVerificationScreen renders title + 6 OTP boxes',
-      (tester) async {
+  testWidgets('TotpVerificationScreen renders title + 6 OTP boxes', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);

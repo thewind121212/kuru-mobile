@@ -12,11 +12,13 @@ part 'create_category200_response.g.dart';
 /// CreateCategory200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class CreateCategory200Response implements Built<CreateCategory200Response, CreateCategory200ResponseBuilder> {
+abstract class CreateCategory200Response
+    implements
+        Built<CreateCategory200Response, CreateCategory200ResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +30,25 @@ abstract class CreateCategory200Response implements Built<CreateCategory200Respo
 
   CreateCategory200Response._();
 
-  factory CreateCategory200Response([void updates(CreateCategory200ResponseBuilder b)]) = _$CreateCategory200Response;
+  factory CreateCategory200Response([
+    void updates(CreateCategory200ResponseBuilder b),
+  ]) = _$CreateCategory200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateCategory200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateCategory200Response> get serializer => _$CreateCategory200ResponseSerializer();
+  static Serializer<CreateCategory200Response> get serializer =>
+      _$CreateCategory200ResponseSerializer();
 }
 
-class _$CreateCategory200ResponseSerializer implements PrimitiveSerializer<CreateCategory200Response> {
+class _$CreateCategory200ResponseSerializer
+    implements PrimitiveSerializer<CreateCategory200Response> {
   @override
-  final Iterable<Type> types = const [CreateCategory200Response, _$CreateCategory200Response];
+  final Iterable<Type> types = const [
+    CreateCategory200Response,
+    _$CreateCategory200Response,
+  ];
 
   @override
   final String wireName = r'CreateCategory200Response';
@@ -72,7 +81,11 @@ class _$CreateCategory200ResponseSerializer implements PrimitiveSerializer<Creat
     CreateCategory200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +101,30 @@ class _$CreateCategory200ResponseSerializer implements PrimitiveSerializer<Creat
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CreateCategoryResponse),
-          ) as CreateCategoryResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(CreateCategoryResponse),
+                  )
+                  as CreateCategoryResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +155,3 @@ class _$CreateCategory200ResponseSerializer implements PrimitiveSerializer<Creat
     return result.build();
   }
 }
-

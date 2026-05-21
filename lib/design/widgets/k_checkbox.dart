@@ -39,8 +39,8 @@ class KCheckbox extends StatelessWidget {
             color: value
                 ? c.primary
                 : showError
-                    ? c.danger
-                    : c.border,
+                ? c.danger
+                : c.border,
             width: 1.5,
           ),
           borderRadius: BorderRadius.circular(5),

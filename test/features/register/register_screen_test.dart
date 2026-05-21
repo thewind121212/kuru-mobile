@@ -7,8 +7,9 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
 
 void main() {
-  testWidgets('RegisterScreen renders name + email + password fields',
-      (tester) async {
+  testWidgets('RegisterScreen renders name + email + password fields', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         child: MaterialApp(

@@ -12,11 +12,16 @@ part 'update_product_info200_response.g.dart';
 /// UpdateProductInfo200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class UpdateProductInfo200Response implements Built<UpdateProductInfo200Response, UpdateProductInfo200ResponseBuilder> {
+abstract class UpdateProductInfo200Response
+    implements
+        Built<
+          UpdateProductInfo200Response,
+          UpdateProductInfo200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class UpdateProductInfo200Response implements Built<UpdateProductInfo20
 
   UpdateProductInfo200Response._();
 
-  factory UpdateProductInfo200Response([void updates(UpdateProductInfo200ResponseBuilder b)]) = _$UpdateProductInfo200Response;
+  factory UpdateProductInfo200Response([
+    void updates(UpdateProductInfo200ResponseBuilder b),
+  ]) = _$UpdateProductInfo200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductInfo200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductInfo200Response> get serializer => _$UpdateProductInfo200ResponseSerializer();
+  static Serializer<UpdateProductInfo200Response> get serializer =>
+      _$UpdateProductInfo200ResponseSerializer();
 }
 
-class _$UpdateProductInfo200ResponseSerializer implements PrimitiveSerializer<UpdateProductInfo200Response> {
+class _$UpdateProductInfo200ResponseSerializer
+    implements PrimitiveSerializer<UpdateProductInfo200Response> {
   @override
-  final Iterable<Type> types = const [UpdateProductInfo200Response, _$UpdateProductInfo200Response];
+  final Iterable<Type> types = const [
+    UpdateProductInfo200Response,
+    _$UpdateProductInfo200Response,
+  ];
 
   @override
   final String wireName = r'UpdateProductInfo200Response';
@@ -72,7 +84,11 @@ class _$UpdateProductInfo200ResponseSerializer implements PrimitiveSerializer<Up
     UpdateProductInfo200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,30 @@ class _$UpdateProductInfo200ResponseSerializer implements PrimitiveSerializer<Up
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(UpdateProductInfoResponse),
-          ) as UpdateProductInfoResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(UpdateProductInfoResponse),
+                  )
+                  as UpdateProductInfoResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +158,3 @@ class _$UpdateProductInfo200ResponseSerializer implements PrimitiveSerializer<Up
     return result.build();
   }
 }
-

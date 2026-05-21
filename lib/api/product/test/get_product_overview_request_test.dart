@@ -56,6 +56,5 @@ void main() {
     test('to test the property `brandIds`', () async {
       // TODO
     });
-
   });
 }

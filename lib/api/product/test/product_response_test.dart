@@ -151,6 +151,5 @@ void main() {
     test('to test the property `brandName`', () async {
       // TODO
     });
-
   });
 }

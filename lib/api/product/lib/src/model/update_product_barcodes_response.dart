@@ -11,10 +11,15 @@ part 'update_product_barcodes_response.g.dart';
 /// UpdateProductBarcodesResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
+/// * [success]
+/// * [error]
 @BuiltValue()
-abstract class UpdateProductBarcodesResponse implements Built<UpdateProductBarcodesResponse, UpdateProductBarcodesResponseBuilder> {
+abstract class UpdateProductBarcodesResponse
+    implements
+        Built<
+          UpdateProductBarcodesResponse,
+          UpdateProductBarcodesResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -23,18 +28,25 @@ abstract class UpdateProductBarcodesResponse implements Built<UpdateProductBarco
 
   UpdateProductBarcodesResponse._();
 
-  factory UpdateProductBarcodesResponse([void updates(UpdateProductBarcodesResponseBuilder b)]) = _$UpdateProductBarcodesResponse;
+  factory UpdateProductBarcodesResponse([
+    void updates(UpdateProductBarcodesResponseBuilder b),
+  ]) = _$UpdateProductBarcodesResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductBarcodesResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductBarcodesResponse> get serializer => _$UpdateProductBarcodesResponseSerializer();
+  static Serializer<UpdateProductBarcodesResponse> get serializer =>
+      _$UpdateProductBarcodesResponseSerializer();
 }
 
-class _$UpdateProductBarcodesResponseSerializer implements PrimitiveSerializer<UpdateProductBarcodesResponse> {
+class _$UpdateProductBarcodesResponseSerializer
+    implements PrimitiveSerializer<UpdateProductBarcodesResponse> {
   @override
-  final Iterable<Type> types = const [UpdateProductBarcodesResponse, _$UpdateProductBarcodesResponse];
+  final Iterable<Type> types = const [
+    UpdateProductBarcodesResponse,
+    _$UpdateProductBarcodesResponse,
+  ];
 
   @override
   final String wireName = r'UpdateProductBarcodesResponse';
@@ -64,7 +76,11 @@ class _$UpdateProductBarcodesResponseSerializer implements PrimitiveSerializer<U
     UpdateProductBarcodesResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +96,21 @@ class _$UpdateProductBarcodesResponseSerializer implements PrimitiveSerializer<U
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.error = valueDes;
           break;
         default:
@@ -121,4 +141,3 @@ class _$UpdateProductBarcodesResponseSerializer implements PrimitiveSerializer<U
     return result.build();
   }
 }
-

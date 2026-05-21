@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 import 'package:kuru_category_api/kuru_category_api.dart';
 
-
 /// tests for CategoryApi
 void main() {
   final instance = KuruCategoryApi().getCategoryApi();
@@ -55,6 +54,5 @@ void main() {
     test('test updateCategory', () async {
       // TODO
     });
-
   });
 }

@@ -69,9 +69,7 @@ class _KSearchBarState extends State<KSearchBar> {
       decoration: BoxDecoration(
         color: c.surfaceElev,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: focused ? c.accent500 : c.border,
-        ),
+        border: Border.all(color: focused ? c.accent500 : c.border),
         boxShadow: focused
             ? [
                 BoxShadow(
@@ -118,10 +116,7 @@ class _KSearchBarState extends State<KSearchBar> {
               icon: Icon(TablerIcons.x, size: 18, color: c.textMuted),
               tooltip: 'Clear',
               iconSize: 18,
-              constraints: const BoxConstraints(
-                minWidth: 48,
-                minHeight: 48,
-              ),
+              constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
               padding: EdgeInsets.zero,
               splashRadius: 24,
               onPressed: _clear,

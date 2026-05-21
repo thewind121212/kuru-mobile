@@ -15,26 +15,27 @@ part 'create_product_request.g.dart';
 /// CreateProductRequest
 ///
 /// Properties:
-/// * [categoryId] 
-/// * [distributorId] 
-/// * [brandId] 
-/// * [name] 
-/// * [description] 
-/// * [imageUrl] 
-/// * [status] 
-/// * [baseUnitCode] 
-/// * [baseUnitLabel] 
-/// * [sellPrice] 
-/// * [exportPrice] 
-/// * [containerLabel] 
-/// * [containerSize] 
-/// * [packs] 
-/// * [barcodes] 
-/// * [initialStocks] 
-/// * [demandStock] 
-/// * [importPrice] 
+/// * [categoryId]
+/// * [distributorId]
+/// * [brandId]
+/// * [name]
+/// * [description]
+/// * [imageUrl]
+/// * [status]
+/// * [baseUnitCode]
+/// * [baseUnitLabel]
+/// * [sellPrice]
+/// * [exportPrice]
+/// * [containerLabel]
+/// * [containerSize]
+/// * [packs]
+/// * [barcodes]
+/// * [initialStocks]
+/// * [demandStock]
+/// * [importPrice]
 @BuiltValue()
-abstract class CreateProductRequest implements Built<CreateProductRequest, CreateProductRequestBuilder> {
+abstract class CreateProductRequest
+    implements Built<CreateProductRequest, CreateProductRequestBuilder> {
   @BuiltValueField(wireName: r'categoryId')
   String? get categoryId;
 
@@ -91,18 +92,24 @@ abstract class CreateProductRequest implements Built<CreateProductRequest, Creat
 
   CreateProductRequest._();
 
-  factory CreateProductRequest([void updates(CreateProductRequestBuilder b)]) = _$CreateProductRequest;
+  factory CreateProductRequest([void updates(CreateProductRequestBuilder b)]) =
+      _$CreateProductRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateProductRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateProductRequest> get serializer => _$CreateProductRequestSerializer();
+  static Serializer<CreateProductRequest> get serializer =>
+      _$CreateProductRequestSerializer();
 }
 
-class _$CreateProductRequestSerializer implements PrimitiveSerializer<CreateProductRequest> {
+class _$CreateProductRequestSerializer
+    implements PrimitiveSerializer<CreateProductRequest> {
   @override
-  final Iterable<Type> types = const [CreateProductRequest, _$CreateProductRequest];
+  final Iterable<Type> types = const [
+    CreateProductRequest,
+    _$CreateProductRequest,
+  ];
 
   @override
   final String wireName = r'CreateProductRequest';
@@ -203,21 +210,27 @@ class _$CreateProductRequestSerializer implements PrimitiveSerializer<CreateProd
       yield r'packs';
       yield serializers.serialize(
         object.packs,
-        specifiedType: const FullType(BuiltList, [FullType(CreateProductPackRequest)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(CreateProductPackRequest),
+        ]),
       );
     }
     if (object.barcodes != null) {
       yield r'barcodes';
       yield serializers.serialize(
         object.barcodes,
-        specifiedType: const FullType(BuiltList, [FullType(CreateProductBarcodeRequest)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(CreateProductBarcodeRequest),
+        ]),
       );
     }
     if (object.initialStocks != null) {
       yield r'initialStocks';
       yield serializers.serialize(
         object.initialStocks,
-        specifiedType: const FullType(BuiltList, [FullType(CreateProductStockRequest)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(CreateProductStockRequest),
+        ]),
       );
     }
     yield r'demandStock';
@@ -240,7 +253,11 @@ class _$CreateProductRequestSerializer implements PrimitiveSerializer<CreateProd
     CreateProductRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -256,129 +273,171 @@ class _$CreateProductRequestSerializer implements PrimitiveSerializer<CreateProd
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.categoryId = valueDes;
           break;
         case r'distributorId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.distributorId = valueDes;
           break;
         case r'brandId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.brandId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'description':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.description = valueDes;
           break;
         case r'imageUrl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.imageUrl = valueDes;
           break;
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.status = valueDes;
           break;
         case r'baseUnitCode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.baseUnitCode = valueDes;
           break;
         case r'baseUnitLabel':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.baseUnitLabel = valueDes;
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         case r'exportPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.exportPrice = valueDes;
           break;
         case r'containerLabel':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.containerLabel = valueDes;
           break;
         case r'containerSize':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.containerSize = valueDes;
           break;
         case r'packs':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CreateProductPackRequest)]),
-          ) as BuiltList<CreateProductPackRequest>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CreateProductPackRequest),
+                    ]),
+                  )
+                  as BuiltList<CreateProductPackRequest>;
           result.packs.replace(valueDes);
           break;
         case r'barcodes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CreateProductBarcodeRequest)]),
-          ) as BuiltList<CreateProductBarcodeRequest>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CreateProductBarcodeRequest),
+                    ]),
+                  )
+                  as BuiltList<CreateProductBarcodeRequest>;
           result.barcodes.replace(valueDes);
           break;
         case r'initialStocks':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CreateProductStockRequest)]),
-          ) as BuiltList<CreateProductStockRequest>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CreateProductStockRequest),
+                    ]),
+                  )
+                  as BuiltList<CreateProductStockRequest>;
           result.initialStocks.replace(valueDes);
           break;
         case r'demandStock':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.demandStock = valueDes;
           break;
         case r'importPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.importPrice = valueDes;
           break;
         default:
@@ -409,4 +468,3 @@ class _$CreateProductRequestSerializer implements PrimitiveSerializer<CreateProd
     return result.build();
   }
 }
-

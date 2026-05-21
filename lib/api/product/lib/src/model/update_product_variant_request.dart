@@ -12,15 +12,17 @@ part 'update_product_variant_request.g.dart';
 /// UpdateProductVariantRequest
 ///
 /// Properties:
-/// * [variantId] 
-/// * [name] 
-/// * [sellPrice] 
-/// * [exportPrice] 
-/// * [importPrice] 
-/// * [barcode] 
-/// * [attributes] 
+/// * [variantId]
+/// * [name]
+/// * [sellPrice]
+/// * [exportPrice]
+/// * [importPrice]
+/// * [barcode]
+/// * [attributes]
 @BuiltValue()
-abstract class UpdateProductVariantRequest implements Built<UpdateProductVariantRequest, UpdateProductVariantRequestBuilder> {
+abstract class UpdateProductVariantRequest
+    implements
+        Built<UpdateProductVariantRequest, UpdateProductVariantRequestBuilder> {
   @BuiltValueField(wireName: r'variantId')
   String get variantId;
 
@@ -44,18 +46,25 @@ abstract class UpdateProductVariantRequest implements Built<UpdateProductVariant
 
   UpdateProductVariantRequest._();
 
-  factory UpdateProductVariantRequest([void updates(UpdateProductVariantRequestBuilder b)]) = _$UpdateProductVariantRequest;
+  factory UpdateProductVariantRequest([
+    void updates(UpdateProductVariantRequestBuilder b),
+  ]) = _$UpdateProductVariantRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductVariantRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductVariantRequest> get serializer => _$UpdateProductVariantRequestSerializer();
+  static Serializer<UpdateProductVariantRequest> get serializer =>
+      _$UpdateProductVariantRequestSerializer();
 }
 
-class _$UpdateProductVariantRequestSerializer implements PrimitiveSerializer<UpdateProductVariantRequest> {
+class _$UpdateProductVariantRequestSerializer
+    implements PrimitiveSerializer<UpdateProductVariantRequest> {
   @override
-  final Iterable<Type> types = const [UpdateProductVariantRequest, _$UpdateProductVariantRequest];
+  final Iterable<Type> types = const [
+    UpdateProductVariantRequest,
+    _$UpdateProductVariantRequest,
+  ];
 
   @override
   final String wireName = r'UpdateProductVariantRequest';
@@ -108,7 +117,10 @@ class _$UpdateProductVariantRequestSerializer implements PrimitiveSerializer<Upd
     yield r'attributes';
     yield serializers.serialize(
       object.attributes,
-      specifiedType: const FullType(BuiltMap, [FullType(String), FullType(String)]),
+      specifiedType: const FullType(BuiltMap, [
+        FullType(String),
+        FullType(String),
+      ]),
     );
   }
 
@@ -118,7 +130,11 @@ class _$UpdateProductVariantRequestSerializer implements PrimitiveSerializer<Upd
     UpdateProductVariantRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -134,52 +150,69 @@ class _$UpdateProductVariantRequestSerializer implements PrimitiveSerializer<Upd
       final value = serializedList[i + 1];
       switch (key) {
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         case r'exportPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.exportPrice = valueDes;
           break;
         case r'importPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.importPrice = valueDes;
           break;
         case r'barcode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.barcode = valueDes;
           break;
         case r'attributes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltMap, [FullType(String), FullType(String)]),
-          ) as BuiltMap<String, String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltMap, [
+                      FullType(String),
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltMap<String, String>;
           result.attributes.replace(valueDes);
           break;
         default:
@@ -210,4 +243,3 @@ class _$UpdateProductVariantRequestSerializer implements PrimitiveSerializer<Upd
     return result.build();
   }
 }
-

@@ -6,9 +6,9 @@ import 'package:kuru_mobile/design/core/feedback/k_badge.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
-        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-        home: Scaffold(body: Center(child: child)),
-      );
+    theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+    home: Scaffold(body: Center(child: child)),
+  );
 
   testWidgets('KBadge renders label', (tester) async {
     await tester.pumpWidget(wrap(const KBadge(label: 'Active')));
@@ -25,11 +25,15 @@ void main() {
   });
 
   testWidgets('KBadge renders leading icon when provided', (tester) async {
-    await tester.pumpWidget(wrap(const KBadge(
-      label: 'Low stock',
-      tone: KBadgeTone.danger,
-      leadingIcon: Icons.warning,
-    )));
+    await tester.pumpWidget(
+      wrap(
+        const KBadge(
+          label: 'Low stock',
+          tone: KBadgeTone.danger,
+          leadingIcon: Icons.warning,
+        ),
+      ),
+    );
     await tester.pump();
     expect(find.byIcon(Icons.warning), findsOneWidget);
     expect(find.text('Low stock'), findsOneWidget);

@@ -8,18 +8,44 @@ void main() {
 
   test('every retail-essential name is present', () {
     const essentials = [
-      'box', 'package', 'tag', 'tags',
-      'shopping-cart', 'shopping-bag',
-      'building-store', 'building-warehouse', 'truck',
-      'barcode', 'receipt', 'wallet', 'coins', 'credit-card',
-      'percentage', 'scale', 'ruler', 'palette',
-      'shirt', 'coffee', 'pizza', 'apple', 'meat', 'bottle',
-      'tool', 'device-laptop', 'camera', 'book',
-      'heart', 'star', 'layout-grid',
+      'box',
+      'package',
+      'tag',
+      'tags',
+      'shopping-cart',
+      'shopping-bag',
+      'building-store',
+      'building-warehouse',
+      'truck',
+      'barcode',
+      'receipt',
+      'wallet',
+      'coins',
+      'credit-card',
+      'percentage',
+      'scale',
+      'ruler',
+      'palette',
+      'shirt',
+      'coffee',
+      'pizza',
+      'apple',
+      'meat',
+      'bottle',
+      'tool',
+      'device-laptop',
+      'camera',
+      'book',
+      'heart',
+      'star',
+      'layout-grid',
     ];
     for (final name in essentials) {
-      expect(kCuratedIcons.containsKey(name), isTrue,
-          reason: 'missing $name from kCuratedIcons');
+      expect(
+        kCuratedIcons.containsKey(name),
+        isTrue,
+        reason: 'missing $name from kCuratedIcons',
+      );
     }
   });
 

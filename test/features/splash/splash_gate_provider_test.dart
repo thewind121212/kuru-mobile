@@ -5,59 +5,65 @@ import 'package:kuru_mobile/features/splash/splash_screen.dart';
 
 void main() {
   group('splashGateProvider', () {
-    test('holds for at least 800ms when bootstrap resolves instantly',
-        () async {
-      final container = ProviderContainer(
-        overrides: [
-          appBootstrapProvider
-              .overrideWith((ref) async => const BootstrapUnauthed()),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'holds for at least 800ms when bootstrap resolves instantly',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            appBootstrapProvider.overrideWith(
+              (ref) async => const BootstrapUnauthed(),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final start = DateTime.now();
-      await container.read(splashGateProvider.future);
-      final elapsed = DateTime.now().difference(start);
+        final start = DateTime.now();
+        await container.read(splashGateProvider.future);
+        final elapsed = DateTime.now().difference(start);
 
-      expect(
-        elapsed,
-        greaterThanOrEqualTo(const Duration(milliseconds: 780)),
-        reason: 'gate must enforce ~800ms floor (allow 20ms slack)',
-      );
-    });
+        expect(
+          elapsed,
+          greaterThanOrEqualTo(const Duration(milliseconds: 780)),
+          reason: 'gate must enforce ~800ms floor (allow 20ms slack)',
+        );
+      },
+    );
 
-    test('does not add extra delay when bootstrap already exceeds 800ms',
-        () async {
-      final container = ProviderContainer(
-        overrides: [
-          appBootstrapProvider.overrideWith((ref) async {
-            await Future<void>.delayed(const Duration(milliseconds: 1100));
-            return const BootstrapUnauthed();
-          }),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'does not add extra delay when bootstrap already exceeds 800ms',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            appBootstrapProvider.overrideWith((ref) async {
+              await Future<void>.delayed(const Duration(milliseconds: 1100));
+              return const BootstrapUnauthed();
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final start = DateTime.now();
-      await container.read(splashGateProvider.future);
-      final elapsed = DateTime.now().difference(start);
+        final start = DateTime.now();
+        await container.read(splashGateProvider.future);
+        final elapsed = DateTime.now().difference(start);
 
-      expect(
-        elapsed,
-        greaterThanOrEqualTo(const Duration(milliseconds: 1080)),
-      );
-      expect(
-        elapsed,
-        lessThan(const Duration(milliseconds: 1400)),
-        reason: 'no significant artificial delay should be added',
-      );
-    });
+        expect(
+          elapsed,
+          greaterThanOrEqualTo(const Duration(milliseconds: 1080)),
+        );
+        expect(
+          elapsed,
+          lessThan(const Duration(milliseconds: 1400)),
+          reason: 'no significant artificial delay should be added',
+        );
+      },
+    );
 
     test('propagates bootstrap errors after the floor', () async {
       final container = ProviderContainer(
         overrides: [
-          appBootstrapProvider
-              .overrideWith((ref) async => throw StateError('boom')),
+          appBootstrapProvider.overrideWith(
+            (ref) async => throw StateError('boom'),
+          ),
         ],
       );
       addTearDown(container.dispose);

@@ -40,21 +40,17 @@ void main() {
   group('AuthRepository.signUp', () {
     test('returns success on OK', () async {
       final dio = _dioWith({'status': 'OK'});
-      final r = await AuthRepository(dio).signUp(
-        fullName: 'A',
-        email: 'a@b.com',
-        password: 'pw',
-      );
+      final r = await AuthRepository(
+        dio,
+      ).signUp(fullName: 'A', email: 'a@b.com', password: 'pw');
       expect(r, isA<ApiSuccess<void>>());
     });
 
     test('returns BadRequest on EMAIL_ALREADY_EXISTS_ERROR', () async {
       final dio = _dioWith({'status': 'EMAIL_ALREADY_EXISTS_ERROR'});
-      final r = await AuthRepository(dio).signUp(
-        fullName: 'A',
-        email: 'a@b.com',
-        password: 'pw',
-      );
+      final r = await AuthRepository(
+        dio,
+      ).signUp(fullName: 'A', email: 'a@b.com', password: 'pw');
       expect(r, isA<ApiFailure<void>>());
       final err = (r as ApiFailure).err as BadRequestException;
       expect(err.code, 'EMAIL_EXISTS');

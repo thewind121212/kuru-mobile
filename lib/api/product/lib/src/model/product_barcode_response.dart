@@ -11,16 +11,17 @@ part 'product_barcode_response.g.dart';
 /// ProductBarcodeResponse
 ///
 /// Properties:
-/// * [id] 
-/// * [orgId] 
-/// * [value] 
-/// * [productId] 
-/// * [isActive] 
-/// * [variantId] 
-/// * [packId] 
-/// * [kind] 
+/// * [id]
+/// * [orgId]
+/// * [value]
+/// * [productId]
+/// * [isActive]
+/// * [variantId]
+/// * [packId]
+/// * [kind]
 @BuiltValue()
-abstract class ProductBarcodeResponse implements Built<ProductBarcodeResponse, ProductBarcodeResponseBuilder> {
+abstract class ProductBarcodeResponse
+    implements Built<ProductBarcodeResponse, ProductBarcodeResponseBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -47,18 +48,25 @@ abstract class ProductBarcodeResponse implements Built<ProductBarcodeResponse, P
 
   ProductBarcodeResponse._();
 
-  factory ProductBarcodeResponse([void updates(ProductBarcodeResponseBuilder b)]) = _$ProductBarcodeResponse;
+  factory ProductBarcodeResponse([
+    void updates(ProductBarcodeResponseBuilder b),
+  ]) = _$ProductBarcodeResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ProductBarcodeResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ProductBarcodeResponse> get serializer => _$ProductBarcodeResponseSerializer();
+  static Serializer<ProductBarcodeResponse> get serializer =>
+      _$ProductBarcodeResponseSerializer();
 }
 
-class _$ProductBarcodeResponseSerializer implements PrimitiveSerializer<ProductBarcodeResponse> {
+class _$ProductBarcodeResponseSerializer
+    implements PrimitiveSerializer<ProductBarcodeResponse> {
   @override
-  final Iterable<Type> types = const [ProductBarcodeResponse, _$ProductBarcodeResponse];
+  final Iterable<Type> types = const [
+    ProductBarcodeResponse,
+    _$ProductBarcodeResponse,
+  ];
 
   @override
   final String wireName = r'ProductBarcodeResponse';
@@ -120,7 +128,11 @@ class _$ProductBarcodeResponseSerializer implements PrimitiveSerializer<ProductB
     ProductBarcodeResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -136,59 +148,75 @@ class _$ProductBarcodeResponseSerializer implements PrimitiveSerializer<ProductB
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'value':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.value = valueDes;
           break;
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'isActive':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.isActive = valueDes;
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         case r'packId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.packId = valueDes;
           break;
         case r'kind':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.kind = valueDes;
           break;
         default:
@@ -219,4 +247,3 @@ class _$ProductBarcodeResponseSerializer implements PrimitiveSerializer<ProductB
     return result.build();
   }
 }
-

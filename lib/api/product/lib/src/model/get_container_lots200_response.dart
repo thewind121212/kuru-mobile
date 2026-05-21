@@ -12,11 +12,13 @@ part 'get_container_lots200_response.g.dart';
 /// GetContainerLots200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class GetContainerLots200Response implements Built<GetContainerLots200Response, GetContainerLots200ResponseBuilder> {
+abstract class GetContainerLots200Response
+    implements
+        Built<GetContainerLots200Response, GetContainerLots200ResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +30,25 @@ abstract class GetContainerLots200Response implements Built<GetContainerLots200R
 
   GetContainerLots200Response._();
 
-  factory GetContainerLots200Response([void updates(GetContainerLots200ResponseBuilder b)]) = _$GetContainerLots200Response;
+  factory GetContainerLots200Response([
+    void updates(GetContainerLots200ResponseBuilder b),
+  ]) = _$GetContainerLots200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetContainerLots200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetContainerLots200Response> get serializer => _$GetContainerLots200ResponseSerializer();
+  static Serializer<GetContainerLots200Response> get serializer =>
+      _$GetContainerLots200ResponseSerializer();
 }
 
-class _$GetContainerLots200ResponseSerializer implements PrimitiveSerializer<GetContainerLots200Response> {
+class _$GetContainerLots200ResponseSerializer
+    implements PrimitiveSerializer<GetContainerLots200Response> {
   @override
-  final Iterable<Type> types = const [GetContainerLots200Response, _$GetContainerLots200Response];
+  final Iterable<Type> types = const [
+    GetContainerLots200Response,
+    _$GetContainerLots200Response,
+  ];
 
   @override
   final String wireName = r'GetContainerLots200Response';
@@ -72,7 +81,11 @@ class _$GetContainerLots200ResponseSerializer implements PrimitiveSerializer<Get
     GetContainerLots200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +101,30 @@ class _$GetContainerLots200ResponseSerializer implements PrimitiveSerializer<Get
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(GetContainerLotsResponse),
-          ) as GetContainerLotsResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(GetContainerLotsResponse),
+                  )
+                  as GetContainerLotsResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +155,3 @@ class _$GetContainerLots200ResponseSerializer implements PrimitiveSerializer<Get
     return result.build();
   }
 }
-

@@ -11,26 +11,34 @@ part 'get_product_by_id_request.g.dart';
 /// GetProductByIdRequest
 ///
 /// Properties:
-/// * [productId] 
+/// * [productId]
 @BuiltValue()
-abstract class GetProductByIdRequest implements Built<GetProductByIdRequest, GetProductByIdRequestBuilder> {
+abstract class GetProductByIdRequest
+    implements Built<GetProductByIdRequest, GetProductByIdRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
   GetProductByIdRequest._();
 
-  factory GetProductByIdRequest([void updates(GetProductByIdRequestBuilder b)]) = _$GetProductByIdRequest;
+  factory GetProductByIdRequest([
+    void updates(GetProductByIdRequestBuilder b),
+  ]) = _$GetProductByIdRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetProductByIdRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetProductByIdRequest> get serializer => _$GetProductByIdRequestSerializer();
+  static Serializer<GetProductByIdRequest> get serializer =>
+      _$GetProductByIdRequestSerializer();
 }
 
-class _$GetProductByIdRequestSerializer implements PrimitiveSerializer<GetProductByIdRequest> {
+class _$GetProductByIdRequestSerializer
+    implements PrimitiveSerializer<GetProductByIdRequest> {
   @override
-  final Iterable<Type> types = const [GetProductByIdRequest, _$GetProductByIdRequest];
+  final Iterable<Type> types = const [
+    GetProductByIdRequest,
+    _$GetProductByIdRequest,
+  ];
 
   @override
   final String wireName = r'GetProductByIdRequest';
@@ -53,7 +61,11 @@ class _$GetProductByIdRequestSerializer implements PrimitiveSerializer<GetProduc
     GetProductByIdRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +81,12 @@ class _$GetProductByIdRequestSerializer implements PrimitiveSerializer<GetProduc
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         default:
@@ -103,4 +117,3 @@ class _$GetProductByIdRequestSerializer implements PrimitiveSerializer<GetProduc
     return result.build();
   }
 }
-

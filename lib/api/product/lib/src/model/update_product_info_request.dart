@@ -11,24 +11,26 @@ part 'update_product_info_request.g.dart';
 /// UpdateProductInfoRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [name] 
-/// * [sellPrice] 
-/// * [categoryId] 
-/// * [distributorId] 
-/// * [description] 
-/// * [imageUrl] 
-/// * [status] 
-/// * [baseUnitCode] 
-/// * [baseUnitLabel] 
-/// * [exportPrice] 
-/// * [containerLabel] 
-/// * [containerSize] 
-/// * [demandStock] 
-/// * [importPrice] 
-/// * [brandId] 
+/// * [productId]
+/// * [name]
+/// * [sellPrice]
+/// * [categoryId]
+/// * [distributorId]
+/// * [description]
+/// * [imageUrl]
+/// * [status]
+/// * [baseUnitCode]
+/// * [baseUnitLabel]
+/// * [exportPrice]
+/// * [containerLabel]
+/// * [containerSize]
+/// * [demandStock]
+/// * [importPrice]
+/// * [brandId]
 @BuiltValue()
-abstract class UpdateProductInfoRequest implements Built<UpdateProductInfoRequest, UpdateProductInfoRequestBuilder> {
+abstract class UpdateProductInfoRequest
+    implements
+        Built<UpdateProductInfoRequest, UpdateProductInfoRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -79,18 +81,25 @@ abstract class UpdateProductInfoRequest implements Built<UpdateProductInfoReques
 
   UpdateProductInfoRequest._();
 
-  factory UpdateProductInfoRequest([void updates(UpdateProductInfoRequestBuilder b)]) = _$UpdateProductInfoRequest;
+  factory UpdateProductInfoRequest([
+    void updates(UpdateProductInfoRequestBuilder b),
+  ]) = _$UpdateProductInfoRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductInfoRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductInfoRequest> get serializer => _$UpdateProductInfoRequestSerializer();
+  static Serializer<UpdateProductInfoRequest> get serializer =>
+      _$UpdateProductInfoRequestSerializer();
 }
 
-class _$UpdateProductInfoRequestSerializer implements PrimitiveSerializer<UpdateProductInfoRequest> {
+class _$UpdateProductInfoRequestSerializer
+    implements PrimitiveSerializer<UpdateProductInfoRequest> {
   @override
-  final Iterable<Type> types = const [UpdateProductInfoRequest, _$UpdateProductInfoRequest];
+  final Iterable<Type> types = const [
+    UpdateProductInfoRequest,
+    _$UpdateProductInfoRequest,
+  ];
 
   @override
   final String wireName = r'UpdateProductInfoRequest';
@@ -218,7 +227,11 @@ class _$UpdateProductInfoRequestSerializer implements PrimitiveSerializer<Update
     UpdateProductInfoRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -234,115 +247,147 @@ class _$UpdateProductInfoRequestSerializer implements PrimitiveSerializer<Update
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.categoryId = valueDes;
           break;
         case r'distributorId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.distributorId = valueDes;
           break;
         case r'description':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.description = valueDes;
           break;
         case r'imageUrl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.imageUrl = valueDes;
           break;
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.status = valueDes;
           break;
         case r'baseUnitCode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.baseUnitCode = valueDes;
           break;
         case r'baseUnitLabel':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.baseUnitLabel = valueDes;
           break;
         case r'exportPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.exportPrice = valueDes;
           break;
         case r'containerLabel':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.containerLabel = valueDes;
           break;
         case r'containerSize':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.containerSize = valueDes;
           break;
         case r'demandStock':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.demandStock = valueDes;
           break;
         case r'importPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.importPrice = valueDes;
           break;
         case r'brandId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.brandId = valueDes;
           break;
         default:
@@ -373,4 +418,3 @@ class _$UpdateProductInfoRequestSerializer implements PrimitiveSerializer<Update
     return result.build();
   }
 }
-

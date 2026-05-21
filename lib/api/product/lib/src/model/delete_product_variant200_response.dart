@@ -12,11 +12,16 @@ part 'delete_product_variant200_response.g.dart';
 /// DeleteProductVariant200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class DeleteProductVariant200Response implements Built<DeleteProductVariant200Response, DeleteProductVariant200ResponseBuilder> {
+abstract class DeleteProductVariant200Response
+    implements
+        Built<
+          DeleteProductVariant200Response,
+          DeleteProductVariant200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class DeleteProductVariant200Response implements Built<DeleteProductVar
 
   DeleteProductVariant200Response._();
 
-  factory DeleteProductVariant200Response([void updates(DeleteProductVariant200ResponseBuilder b)]) = _$DeleteProductVariant200Response;
+  factory DeleteProductVariant200Response([
+    void updates(DeleteProductVariant200ResponseBuilder b),
+  ]) = _$DeleteProductVariant200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeleteProductVariant200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeleteProductVariant200Response> get serializer => _$DeleteProductVariant200ResponseSerializer();
+  static Serializer<DeleteProductVariant200Response> get serializer =>
+      _$DeleteProductVariant200ResponseSerializer();
 }
 
-class _$DeleteProductVariant200ResponseSerializer implements PrimitiveSerializer<DeleteProductVariant200Response> {
+class _$DeleteProductVariant200ResponseSerializer
+    implements PrimitiveSerializer<DeleteProductVariant200Response> {
   @override
-  final Iterable<Type> types = const [DeleteProductVariant200Response, _$DeleteProductVariant200Response];
+  final Iterable<Type> types = const [
+    DeleteProductVariant200Response,
+    _$DeleteProductVariant200Response,
+  ];
 
   @override
   final String wireName = r'DeleteProductVariant200Response';
@@ -72,7 +84,11 @@ class _$DeleteProductVariant200ResponseSerializer implements PrimitiveSerializer
     DeleteProductVariant200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,30 @@ class _$DeleteProductVariant200ResponseSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DeleteProductVariantResponse),
-          ) as DeleteProductVariantResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DeleteProductVariantResponse),
+                  )
+                  as DeleteProductVariantResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +158,3 @@ class _$DeleteProductVariant200ResponseSerializer implements PrimitiveSerializer
     return result.build();
   }
 }
-

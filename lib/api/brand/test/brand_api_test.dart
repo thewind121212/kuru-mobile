@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 import 'package:kuru_brand_api/kuru_brand_api.dart';
 
-
 /// tests for BrandApi
 void main() {
   final instance = KuruBrandApi().getBrandApi();
@@ -41,6 +40,5 @@ void main() {
     test('test updateBrand', () async {
       // TODO
     });
-
   });
 }

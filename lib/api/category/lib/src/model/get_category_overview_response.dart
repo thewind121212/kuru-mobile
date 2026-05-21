@@ -13,26 +13,35 @@ part 'get_category_overview_response.g.dart';
 /// GetCategoryOverviewResponse
 ///
 /// Properties:
-/// * [categoryOverviews] 
+/// * [categoryOverviews]
 @BuiltValue()
-abstract class GetCategoryOverviewResponse implements Built<GetCategoryOverviewResponse, GetCategoryOverviewResponseBuilder> {
+abstract class GetCategoryOverviewResponse
+    implements
+        Built<GetCategoryOverviewResponse, GetCategoryOverviewResponseBuilder> {
   @BuiltValueField(wireName: r'categoryOverviews')
   BuiltList<CategoryResponse>? get categoryOverviews;
 
   GetCategoryOverviewResponse._();
 
-  factory GetCategoryOverviewResponse([void updates(GetCategoryOverviewResponseBuilder b)]) = _$GetCategoryOverviewResponse;
+  factory GetCategoryOverviewResponse([
+    void updates(GetCategoryOverviewResponseBuilder b),
+  ]) = _$GetCategoryOverviewResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetCategoryOverviewResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetCategoryOverviewResponse> get serializer => _$GetCategoryOverviewResponseSerializer();
+  static Serializer<GetCategoryOverviewResponse> get serializer =>
+      _$GetCategoryOverviewResponseSerializer();
 }
 
-class _$GetCategoryOverviewResponseSerializer implements PrimitiveSerializer<GetCategoryOverviewResponse> {
+class _$GetCategoryOverviewResponseSerializer
+    implements PrimitiveSerializer<GetCategoryOverviewResponse> {
   @override
-  final Iterable<Type> types = const [GetCategoryOverviewResponse, _$GetCategoryOverviewResponse];
+  final Iterable<Type> types = const [
+    GetCategoryOverviewResponse,
+    _$GetCategoryOverviewResponse,
+  ];
 
   @override
   final String wireName = r'GetCategoryOverviewResponse';
@@ -57,7 +66,11 @@ class _$GetCategoryOverviewResponseSerializer implements PrimitiveSerializer<Get
     GetCategoryOverviewResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -73,10 +86,14 @@ class _$GetCategoryOverviewResponseSerializer implements PrimitiveSerializer<Get
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryOverviews':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CategoryResponse)]),
-          ) as BuiltList<CategoryResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CategoryResponse),
+                    ]),
+                  )
+                  as BuiltList<CategoryResponse>;
           result.categoryOverviews.replace(valueDes);
           break;
         default:
@@ -107,4 +124,3 @@ class _$GetCategoryOverviewResponseSerializer implements PrimitiveSerializer<Get
     return result.build();
   }
 }
-

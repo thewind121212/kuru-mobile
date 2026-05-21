@@ -12,10 +12,11 @@ part 'update_category_request.g.dart';
 /// UpdateCategoryRequest
 ///
 /// Properties:
-/// * [categoryId] 
-/// * [categoryUpdate] 
+/// * [categoryId]
+/// * [categoryUpdate]
 @BuiltValue()
-abstract class UpdateCategoryRequest implements Built<UpdateCategoryRequest, UpdateCategoryRequestBuilder> {
+abstract class UpdateCategoryRequest
+    implements Built<UpdateCategoryRequest, UpdateCategoryRequestBuilder> {
   @BuiltValueField(wireName: r'categoryId')
   String get categoryId;
 
@@ -24,18 +25,25 @@ abstract class UpdateCategoryRequest implements Built<UpdateCategoryRequest, Upd
 
   UpdateCategoryRequest._();
 
-  factory UpdateCategoryRequest([void updates(UpdateCategoryRequestBuilder b)]) = _$UpdateCategoryRequest;
+  factory UpdateCategoryRequest([
+    void updates(UpdateCategoryRequestBuilder b),
+  ]) = _$UpdateCategoryRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateCategoryRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateCategoryRequest> get serializer => _$UpdateCategoryRequestSerializer();
+  static Serializer<UpdateCategoryRequest> get serializer =>
+      _$UpdateCategoryRequestSerializer();
 }
 
-class _$UpdateCategoryRequestSerializer implements PrimitiveSerializer<UpdateCategoryRequest> {
+class _$UpdateCategoryRequestSerializer
+    implements PrimitiveSerializer<UpdateCategoryRequest> {
   @override
-  final Iterable<Type> types = const [UpdateCategoryRequest, _$UpdateCategoryRequest];
+  final Iterable<Type> types = const [
+    UpdateCategoryRequest,
+    _$UpdateCategoryRequest,
+  ];
 
   @override
   final String wireName = r'UpdateCategoryRequest';
@@ -63,7 +71,11 @@ class _$UpdateCategoryRequestSerializer implements PrimitiveSerializer<UpdateCat
     UpdateCategoryRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -79,17 +91,21 @@ class _$UpdateCategoryRequestSerializer implements PrimitiveSerializer<UpdateCat
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.categoryId = valueDes;
           break;
         case r'categoryUpdate':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CreateCategoryRequest),
-          ) as CreateCategoryRequest;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(CreateCategoryRequest),
+                  )
+                  as CreateCategoryRequest;
           result.categoryUpdate.replace(valueDes);
           break;
         default:
@@ -120,4 +136,3 @@ class _$UpdateCategoryRequestSerializer implements PrimitiveSerializer<UpdateCat
     return result.build();
   }
 }
-

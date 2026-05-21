@@ -32,4 +32,3 @@ export 'package:kuru_category_api/src/model/remove_category_response.dart';
 export 'package:kuru_category_api/src/model/update_category200_response.dart';
 export 'package:kuru_category_api/src/model/update_category_request.dart';
 export 'package:kuru_category_api/src/model/update_category_response.dart';
-

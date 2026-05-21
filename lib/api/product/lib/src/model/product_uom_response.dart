@@ -13,15 +13,16 @@ part 'product_uom_response.g.dart';
 /// ProductUOMResponse
 ///
 /// Properties:
-/// * [id] 
-/// * [orgId] 
-/// * [productId] 
-/// * [name] 
-/// * [ratio] 
-/// * [sellPrice] 
-/// * [barcodes] 
+/// * [id]
+/// * [orgId]
+/// * [productId]
+/// * [name]
+/// * [ratio]
+/// * [sellPrice]
+/// * [barcodes]
 @BuiltValue()
-abstract class ProductUOMResponse implements Built<ProductUOMResponse, ProductUOMResponseBuilder> {
+abstract class ProductUOMResponse
+    implements Built<ProductUOMResponse, ProductUOMResponseBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -45,16 +46,19 @@ abstract class ProductUOMResponse implements Built<ProductUOMResponse, ProductUO
 
   ProductUOMResponse._();
 
-  factory ProductUOMResponse([void updates(ProductUOMResponseBuilder b)]) = _$ProductUOMResponse;
+  factory ProductUOMResponse([void updates(ProductUOMResponseBuilder b)]) =
+      _$ProductUOMResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ProductUOMResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ProductUOMResponse> get serializer => _$ProductUOMResponseSerializer();
+  static Serializer<ProductUOMResponse> get serializer =>
+      _$ProductUOMResponseSerializer();
 }
 
-class _$ProductUOMResponseSerializer implements PrimitiveSerializer<ProductUOMResponse> {
+class _$ProductUOMResponseSerializer
+    implements PrimitiveSerializer<ProductUOMResponse> {
   @override
   final Iterable<Type> types = const [ProductUOMResponse, _$ProductUOMResponse];
 
@@ -102,7 +106,9 @@ class _$ProductUOMResponseSerializer implements PrimitiveSerializer<ProductUOMRe
       yield r'barcodes';
       yield serializers.serialize(
         object.barcodes,
-        specifiedType: const FullType(BuiltList, [FullType(ProductBarcodeResponse)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(ProductBarcodeResponse),
+        ]),
       );
     }
   }
@@ -113,7 +119,11 @@ class _$ProductUOMResponseSerializer implements PrimitiveSerializer<ProductUOMRe
     ProductUOMResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -129,52 +139,65 @@ class _$ProductUOMResponseSerializer implements PrimitiveSerializer<ProductUOMRe
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'ratio':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.ratio = valueDes;
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         case r'barcodes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(ProductBarcodeResponse)]),
-          ) as BuiltList<ProductBarcodeResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(ProductBarcodeResponse),
+                    ]),
+                  )
+                  as BuiltList<ProductBarcodeResponse>;
           result.barcodes.replace(valueDes);
           break;
         default:
@@ -205,4 +228,3 @@ class _$ProductUOMResponseSerializer implements PrimitiveSerializer<ProductUOMRe
     return result.build();
   }
 }
-

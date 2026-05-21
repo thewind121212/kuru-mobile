@@ -13,11 +13,16 @@ part 'update_product_barcodes_request.g.dart';
 /// UpdateProductBarcodesRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [upsertBarcodes] 
-/// * [removeBarcodeIds] 
+/// * [productId]
+/// * [upsertBarcodes]
+/// * [removeBarcodeIds]
 @BuiltValue()
-abstract class UpdateProductBarcodesRequest implements Built<UpdateProductBarcodesRequest, UpdateProductBarcodesRequestBuilder> {
+abstract class UpdateProductBarcodesRequest
+    implements
+        Built<
+          UpdateProductBarcodesRequest,
+          UpdateProductBarcodesRequestBuilder
+        > {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -29,18 +34,25 @@ abstract class UpdateProductBarcodesRequest implements Built<UpdateProductBarcod
 
   UpdateProductBarcodesRequest._();
 
-  factory UpdateProductBarcodesRequest([void updates(UpdateProductBarcodesRequestBuilder b)]) = _$UpdateProductBarcodesRequest;
+  factory UpdateProductBarcodesRequest([
+    void updates(UpdateProductBarcodesRequestBuilder b),
+  ]) = _$UpdateProductBarcodesRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductBarcodesRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductBarcodesRequest> get serializer => _$UpdateProductBarcodesRequestSerializer();
+  static Serializer<UpdateProductBarcodesRequest> get serializer =>
+      _$UpdateProductBarcodesRequestSerializer();
 }
 
-class _$UpdateProductBarcodesRequestSerializer implements PrimitiveSerializer<UpdateProductBarcodesRequest> {
+class _$UpdateProductBarcodesRequestSerializer
+    implements PrimitiveSerializer<UpdateProductBarcodesRequest> {
   @override
-  final Iterable<Type> types = const [UpdateProductBarcodesRequest, _$UpdateProductBarcodesRequest];
+  final Iterable<Type> types = const [
+    UpdateProductBarcodesRequest,
+    _$UpdateProductBarcodesRequest,
+  ];
 
   @override
   final String wireName = r'UpdateProductBarcodesRequest';
@@ -59,7 +71,9 @@ class _$UpdateProductBarcodesRequestSerializer implements PrimitiveSerializer<Up
       yield r'upsertBarcodes';
       yield serializers.serialize(
         object.upsertBarcodes,
-        specifiedType: const FullType(BuiltList, [FullType(UpsertBarcodeInput)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(UpsertBarcodeInput),
+        ]),
       );
     }
     if (object.removeBarcodeIds != null) {
@@ -77,7 +91,11 @@ class _$UpdateProductBarcodesRequestSerializer implements PrimitiveSerializer<Up
     UpdateProductBarcodesRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -93,24 +111,34 @@ class _$UpdateProductBarcodesRequestSerializer implements PrimitiveSerializer<Up
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'upsertBarcodes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(UpsertBarcodeInput)]),
-          ) as BuiltList<UpsertBarcodeInput>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(UpsertBarcodeInput),
+                    ]),
+                  )
+                  as BuiltList<UpsertBarcodeInput>;
           result.upsertBarcodes.replace(valueDes);
           break;
         case r'removeBarcodeIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.removeBarcodeIds.replace(valueDes);
           break;
         default:
@@ -141,4 +169,3 @@ class _$UpdateProductBarcodesRequestSerializer implements PrimitiveSerializer<Up
     return result.build();
   }
 }
-

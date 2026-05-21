@@ -12,11 +12,16 @@ part 'update_product_variant200_response.g.dart';
 /// UpdateProductVariant200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class UpdateProductVariant200Response implements Built<UpdateProductVariant200Response, UpdateProductVariant200ResponseBuilder> {
+abstract class UpdateProductVariant200Response
+    implements
+        Built<
+          UpdateProductVariant200Response,
+          UpdateProductVariant200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class UpdateProductVariant200Response implements Built<UpdateProductVar
 
   UpdateProductVariant200Response._();
 
-  factory UpdateProductVariant200Response([void updates(UpdateProductVariant200ResponseBuilder b)]) = _$UpdateProductVariant200Response;
+  factory UpdateProductVariant200Response([
+    void updates(UpdateProductVariant200ResponseBuilder b),
+  ]) = _$UpdateProductVariant200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductVariant200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductVariant200Response> get serializer => _$UpdateProductVariant200ResponseSerializer();
+  static Serializer<UpdateProductVariant200Response> get serializer =>
+      _$UpdateProductVariant200ResponseSerializer();
 }
 
-class _$UpdateProductVariant200ResponseSerializer implements PrimitiveSerializer<UpdateProductVariant200Response> {
+class _$UpdateProductVariant200ResponseSerializer
+    implements PrimitiveSerializer<UpdateProductVariant200Response> {
   @override
-  final Iterable<Type> types = const [UpdateProductVariant200Response, _$UpdateProductVariant200Response];
+  final Iterable<Type> types = const [
+    UpdateProductVariant200Response,
+    _$UpdateProductVariant200Response,
+  ];
 
   @override
   final String wireName = r'UpdateProductVariant200Response';
@@ -72,7 +84,11 @@ class _$UpdateProductVariant200ResponseSerializer implements PrimitiveSerializer
     UpdateProductVariant200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,30 @@ class _$UpdateProductVariant200ResponseSerializer implements PrimitiveSerializer
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(UpdateProductVariantResponse),
-          ) as UpdateProductVariantResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(UpdateProductVariantResponse),
+                  )
+                  as UpdateProductVariantResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +158,3 @@ class _$UpdateProductVariant200ResponseSerializer implements PrimitiveSerializer
     return result.build();
   }
 }
-

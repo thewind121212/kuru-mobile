@@ -12,11 +12,12 @@ part 'get_brand_by_id200_response.g.dart';
 /// GetBrandById200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class GetBrandById200Response implements Built<GetBrandById200Response, GetBrandById200ResponseBuilder> {
+abstract class GetBrandById200Response
+    implements Built<GetBrandById200Response, GetBrandById200ResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +29,25 @@ abstract class GetBrandById200Response implements Built<GetBrandById200Response,
 
   GetBrandById200Response._();
 
-  factory GetBrandById200Response([void updates(GetBrandById200ResponseBuilder b)]) = _$GetBrandById200Response;
+  factory GetBrandById200Response([
+    void updates(GetBrandById200ResponseBuilder b),
+  ]) = _$GetBrandById200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetBrandById200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetBrandById200Response> get serializer => _$GetBrandById200ResponseSerializer();
+  static Serializer<GetBrandById200Response> get serializer =>
+      _$GetBrandById200ResponseSerializer();
 }
 
-class _$GetBrandById200ResponseSerializer implements PrimitiveSerializer<GetBrandById200Response> {
+class _$GetBrandById200ResponseSerializer
+    implements PrimitiveSerializer<GetBrandById200Response> {
   @override
-  final Iterable<Type> types = const [GetBrandById200Response, _$GetBrandById200Response];
+  final Iterable<Type> types = const [
+    GetBrandById200Response,
+    _$GetBrandById200Response,
+  ];
 
   @override
   final String wireName = r'GetBrandById200Response';
@@ -72,7 +80,11 @@ class _$GetBrandById200ResponseSerializer implements PrimitiveSerializer<GetBran
     GetBrandById200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +100,30 @@ class _$GetBrandById200ResponseSerializer implements PrimitiveSerializer<GetBran
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BrandResponse),
-          ) as BrandResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BrandResponse),
+                  )
+                  as BrandResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +154,3 @@ class _$GetBrandById200ResponseSerializer implements PrimitiveSerializer<GetBran
     return result.build();
   }
 }
-

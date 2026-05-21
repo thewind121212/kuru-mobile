@@ -12,17 +12,18 @@ part 'variant_input.g.dart';
 /// VariantInput
 ///
 /// Properties:
-/// * [id] 
-/// * [name] 
-/// * [sellPrice] 
-/// * [exportPrice] 
-/// * [importPrice] 
-/// * [attributes] 
-/// * [barcode] 
-/// * [imageUrl] 
-/// * [attributeValueIds] 
+/// * [id]
+/// * [name]
+/// * [sellPrice]
+/// * [exportPrice]
+/// * [importPrice]
+/// * [attributes]
+/// * [barcode]
+/// * [imageUrl]
+/// * [attributeValueIds]
 @BuiltValue()
-abstract class VariantInput implements Built<VariantInput, VariantInputBuilder> {
+abstract class VariantInput
+    implements Built<VariantInput, VariantInputBuilder> {
   @BuiltValueField(wireName: r'id')
   String? get id;
 
@@ -109,7 +110,10 @@ class _$VariantInputSerializer implements PrimitiveSerializer<VariantInput> {
     yield r'attributes';
     yield serializers.serialize(
       object.attributes,
-      specifiedType: const FullType(BuiltMap, [FullType(String), FullType(String)]),
+      specifiedType: const FullType(BuiltMap, [
+        FullType(String),
+        FullType(String),
+      ]),
     );
     if (object.barcode != null) {
       yield r'barcode';
@@ -140,7 +144,11 @@ class _$VariantInputSerializer implements PrimitiveSerializer<VariantInput> {
     VariantInput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -156,66 +164,89 @@ class _$VariantInputSerializer implements PrimitiveSerializer<VariantInput> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         case r'exportPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.exportPrice = valueDes;
           break;
         case r'importPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.importPrice = valueDes;
           break;
         case r'attributes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltMap, [FullType(String), FullType(String)]),
-          ) as BuiltMap<String, String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltMap, [
+                      FullType(String),
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltMap<String, String>;
           result.attributes.replace(valueDes);
           break;
         case r'barcode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.barcode = valueDes;
           break;
         case r'imageUrl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.imageUrl = valueDes;
           break;
         case r'attributeValueIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.attributeValueIds.replace(valueDes);
           break;
         default:
@@ -246,4 +277,3 @@ class _$VariantInputSerializer implements PrimitiveSerializer<VariantInput> {
     return result.build();
   }
 }
-

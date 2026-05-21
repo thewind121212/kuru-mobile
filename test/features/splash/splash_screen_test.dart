@@ -13,11 +13,11 @@ import 'package:kuru_mobile/features/splash/splash_screen.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 PackageInfo fakePackageInfo({String version = '0.2.1'}) => PackageInfo(
-      appName: 'Kuru',
-      packageName: 'com.kuru.kuruMobile',
-      version: version,
-      buildNumber: '1',
-    );
+  appName: 'Kuru',
+  packageName: 'com.kuru.kuruMobile',
+  version: version,
+  buildNumber: '1',
+);
 
 // Widget tests bypass the gate provider's 800ms timer by default; the timing
 // behavior itself is covered in splash_gate_provider_test.dart. Per-test
@@ -25,8 +25,7 @@ PackageInfo fakePackageInfo({String version = '0.2.1'}) => PackageInfo(
 Widget host(SplashScreen splash, List<Override> extraOverrides) {
   return ProviderScope(
     overrides: [
-      splashGateProvider
-          .overrideWith((ref) async => const BootstrapUnauthed()),
+      splashGateProvider.overrideWith((ref) async => const BootstrapUnauthed()),
       packageInfoProvider.overrideWith((ref) async => fakePackageInfo()),
       ...extraOverrides,
     ],
@@ -47,8 +46,7 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
-  testWidgets('SplashScreen uses the simple AuthLogo variant',
-      (tester) async {
+  testWidgets('SplashScreen uses the simple AuthLogo variant', (tester) async {
     await tester.pumpWidget(host(const SplashScreen(), []));
     await tester.pump();
 
@@ -56,8 +54,9 @@ void main() {
     expect(logo.simple, isTrue);
   });
 
-  testWidgets('SplashScreen renders the version label once info resolves',
-      (tester) async {
+  testWidgets('SplashScreen renders the version label once info resolves', (
+    tester,
+  ) async {
     await tester.pumpWidget(host(const SplashScreen(), []));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
@@ -66,24 +65,25 @@ void main() {
   });
 
   testWidgets(
-      'SplashScreen does not render version label while PackageInfo loads',
-      (tester) async {
-    final completer = Completer<PackageInfo>();
-    addTearDown(() {
-      if (!completer.isCompleted) completer.complete(fakePackageInfo());
-    });
+    'SplashScreen does not render version label while PackageInfo loads',
+    (tester) async {
+      final completer = Completer<PackageInfo>();
+      addTearDown(() {
+        if (!completer.isCompleted) completer.complete(fakePackageInfo());
+      });
 
-    await tester.pumpWidget(
-      host(const SplashScreen(), [
-        packageInfoProvider.overrideWith((ref) => completer.future),
-      ]),
-    );
-    await tester.pump();
+      await tester.pumpWidget(
+        host(const SplashScreen(), [
+          packageInfoProvider.overrideWith((ref) => completer.future),
+        ]),
+      );
+      await tester.pump();
 
-    expect(find.textContaining('v0.2'), findsNothing);
+      expect(find.textContaining('v0.2'), findsNothing);
 
-    completer.complete(fakePackageInfo());
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 50));
-  });
+      completer.complete(fakePackageInfo());
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    },
+  );
 }

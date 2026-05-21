@@ -11,15 +11,16 @@ part 'create_category_request.g.dart';
 /// CreateCategoryRequest
 ///
 /// Properties:
-/// * [name] 
-/// * [parentId] 
-/// * [colorSettings] 
-/// * [layer] 
-/// * [description] 
-/// * [status] 
-/// * [icon] 
+/// * [name]
+/// * [parentId]
+/// * [colorSettings]
+/// * [layer]
+/// * [description]
+/// * [status]
+/// * [icon]
 @BuiltValue()
-abstract class CreateCategoryRequest implements Built<CreateCategoryRequest, CreateCategoryRequestBuilder> {
+abstract class CreateCategoryRequest
+    implements Built<CreateCategoryRequest, CreateCategoryRequestBuilder> {
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -43,18 +44,25 @@ abstract class CreateCategoryRequest implements Built<CreateCategoryRequest, Cre
 
   CreateCategoryRequest._();
 
-  factory CreateCategoryRequest([void updates(CreateCategoryRequestBuilder b)]) = _$CreateCategoryRequest;
+  factory CreateCategoryRequest([
+    void updates(CreateCategoryRequestBuilder b),
+  ]) = _$CreateCategoryRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateCategoryRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateCategoryRequest> get serializer => _$CreateCategoryRequestSerializer();
+  static Serializer<CreateCategoryRequest> get serializer =>
+      _$CreateCategoryRequestSerializer();
 }
 
-class _$CreateCategoryRequestSerializer implements PrimitiveSerializer<CreateCategoryRequest> {
+class _$CreateCategoryRequestSerializer
+    implements PrimitiveSerializer<CreateCategoryRequest> {
   @override
-  final Iterable<Type> types = const [CreateCategoryRequest, _$CreateCategoryRequest];
+  final Iterable<Type> types = const [
+    CreateCategoryRequest,
+    _$CreateCategoryRequest,
+  ];
 
   @override
   final String wireName = r'CreateCategoryRequest';
@@ -115,7 +123,11 @@ class _$CreateCategoryRequestSerializer implements PrimitiveSerializer<CreateCat
     CreateCategoryRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -131,52 +143,66 @@ class _$CreateCategoryRequestSerializer implements PrimitiveSerializer<CreateCat
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'parentId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.parentId = valueDes;
           break;
         case r'colorSettings':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.colorSettings = valueDes;
           break;
         case r'layer':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.layer = valueDes;
           break;
         case r'description':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.description = valueDes;
           break;
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.status = valueDes;
           break;
         case r'icon':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.icon = valueDes;
           break;
         default:
@@ -207,4 +233,3 @@ class _$CreateCategoryRequestSerializer implements PrimitiveSerializer<CreateCat
     return result.build();
   }
 }
-

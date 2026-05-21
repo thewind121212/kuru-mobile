@@ -61,8 +61,10 @@ class _LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException e, ErrorInterceptorHandler handler) {
-    log.w('× ${e.response?.statusCode ?? '???'} ${e.requestOptions.uri}: '
-        '${e.message}');
+    log.w(
+      '× ${e.response?.statusCode ?? '???'} ${e.requestOptions.uri}: '
+      '${e.message}',
+    );
     handler.next(e);
   }
 }

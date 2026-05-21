@@ -15,12 +15,12 @@ import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/design/core/input/k_currency_field.dart';
 import 'package:kuru_mobile/design/core/input/k_text_field.dart';
 import 'package:kuru_mobile/design/core/input/k_textarea.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
-import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
@@ -83,7 +83,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     _sellPrice = p?.sellPrice.toInt();
     _importPrice = p?.importPrice?.toInt();
     _exportPrice = p?.exportPrice?.toInt();
-    
+
     final demandSeed = p?.demandStock == null || p!.demandStock == 0
         ? ''
         : p.demandStock.toInt().toString();
@@ -119,7 +119,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       ..dispose();
     super.dispose();
   }
-  
+
   void _onDescChanged() {
     setState(() {});
   }
@@ -302,7 +302,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     final desc = _descCtrl.text.trim();
     final demandText = _demandStockCtrl.text.trim();
     final repo = ref.read(productRepositoryProvider);
-    
+
     if (widget.initial == null) {
       final createResult = await repo.create(
         CreateProductBody(
@@ -491,18 +491,22 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 children: [
                   _ImageIdentityPanel(
                     imageFile: _imageFile,
-                    networkImageUrl: widget.initial?.hasImage == true
+                    networkImageUrl: widget.initial?.hasImage ?? false
                         ? widget.initial!.imageUrl
                         : null,
                     name: _nameCtrl.text,
                     unitLabel: unitLabel,
                     onPickImage: _pickImage,
-                    onClearImage: _imageFile == null && !(widget.initial?.hasImage == true)
+                    onClearImage:
+                        _imageFile == null &&
+                            !(widget.initial?.hasImage ?? false)
                         ? null
                         : () {
                             setState(() => _imageFile = null);
-                            // To actually clear the image on backend, it might require a separate API call,
-                            // but for now, we just clear the local selection if any.
+                            // To actually clear the image on backend,
+                            // it might require a separate API call,
+                            // but for now, we just clear the local
+                            // selection if any.
                           },
                   ),
                   const SizedBox(height: 18),
@@ -683,18 +687,18 @@ class _ImageIdentityPanel extends StatelessWidget {
                   child: imageFile != null
                       ? Image.file(imageFile!, fit: BoxFit.cover)
                       : (networkImageUrl != null
-                          ? Image.network(
-                              '${Env.imageBaseUrl}/product-avatar/$networkImageUrl',
-                              fit: BoxFit.cover,
-                            )
-                          : ColoredBox(
-                              color: c.accent50,
-                              child: Icon(
-                                TablerIcons.photo_plus,
-                                color: c.accent600,
-                                size: 34,
-                              ),
-                            )),
+                            ? Image.network(
+                                '${Env.imageBaseUrl}/product-avatar/$networkImageUrl',
+                                fit: BoxFit.cover,
+                              )
+                            : ColoredBox(
+                                color: c.accent50,
+                                child: Icon(
+                                  TablerIcons.photo_plus,
+                                  color: c.accent600,
+                                  size: 34,
+                                ),
+                              )),
                 ),
               ),
               const SizedBox(width: 14),
@@ -1097,7 +1101,9 @@ class _CreateFooter extends StatelessWidget {
                   ),
                 )
               : const Icon(TablerIcons.check),
-          label: Text(submitting ? 'Đang lưu' : (isEdit ? 'Lưu' : 'Tạo sản phẩm')),
+          label: Text(
+            submitting ? 'Đang lưu' : (isEdit ? 'Lưu' : 'Tạo sản phẩm'),
+          ),
           style: FilledButton.styleFrom(
             backgroundColor: c.accent600,
             disabledBackgroundColor: c.accent600.withValues(alpha: 0.38),

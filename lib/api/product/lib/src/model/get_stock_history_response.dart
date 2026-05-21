@@ -13,12 +13,13 @@ part 'get_stock_history_response.g.dart';
 /// GetStockHistoryResponse
 ///
 /// Properties:
-/// * [moves] 
-/// * [page] 
-/// * [limit] 
-/// * [total] 
+/// * [moves]
+/// * [page]
+/// * [limit]
+/// * [total]
 @BuiltValue()
-abstract class GetStockHistoryResponse implements Built<GetStockHistoryResponse, GetStockHistoryResponseBuilder> {
+abstract class GetStockHistoryResponse
+    implements Built<GetStockHistoryResponse, GetStockHistoryResponseBuilder> {
   @BuiltValueField(wireName: r'moves')
   BuiltList<StockMoveHistoryResponse>? get moves;
 
@@ -33,18 +34,25 @@ abstract class GetStockHistoryResponse implements Built<GetStockHistoryResponse,
 
   GetStockHistoryResponse._();
 
-  factory GetStockHistoryResponse([void updates(GetStockHistoryResponseBuilder b)]) = _$GetStockHistoryResponse;
+  factory GetStockHistoryResponse([
+    void updates(GetStockHistoryResponseBuilder b),
+  ]) = _$GetStockHistoryResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetStockHistoryResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetStockHistoryResponse> get serializer => _$GetStockHistoryResponseSerializer();
+  static Serializer<GetStockHistoryResponse> get serializer =>
+      _$GetStockHistoryResponseSerializer();
 }
 
-class _$GetStockHistoryResponseSerializer implements PrimitiveSerializer<GetStockHistoryResponse> {
+class _$GetStockHistoryResponseSerializer
+    implements PrimitiveSerializer<GetStockHistoryResponse> {
   @override
-  final Iterable<Type> types = const [GetStockHistoryResponse, _$GetStockHistoryResponse];
+  final Iterable<Type> types = const [
+    GetStockHistoryResponse,
+    _$GetStockHistoryResponse,
+  ];
 
   @override
   final String wireName = r'GetStockHistoryResponse';
@@ -58,7 +66,9 @@ class _$GetStockHistoryResponseSerializer implements PrimitiveSerializer<GetStoc
       yield r'moves';
       yield serializers.serialize(
         object.moves,
-        specifiedType: const FullType(BuiltList, [FullType(StockMoveHistoryResponse)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(StockMoveHistoryResponse),
+        ]),
       );
     }
     yield r'page';
@@ -84,7 +94,11 @@ class _$GetStockHistoryResponseSerializer implements PrimitiveSerializer<GetStoc
     GetStockHistoryResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -100,31 +114,32 @@ class _$GetStockHistoryResponseSerializer implements PrimitiveSerializer<GetStoc
       final value = serializedList[i + 1];
       switch (key) {
         case r'moves':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(StockMoveHistoryResponse)]),
-          ) as BuiltList<StockMoveHistoryResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(StockMoveHistoryResponse),
+                    ]),
+                  )
+                  as BuiltList<StockMoveHistoryResponse>;
           result.moves.replace(valueDes);
           break;
         case r'page':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.page = valueDes;
           break;
         case r'limit':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.limit = valueDes;
           break;
         case r'total':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.total = valueDes;
           break;
         default:
@@ -155,4 +170,3 @@ class _$GetStockHistoryResponseSerializer implements PrimitiveSerializer<GetStoc
     return result.build();
   }
 }
-

@@ -13,12 +13,14 @@ part 'create_product_pack_request.g.dart';
 /// CreateProductPackRequest
 ///
 /// Properties:
-/// * [name] 
-/// * [multiplier] 
-/// * [barcodes] 
-/// * [sellPrice] 
+/// * [name]
+/// * [multiplier]
+/// * [barcodes]
+/// * [sellPrice]
 @BuiltValue()
-abstract class CreateProductPackRequest implements Built<CreateProductPackRequest, CreateProductPackRequestBuilder> {
+abstract class CreateProductPackRequest
+    implements
+        Built<CreateProductPackRequest, CreateProductPackRequestBuilder> {
   @BuiltValueField(wireName: r'name')
   String get name;
 
@@ -33,18 +35,25 @@ abstract class CreateProductPackRequest implements Built<CreateProductPackReques
 
   CreateProductPackRequest._();
 
-  factory CreateProductPackRequest([void updates(CreateProductPackRequestBuilder b)]) = _$CreateProductPackRequest;
+  factory CreateProductPackRequest([
+    void updates(CreateProductPackRequestBuilder b),
+  ]) = _$CreateProductPackRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateProductPackRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateProductPackRequest> get serializer => _$CreateProductPackRequestSerializer();
+  static Serializer<CreateProductPackRequest> get serializer =>
+      _$CreateProductPackRequestSerializer();
 }
 
-class _$CreateProductPackRequestSerializer implements PrimitiveSerializer<CreateProductPackRequest> {
+class _$CreateProductPackRequestSerializer
+    implements PrimitiveSerializer<CreateProductPackRequest> {
   @override
-  final Iterable<Type> types = const [CreateProductPackRequest, _$CreateProductPackRequest];
+  final Iterable<Type> types = const [
+    CreateProductPackRequest,
+    _$CreateProductPackRequest,
+  ];
 
   @override
   final String wireName = r'CreateProductPackRequest';
@@ -68,7 +77,9 @@ class _$CreateProductPackRequestSerializer implements PrimitiveSerializer<Create
       yield r'barcodes';
       yield serializers.serialize(
         object.barcodes,
-        specifiedType: const FullType(BuiltList, [FullType(CreateProductBarcodeRequest)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(CreateProductBarcodeRequest),
+        ]),
       );
     }
     if (object.sellPrice != null) {
@@ -86,7 +97,11 @@ class _$CreateProductPackRequestSerializer implements PrimitiveSerializer<Create
     CreateProductPackRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -102,31 +117,38 @@ class _$CreateProductPackRequestSerializer implements PrimitiveSerializer<Create
       final value = serializedList[i + 1];
       switch (key) {
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'multiplier':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.multiplier = valueDes;
           break;
         case r'barcodes':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CreateProductBarcodeRequest)]),
-          ) as BuiltList<CreateProductBarcodeRequest>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CreateProductBarcodeRequest),
+                    ]),
+                  )
+                  as BuiltList<CreateProductBarcodeRequest>;
           result.barcodes.replace(valueDes);
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         default:
@@ -157,4 +179,3 @@ class _$CreateProductPackRequestSerializer implements PrimitiveSerializer<Create
     return result.build();
   }
 }
-

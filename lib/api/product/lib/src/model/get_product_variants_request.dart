@@ -11,26 +11,35 @@ part 'get_product_variants_request.g.dart';
 /// GetProductVariantsRequest
 ///
 /// Properties:
-/// * [productId] 
+/// * [productId]
 @BuiltValue()
-abstract class GetProductVariantsRequest implements Built<GetProductVariantsRequest, GetProductVariantsRequestBuilder> {
+abstract class GetProductVariantsRequest
+    implements
+        Built<GetProductVariantsRequest, GetProductVariantsRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
   GetProductVariantsRequest._();
 
-  factory GetProductVariantsRequest([void updates(GetProductVariantsRequestBuilder b)]) = _$GetProductVariantsRequest;
+  factory GetProductVariantsRequest([
+    void updates(GetProductVariantsRequestBuilder b),
+  ]) = _$GetProductVariantsRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetProductVariantsRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetProductVariantsRequest> get serializer => _$GetProductVariantsRequestSerializer();
+  static Serializer<GetProductVariantsRequest> get serializer =>
+      _$GetProductVariantsRequestSerializer();
 }
 
-class _$GetProductVariantsRequestSerializer implements PrimitiveSerializer<GetProductVariantsRequest> {
+class _$GetProductVariantsRequestSerializer
+    implements PrimitiveSerializer<GetProductVariantsRequest> {
   @override
-  final Iterable<Type> types = const [GetProductVariantsRequest, _$GetProductVariantsRequest];
+  final Iterable<Type> types = const [
+    GetProductVariantsRequest,
+    _$GetProductVariantsRequest,
+  ];
 
   @override
   final String wireName = r'GetProductVariantsRequest';
@@ -53,7 +62,11 @@ class _$GetProductVariantsRequestSerializer implements PrimitiveSerializer<GetPr
     GetProductVariantsRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +82,12 @@ class _$GetProductVariantsRequestSerializer implements PrimitiveSerializer<GetPr
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         default:
@@ -103,4 +118,3 @@ class _$GetProductVariantsRequestSerializer implements PrimitiveSerializer<GetPr
     return result.build();
   }
 }
-

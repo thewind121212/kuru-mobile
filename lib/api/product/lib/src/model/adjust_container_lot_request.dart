@@ -12,12 +12,14 @@ part 'adjust_container_lot_request.g.dart';
 /// AdjustContainerLotRequest
 ///
 /// Properties:
-/// * [containerLotId] 
-/// * [newQtyRemaining] 
-/// * [reason] 
-/// * [note] 
+/// * [containerLotId]
+/// * [newQtyRemaining]
+/// * [reason]
+/// * [note]
 @BuiltValue()
-abstract class AdjustContainerLotRequest implements Built<AdjustContainerLotRequest, AdjustContainerLotRequestBuilder> {
+abstract class AdjustContainerLotRequest
+    implements
+        Built<AdjustContainerLotRequest, AdjustContainerLotRequestBuilder> {
   @BuiltValueField(wireName: r'containerLotId')
   String get containerLotId;
 
@@ -33,18 +35,25 @@ abstract class AdjustContainerLotRequest implements Built<AdjustContainerLotRequ
 
   AdjustContainerLotRequest._();
 
-  factory AdjustContainerLotRequest([void updates(AdjustContainerLotRequestBuilder b)]) = _$AdjustContainerLotRequest;
+  factory AdjustContainerLotRequest([
+    void updates(AdjustContainerLotRequestBuilder b),
+  ]) = _$AdjustContainerLotRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdjustContainerLotRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdjustContainerLotRequest> get serializer => _$AdjustContainerLotRequestSerializer();
+  static Serializer<AdjustContainerLotRequest> get serializer =>
+      _$AdjustContainerLotRequestSerializer();
 }
 
-class _$AdjustContainerLotRequestSerializer implements PrimitiveSerializer<AdjustContainerLotRequest> {
+class _$AdjustContainerLotRequestSerializer
+    implements PrimitiveSerializer<AdjustContainerLotRequest> {
   @override
-  final Iterable<Type> types = const [AdjustContainerLotRequest, _$AdjustContainerLotRequest];
+  final Iterable<Type> types = const [
+    AdjustContainerLotRequest,
+    _$AdjustContainerLotRequest,
+  ];
 
   @override
   final String wireName = r'AdjustContainerLotRequest';
@@ -84,7 +93,11 @@ class _$AdjustContainerLotRequestSerializer implements PrimitiveSerializer<Adjus
     AdjustContainerLotRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -100,31 +113,39 @@ class _$AdjustContainerLotRequestSerializer implements PrimitiveSerializer<Adjus
       final value = serializedList[i + 1];
       switch (key) {
         case r'containerLotId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.containerLotId = valueDes;
           break;
         case r'newQtyRemaining':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.newQtyRemaining = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ManualAdjustReason),
-          ) as ManualAdjustReason;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(ManualAdjustReason),
+                  )
+                  as ManualAdjustReason;
           result.reason = valueDes;
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.note = valueDes;
           break;
         default:
@@ -155,4 +176,3 @@ class _$AdjustContainerLotRequestSerializer implements PrimitiveSerializer<Adjus
     return result.build();
   }
 }
-

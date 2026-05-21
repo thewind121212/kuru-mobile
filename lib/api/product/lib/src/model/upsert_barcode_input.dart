@@ -11,10 +11,11 @@ part 'upsert_barcode_input.g.dart';
 /// UpsertBarcodeInput
 ///
 /// Properties:
-/// * [id] 
-/// * [barcode] 
+/// * [id]
+/// * [barcode]
 @BuiltValue()
-abstract class UpsertBarcodeInput implements Built<UpsertBarcodeInput, UpsertBarcodeInputBuilder> {
+abstract class UpsertBarcodeInput
+    implements Built<UpsertBarcodeInput, UpsertBarcodeInputBuilder> {
   @BuiltValueField(wireName: r'id')
   String? get id;
 
@@ -23,16 +24,19 @@ abstract class UpsertBarcodeInput implements Built<UpsertBarcodeInput, UpsertBar
 
   UpsertBarcodeInput._();
 
-  factory UpsertBarcodeInput([void updates(UpsertBarcodeInputBuilder b)]) = _$UpsertBarcodeInput;
+  factory UpsertBarcodeInput([void updates(UpsertBarcodeInputBuilder b)]) =
+      _$UpsertBarcodeInput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpsertBarcodeInputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpsertBarcodeInput> get serializer => _$UpsertBarcodeInputSerializer();
+  static Serializer<UpsertBarcodeInput> get serializer =>
+      _$UpsertBarcodeInputSerializer();
 }
 
-class _$UpsertBarcodeInputSerializer implements PrimitiveSerializer<UpsertBarcodeInput> {
+class _$UpsertBarcodeInputSerializer
+    implements PrimitiveSerializer<UpsertBarcodeInput> {
   @override
   final Iterable<Type> types = const [UpsertBarcodeInput, _$UpsertBarcodeInput];
 
@@ -64,7 +68,11 @@ class _$UpsertBarcodeInputSerializer implements PrimitiveSerializer<UpsertBarcod
     UpsertBarcodeInput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +88,21 @@ class _$UpsertBarcodeInputSerializer implements PrimitiveSerializer<UpsertBarcod
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'barcode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.barcode = valueDes;
           break;
         default:
@@ -121,4 +133,3 @@ class _$UpsertBarcodeInputSerializer implements PrimitiveSerializer<UpsertBarcod
     return result.build();
   }
 }
-

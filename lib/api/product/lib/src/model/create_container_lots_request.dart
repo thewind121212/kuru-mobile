@@ -13,10 +13,12 @@ part 'create_container_lots_request.g.dart';
 /// CreateContainerLotsRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [lots] 
+/// * [productId]
+/// * [lots]
 @BuiltValue()
-abstract class CreateContainerLotsRequest implements Built<CreateContainerLotsRequest, CreateContainerLotsRequestBuilder> {
+abstract class CreateContainerLotsRequest
+    implements
+        Built<CreateContainerLotsRequest, CreateContainerLotsRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -25,18 +27,25 @@ abstract class CreateContainerLotsRequest implements Built<CreateContainerLotsRe
 
   CreateContainerLotsRequest._();
 
-  factory CreateContainerLotsRequest([void updates(CreateContainerLotsRequestBuilder b)]) = _$CreateContainerLotsRequest;
+  factory CreateContainerLotsRequest([
+    void updates(CreateContainerLotsRequestBuilder b),
+  ]) = _$CreateContainerLotsRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateContainerLotsRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateContainerLotsRequest> get serializer => _$CreateContainerLotsRequestSerializer();
+  static Serializer<CreateContainerLotsRequest> get serializer =>
+      _$CreateContainerLotsRequestSerializer();
 }
 
-class _$CreateContainerLotsRequestSerializer implements PrimitiveSerializer<CreateContainerLotsRequest> {
+class _$CreateContainerLotsRequestSerializer
+    implements PrimitiveSerializer<CreateContainerLotsRequest> {
   @override
-  final Iterable<Type> types = const [CreateContainerLotsRequest, _$CreateContainerLotsRequest];
+  final Iterable<Type> types = const [
+    CreateContainerLotsRequest,
+    _$CreateContainerLotsRequest,
+  ];
 
   @override
   final String wireName = r'CreateContainerLotsRequest';
@@ -55,7 +64,9 @@ class _$CreateContainerLotsRequestSerializer implements PrimitiveSerializer<Crea
       yield r'lots';
       yield serializers.serialize(
         object.lots,
-        specifiedType: const FullType(BuiltList, [FullType(CreateContainerLotInput)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(CreateContainerLotInput),
+        ]),
       );
     }
   }
@@ -66,7 +77,11 @@ class _$CreateContainerLotsRequestSerializer implements PrimitiveSerializer<Crea
     CreateContainerLotsRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -82,17 +97,23 @@ class _$CreateContainerLotsRequestSerializer implements PrimitiveSerializer<Crea
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'lots':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(CreateContainerLotInput)]),
-          ) as BuiltList<CreateContainerLotInput>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(CreateContainerLotInput),
+                    ]),
+                  )
+                  as BuiltList<CreateContainerLotInput>;
           result.lots.replace(valueDes);
           break;
         default:
@@ -123,4 +144,3 @@ class _$CreateContainerLotsRequestSerializer implements PrimitiveSerializer<Crea
     return result.build();
   }
 }
-

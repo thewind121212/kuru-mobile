@@ -104,16 +104,16 @@ class _KOtpInputState extends State<KOtpInput> {
   }
 
   Color _borderFor(KuruColors c) => switch (widget.status) {
-        KOtpStatus.idle => c.border,
-        KOtpStatus.success => c.success,
-        KOtpStatus.error => c.danger,
-      };
+    KOtpStatus.idle => c.border,
+    KOtpStatus.success => c.success,
+    KOtpStatus.error => c.danger,
+  };
 
   Color _textFor(KuruColors c) => switch (widget.status) {
-        KOtpStatus.idle => c.textPrimary,
-        KOtpStatus.success => c.success,
-        KOtpStatus.error => c.danger,
-      };
+    KOtpStatus.idle => c.textPrimary,
+    KOtpStatus.success => c.success,
+    KOtpStatus.error => c.danger,
+  };
 
   @override
   Widget build(BuildContext context) {

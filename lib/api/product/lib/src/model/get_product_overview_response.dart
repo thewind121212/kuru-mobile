@@ -13,13 +13,15 @@ part 'get_product_overview_response.g.dart';
 /// GetProductOverviewResponse
 ///
 /// Properties:
-/// * [products] 
-/// * [maxSellPrice] 
-/// * [totalProducts] 
-/// * [totalValue] 
-/// * [totalVariants] 
+/// * [products]
+/// * [maxSellPrice]
+/// * [totalProducts]
+/// * [totalValue]
+/// * [totalVariants]
 @BuiltValue()
-abstract class GetProductOverviewResponse implements Built<GetProductOverviewResponse, GetProductOverviewResponseBuilder> {
+abstract class GetProductOverviewResponse
+    implements
+        Built<GetProductOverviewResponse, GetProductOverviewResponseBuilder> {
   @BuiltValueField(wireName: r'products')
   BuiltList<ProductOverviewResponse>? get products;
 
@@ -37,18 +39,25 @@ abstract class GetProductOverviewResponse implements Built<GetProductOverviewRes
 
   GetProductOverviewResponse._();
 
-  factory GetProductOverviewResponse([void updates(GetProductOverviewResponseBuilder b)]) = _$GetProductOverviewResponse;
+  factory GetProductOverviewResponse([
+    void updates(GetProductOverviewResponseBuilder b),
+  ]) = _$GetProductOverviewResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetProductOverviewResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetProductOverviewResponse> get serializer => _$GetProductOverviewResponseSerializer();
+  static Serializer<GetProductOverviewResponse> get serializer =>
+      _$GetProductOverviewResponseSerializer();
 }
 
-class _$GetProductOverviewResponseSerializer implements PrimitiveSerializer<GetProductOverviewResponse> {
+class _$GetProductOverviewResponseSerializer
+    implements PrimitiveSerializer<GetProductOverviewResponse> {
   @override
-  final Iterable<Type> types = const [GetProductOverviewResponse, _$GetProductOverviewResponse];
+  final Iterable<Type> types = const [
+    GetProductOverviewResponse,
+    _$GetProductOverviewResponse,
+  ];
 
   @override
   final String wireName = r'GetProductOverviewResponse';
@@ -62,7 +71,9 @@ class _$GetProductOverviewResponseSerializer implements PrimitiveSerializer<GetP
       yield r'products';
       yield serializers.serialize(
         object.products,
-        specifiedType: const FullType(BuiltList, [FullType(ProductOverviewResponse)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(ProductOverviewResponse),
+        ]),
       );
     }
     yield r'maxSellPrice';
@@ -93,7 +104,11 @@ class _$GetProductOverviewResponseSerializer implements PrimitiveSerializer<GetP
     GetProductOverviewResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -109,38 +124,44 @@ class _$GetProductOverviewResponseSerializer implements PrimitiveSerializer<GetP
       final value = serializedList[i + 1];
       switch (key) {
         case r'products':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(ProductOverviewResponse)]),
-          ) as BuiltList<ProductOverviewResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(ProductOverviewResponse),
+                    ]),
+                  )
+                  as BuiltList<ProductOverviewResponse>;
           result.products.replace(valueDes);
           break;
         case r'maxSellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.maxSellPrice = valueDes;
           break;
         case r'totalProducts':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.totalProducts = valueDes;
           break;
         case r'totalValue':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.totalValue = valueDes;
           break;
         case r'totalVariants':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.totalVariants = valueDes;
           break;
         default:
@@ -171,4 +192,3 @@ class _$GetProductOverviewResponseSerializer implements PrimitiveSerializer<GetP
     return result.build();
   }
 }
-

@@ -12,11 +12,16 @@ part 'adjust_container_lot200_response.g.dart';
 /// AdjustContainerLot200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class AdjustContainerLot200Response implements Built<AdjustContainerLot200Response, AdjustContainerLot200ResponseBuilder> {
+abstract class AdjustContainerLot200Response
+    implements
+        Built<
+          AdjustContainerLot200Response,
+          AdjustContainerLot200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class AdjustContainerLot200Response implements Built<AdjustContainerLot
 
   AdjustContainerLot200Response._();
 
-  factory AdjustContainerLot200Response([void updates(AdjustContainerLot200ResponseBuilder b)]) = _$AdjustContainerLot200Response;
+  factory AdjustContainerLot200Response([
+    void updates(AdjustContainerLot200ResponseBuilder b),
+  ]) = _$AdjustContainerLot200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdjustContainerLot200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdjustContainerLot200Response> get serializer => _$AdjustContainerLot200ResponseSerializer();
+  static Serializer<AdjustContainerLot200Response> get serializer =>
+      _$AdjustContainerLot200ResponseSerializer();
 }
 
-class _$AdjustContainerLot200ResponseSerializer implements PrimitiveSerializer<AdjustContainerLot200Response> {
+class _$AdjustContainerLot200ResponseSerializer
+    implements PrimitiveSerializer<AdjustContainerLot200Response> {
   @override
-  final Iterable<Type> types = const [AdjustContainerLot200Response, _$AdjustContainerLot200Response];
+  final Iterable<Type> types = const [
+    AdjustContainerLot200Response,
+    _$AdjustContainerLot200Response,
+  ];
 
   @override
   final String wireName = r'AdjustContainerLot200Response';
@@ -72,7 +84,11 @@ class _$AdjustContainerLot200ResponseSerializer implements PrimitiveSerializer<A
     AdjustContainerLot200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,30 @@ class _$AdjustContainerLot200ResponseSerializer implements PrimitiveSerializer<A
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(AdjustContainerLotResponse),
-          ) as AdjustContainerLotResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(AdjustContainerLotResponse),
+                  )
+                  as AdjustContainerLotResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +158,3 @@ class _$AdjustContainerLot200ResponseSerializer implements PrimitiveSerializer<A
     return result.build();
   }
 }
-

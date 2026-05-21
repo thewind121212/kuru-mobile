@@ -11,22 +11,23 @@ part 'category_response.g.dart';
 /// CategoryResponse
 ///
 /// Properties:
-/// * [categoryId] 
-/// * [name] 
-/// * [parentId] 
-/// * [parentName] 
-/// * [description] 
-/// * [colorSettings] 
-/// * [layer] 
-/// * [icon] 
-/// * [subCategoriesCount] 
-/// * [status] 
-/// * [orgId] 
-/// * [itemCount] 
-/// * [totalValue] 
-/// * [lowStockCount] 
+/// * [categoryId]
+/// * [name]
+/// * [parentId]
+/// * [parentName]
+/// * [description]
+/// * [colorSettings]
+/// * [layer]
+/// * [icon]
+/// * [subCategoriesCount]
+/// * [status]
+/// * [orgId]
+/// * [itemCount]
+/// * [totalValue]
+/// * [lowStockCount]
 @BuiltValue()
-abstract class CategoryResponse implements Built<CategoryResponse, CategoryResponseBuilder> {
+abstract class CategoryResponse
+    implements Built<CategoryResponse, CategoryResponseBuilder> {
   @BuiltValueField(wireName: r'categoryId')
   String? get categoryId;
 
@@ -71,16 +72,19 @@ abstract class CategoryResponse implements Built<CategoryResponse, CategoryRespo
 
   CategoryResponse._();
 
-  factory CategoryResponse([void updates(CategoryResponseBuilder b)]) = _$CategoryResponse;
+  factory CategoryResponse([void updates(CategoryResponseBuilder b)]) =
+      _$CategoryResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CategoryResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CategoryResponse> get serializer => _$CategoryResponseSerializer();
+  static Serializer<CategoryResponse> get serializer =>
+      _$CategoryResponseSerializer();
 }
 
-class _$CategoryResponseSerializer implements PrimitiveSerializer<CategoryResponse> {
+class _$CategoryResponseSerializer
+    implements PrimitiveSerializer<CategoryResponse> {
   @override
   final Iterable<Type> types = const [CategoryResponse, _$CategoryResponse];
 
@@ -190,7 +194,11 @@ class _$CategoryResponseSerializer implements PrimitiveSerializer<CategoryRespon
     CategoryResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -206,101 +214,117 @@ class _$CategoryResponseSerializer implements PrimitiveSerializer<CategoryRespon
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.categoryId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'parentId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.parentId = valueDes;
           break;
         case r'parentName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.parentName = valueDes;
           break;
         case r'description':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.description = valueDes;
           break;
         case r'colorSettings':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.colorSettings = valueDes;
           break;
         case r'layer':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.layer = valueDes;
           break;
         case r'icon':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.icon = valueDes;
           break;
         case r'subCategoriesCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.subCategoriesCount = valueDes;
           break;
         case r'status':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.status = valueDes;
           break;
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'itemCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.itemCount = valueDes;
           break;
         case r'totalValue':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(num),
-          ) as num;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(num))
+                  as num;
           result.totalValue = valueDes;
           break;
         case r'lowStockCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.lowStockCount = valueDes;
           break;
         default:
@@ -331,4 +355,3 @@ class _$CategoryResponseSerializer implements PrimitiveSerializer<CategoryRespon
     return result.build();
   }
 }
-

@@ -13,26 +13,35 @@ part 'get_product_variants_response.g.dart';
 /// GetProductVariantsResponse
 ///
 /// Properties:
-/// * [variants] 
+/// * [variants]
 @BuiltValue()
-abstract class GetProductVariantsResponse implements Built<GetProductVariantsResponse, GetProductVariantsResponseBuilder> {
+abstract class GetProductVariantsResponse
+    implements
+        Built<GetProductVariantsResponse, GetProductVariantsResponseBuilder> {
   @BuiltValueField(wireName: r'variants')
   BuiltList<ProductVariantResponse>? get variants;
 
   GetProductVariantsResponse._();
 
-  factory GetProductVariantsResponse([void updates(GetProductVariantsResponseBuilder b)]) = _$GetProductVariantsResponse;
+  factory GetProductVariantsResponse([
+    void updates(GetProductVariantsResponseBuilder b),
+  ]) = _$GetProductVariantsResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetProductVariantsResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetProductVariantsResponse> get serializer => _$GetProductVariantsResponseSerializer();
+  static Serializer<GetProductVariantsResponse> get serializer =>
+      _$GetProductVariantsResponseSerializer();
 }
 
-class _$GetProductVariantsResponseSerializer implements PrimitiveSerializer<GetProductVariantsResponse> {
+class _$GetProductVariantsResponseSerializer
+    implements PrimitiveSerializer<GetProductVariantsResponse> {
   @override
-  final Iterable<Type> types = const [GetProductVariantsResponse, _$GetProductVariantsResponse];
+  final Iterable<Type> types = const [
+    GetProductVariantsResponse,
+    _$GetProductVariantsResponse,
+  ];
 
   @override
   final String wireName = r'GetProductVariantsResponse';
@@ -46,7 +55,9 @@ class _$GetProductVariantsResponseSerializer implements PrimitiveSerializer<GetP
       yield r'variants';
       yield serializers.serialize(
         object.variants,
-        specifiedType: const FullType(BuiltList, [FullType(ProductVariantResponse)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(ProductVariantResponse),
+        ]),
       );
     }
   }
@@ -57,7 +68,11 @@ class _$GetProductVariantsResponseSerializer implements PrimitiveSerializer<GetP
     GetProductVariantsResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -73,10 +88,14 @@ class _$GetProductVariantsResponseSerializer implements PrimitiveSerializer<GetP
       final value = serializedList[i + 1];
       switch (key) {
         case r'variants':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(ProductVariantResponse)]),
-          ) as BuiltList<ProductVariantResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(ProductVariantResponse),
+                    ]),
+                  )
+                  as BuiltList<ProductVariantResponse>;
           result.variants.replace(valueDes);
           break;
         default:
@@ -107,4 +126,3 @@ class _$GetProductVariantsResponseSerializer implements PrimitiveSerializer<GetP
     return result.build();
   }
 }
-

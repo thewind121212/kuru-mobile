@@ -11,16 +11,17 @@ part 'brand_response.g.dart';
 /// BrandResponse
 ///
 /// Properties:
-/// * [id] 
-/// * [orgId] 
-/// * [name] 
-/// * [slug] 
-/// * [logoUrl] 
-/// * [isDelete] 
-/// * [createdAt] 
-/// * [updatedAt] 
+/// * [id]
+/// * [orgId]
+/// * [name]
+/// * [slug]
+/// * [logoUrl]
+/// * [isDelete]
+/// * [createdAt]
+/// * [updatedAt]
 @BuiltValue()
-abstract class BrandResponse implements Built<BrandResponse, BrandResponseBuilder> {
+abstract class BrandResponse
+    implements Built<BrandResponse, BrandResponseBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -47,13 +48,15 @@ abstract class BrandResponse implements Built<BrandResponse, BrandResponseBuilde
 
   BrandResponse._();
 
-  factory BrandResponse([void updates(BrandResponseBuilder b)]) = _$BrandResponse;
+  factory BrandResponse([void updates(BrandResponseBuilder b)]) =
+      _$BrandResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BrandResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BrandResponse> get serializer => _$BrandResponseSerializer();
+  static Serializer<BrandResponse> get serializer =>
+      _$BrandResponseSerializer();
 }
 
 class _$BrandResponseSerializer implements PrimitiveSerializer<BrandResponse> {
@@ -120,7 +123,11 @@ class _$BrandResponseSerializer implements PrimitiveSerializer<BrandResponse> {
     BrandResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -136,59 +143,75 @@ class _$BrandResponseSerializer implements PrimitiveSerializer<BrandResponse> {
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'slug':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.slug = valueDes;
           break;
         case r'logoUrl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.logoUrl = valueDes;
           break;
         case r'isDelete':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.isDelete = valueDes;
           break;
         case r'createdAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.createdAt = valueDes;
           break;
         case r'updatedAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.updatedAt = valueDes;
           break;
         default:
@@ -219,4 +242,3 @@ class _$BrandResponseSerializer implements PrimitiveSerializer<BrandResponse> {
     return result.build();
   }
 }
-

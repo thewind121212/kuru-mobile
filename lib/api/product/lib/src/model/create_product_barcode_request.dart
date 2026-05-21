@@ -11,10 +11,12 @@ part 'create_product_barcode_request.g.dart';
 /// CreateProductBarcodeRequest
 ///
 /// Properties:
-/// * [value] 
-/// * [isActive] 
+/// * [value]
+/// * [isActive]
 @BuiltValue()
-abstract class CreateProductBarcodeRequest implements Built<CreateProductBarcodeRequest, CreateProductBarcodeRequestBuilder> {
+abstract class CreateProductBarcodeRequest
+    implements
+        Built<CreateProductBarcodeRequest, CreateProductBarcodeRequestBuilder> {
   @BuiltValueField(wireName: r'value')
   String get value;
 
@@ -23,18 +25,25 @@ abstract class CreateProductBarcodeRequest implements Built<CreateProductBarcode
 
   CreateProductBarcodeRequest._();
 
-  factory CreateProductBarcodeRequest([void updates(CreateProductBarcodeRequestBuilder b)]) = _$CreateProductBarcodeRequest;
+  factory CreateProductBarcodeRequest([
+    void updates(CreateProductBarcodeRequestBuilder b),
+  ]) = _$CreateProductBarcodeRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateProductBarcodeRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateProductBarcodeRequest> get serializer => _$CreateProductBarcodeRequestSerializer();
+  static Serializer<CreateProductBarcodeRequest> get serializer =>
+      _$CreateProductBarcodeRequestSerializer();
 }
 
-class _$CreateProductBarcodeRequestSerializer implements PrimitiveSerializer<CreateProductBarcodeRequest> {
+class _$CreateProductBarcodeRequestSerializer
+    implements PrimitiveSerializer<CreateProductBarcodeRequest> {
   @override
-  final Iterable<Type> types = const [CreateProductBarcodeRequest, _$CreateProductBarcodeRequest];
+  final Iterable<Type> types = const [
+    CreateProductBarcodeRequest,
+    _$CreateProductBarcodeRequest,
+  ];
 
   @override
   final String wireName = r'CreateProductBarcodeRequest';
@@ -64,7 +73,11 @@ class _$CreateProductBarcodeRequestSerializer implements PrimitiveSerializer<Cre
     CreateProductBarcodeRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +93,21 @@ class _$CreateProductBarcodeRequestSerializer implements PrimitiveSerializer<Cre
       final value = serializedList[i + 1];
       switch (key) {
         case r'value':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.value = valueDes;
           break;
         case r'isActive':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.isActive = valueDes;
           break;
         default:
@@ -121,4 +138,3 @@ class _$CreateProductBarcodeRequestSerializer implements PrimitiveSerializer<Cre
     return result.build();
   }
 }
-

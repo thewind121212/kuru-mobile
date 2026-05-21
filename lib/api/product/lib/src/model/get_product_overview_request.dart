@@ -12,18 +12,20 @@ part 'get_product_overview_request.g.dart';
 /// GetProductOverviewRequest
 ///
 /// Properties:
-/// * [searchString] 
-/// * [categoryIds] 
-/// * [distributorIds] 
-/// * [page] 
-/// * [limit] 
-/// * [warehouseIds] 
-/// * [attributeFilters] 
-/// * [minPrice] 
-/// * [maxPrice] 
-/// * [brandIds] 
+/// * [searchString]
+/// * [categoryIds]
+/// * [distributorIds]
+/// * [page]
+/// * [limit]
+/// * [warehouseIds]
+/// * [attributeFilters]
+/// * [minPrice]
+/// * [maxPrice]
+/// * [brandIds]
 @BuiltValue()
-abstract class GetProductOverviewRequest implements Built<GetProductOverviewRequest, GetProductOverviewRequestBuilder> {
+abstract class GetProductOverviewRequest
+    implements
+        Built<GetProductOverviewRequest, GetProductOverviewRequestBuilder> {
   @BuiltValueField(wireName: r'searchString')
   String? get searchString;
 
@@ -56,18 +58,25 @@ abstract class GetProductOverviewRequest implements Built<GetProductOverviewRequ
 
   GetProductOverviewRequest._();
 
-  factory GetProductOverviewRequest([void updates(GetProductOverviewRequestBuilder b)]) = _$GetProductOverviewRequest;
+  factory GetProductOverviewRequest([
+    void updates(GetProductOverviewRequestBuilder b),
+  ]) = _$GetProductOverviewRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetProductOverviewRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetProductOverviewRequest> get serializer => _$GetProductOverviewRequestSerializer();
+  static Serializer<GetProductOverviewRequest> get serializer =>
+      _$GetProductOverviewRequestSerializer();
 }
 
-class _$GetProductOverviewRequestSerializer implements PrimitiveSerializer<GetProductOverviewRequest> {
+class _$GetProductOverviewRequestSerializer
+    implements PrimitiveSerializer<GetProductOverviewRequest> {
   @override
-  final Iterable<Type> types = const [GetProductOverviewRequest, _$GetProductOverviewRequest];
+  final Iterable<Type> types = const [
+    GetProductOverviewRequest,
+    _$GetProductOverviewRequest,
+  ];
 
   @override
   final String wireName = r'GetProductOverviewRequest';
@@ -155,7 +164,11 @@ class _$GetProductOverviewRequestSerializer implements PrimitiveSerializer<GetPr
     GetProductOverviewRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -171,73 +184,97 @@ class _$GetProductOverviewRequestSerializer implements PrimitiveSerializer<GetPr
       final value = serializedList[i + 1];
       switch (key) {
         case r'searchString':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.searchString = valueDes;
           break;
         case r'categoryIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.categoryIds.replace(valueDes);
           break;
         case r'distributorIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.distributorIds.replace(valueDes);
           break;
         case r'page':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.page = valueDes;
           break;
         case r'limit':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.limit = valueDes;
           break;
         case r'warehouseIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.warehouseIds.replace(valueDes);
           break;
         case r'attributeFilters':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.attributeFilters.replace(valueDes);
           break;
         case r'minPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.minPrice = valueDes;
           break;
         case r'maxPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.maxPrice = valueDes;
           break;
         case r'brandIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.brandIds.replace(valueDes);
           break;
         default:
@@ -268,4 +305,3 @@ class _$GetProductOverviewRequestSerializer implements PrimitiveSerializer<GetPr
     return result.build();
   }
 }
-

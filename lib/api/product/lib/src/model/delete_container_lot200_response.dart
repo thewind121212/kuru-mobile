@@ -12,11 +12,16 @@ part 'delete_container_lot200_response.g.dart';
 /// DeleteContainerLot200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class DeleteContainerLot200Response implements Built<DeleteContainerLot200Response, DeleteContainerLot200ResponseBuilder> {
+abstract class DeleteContainerLot200Response
+    implements
+        Built<
+          DeleteContainerLot200Response,
+          DeleteContainerLot200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class DeleteContainerLot200Response implements Built<DeleteContainerLot
 
   DeleteContainerLot200Response._();
 
-  factory DeleteContainerLot200Response([void updates(DeleteContainerLot200ResponseBuilder b)]) = _$DeleteContainerLot200Response;
+  factory DeleteContainerLot200Response([
+    void updates(DeleteContainerLot200ResponseBuilder b),
+  ]) = _$DeleteContainerLot200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeleteContainerLot200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeleteContainerLot200Response> get serializer => _$DeleteContainerLot200ResponseSerializer();
+  static Serializer<DeleteContainerLot200Response> get serializer =>
+      _$DeleteContainerLot200ResponseSerializer();
 }
 
-class _$DeleteContainerLot200ResponseSerializer implements PrimitiveSerializer<DeleteContainerLot200Response> {
+class _$DeleteContainerLot200ResponseSerializer
+    implements PrimitiveSerializer<DeleteContainerLot200Response> {
   @override
-  final Iterable<Type> types = const [DeleteContainerLot200Response, _$DeleteContainerLot200Response];
+  final Iterable<Type> types = const [
+    DeleteContainerLot200Response,
+    _$DeleteContainerLot200Response,
+  ];
 
   @override
   final String wireName = r'DeleteContainerLot200Response';
@@ -72,7 +84,11 @@ class _$DeleteContainerLot200ResponseSerializer implements PrimitiveSerializer<D
     DeleteContainerLot200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,30 @@ class _$DeleteContainerLot200ResponseSerializer implements PrimitiveSerializer<D
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DeleteContainerLotResponse),
-          ) as DeleteContainerLotResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DeleteContainerLotResponse),
+                  )
+                  as DeleteContainerLotResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +158,3 @@ class _$DeleteContainerLot200ResponseSerializer implements PrimitiveSerializer<D
     return result.build();
   }
 }
-

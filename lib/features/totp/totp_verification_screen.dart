@@ -137,8 +137,9 @@ class _TotpVerificationScreenState
                   KPrimaryBtn(
                     fullWidth: true,
                     icon: const Icon(Icons.arrow_outward),
-                    onPressed:
-                        _code.length == 6 && !_submitting ? _verify : null,
+                    onPressed: _code.length == 6 && !_submitting
+                        ? _verify
+                        : null,
                     child: Text(l.totpVerifyButton),
                   ),
                   const SizedBox(height: 18),

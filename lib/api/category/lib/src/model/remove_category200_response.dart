@@ -12,11 +12,13 @@ part 'remove_category200_response.g.dart';
 /// RemoveCategory200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class RemoveCategory200Response implements Built<RemoveCategory200Response, RemoveCategory200ResponseBuilder> {
+abstract class RemoveCategory200Response
+    implements
+        Built<RemoveCategory200Response, RemoveCategory200ResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +30,25 @@ abstract class RemoveCategory200Response implements Built<RemoveCategory200Respo
 
   RemoveCategory200Response._();
 
-  factory RemoveCategory200Response([void updates(RemoveCategory200ResponseBuilder b)]) = _$RemoveCategory200Response;
+  factory RemoveCategory200Response([
+    void updates(RemoveCategory200ResponseBuilder b),
+  ]) = _$RemoveCategory200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RemoveCategory200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RemoveCategory200Response> get serializer => _$RemoveCategory200ResponseSerializer();
+  static Serializer<RemoveCategory200Response> get serializer =>
+      _$RemoveCategory200ResponseSerializer();
 }
 
-class _$RemoveCategory200ResponseSerializer implements PrimitiveSerializer<RemoveCategory200Response> {
+class _$RemoveCategory200ResponseSerializer
+    implements PrimitiveSerializer<RemoveCategory200Response> {
   @override
-  final Iterable<Type> types = const [RemoveCategory200Response, _$RemoveCategory200Response];
+  final Iterable<Type> types = const [
+    RemoveCategory200Response,
+    _$RemoveCategory200Response,
+  ];
 
   @override
   final String wireName = r'RemoveCategory200Response';
@@ -72,7 +81,11 @@ class _$RemoveCategory200ResponseSerializer implements PrimitiveSerializer<Remov
     RemoveCategory200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +101,30 @@ class _$RemoveCategory200ResponseSerializer implements PrimitiveSerializer<Remov
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(RemoveCategoryResponse),
-          ) as RemoveCategoryResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(RemoveCategoryResponse),
+                  )
+                  as RemoveCategoryResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +155,3 @@ class _$RemoveCategory200ResponseSerializer implements PrimitiveSerializer<Remov
     return result.build();
   }
 }
-

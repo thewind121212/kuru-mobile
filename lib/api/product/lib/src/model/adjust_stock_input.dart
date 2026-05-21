@@ -11,11 +11,12 @@ part 'adjust_stock_input.g.dart';
 /// AdjustStockInput
 ///
 /// Properties:
-/// * [warehouseId] 
-/// * [quantity] 
-/// * [variantId] 
+/// * [warehouseId]
+/// * [quantity]
+/// * [variantId]
 @BuiltValue()
-abstract class AdjustStockInput implements Built<AdjustStockInput, AdjustStockInputBuilder> {
+abstract class AdjustStockInput
+    implements Built<AdjustStockInput, AdjustStockInputBuilder> {
   @BuiltValueField(wireName: r'warehouseId')
   String get warehouseId;
 
@@ -27,16 +28,19 @@ abstract class AdjustStockInput implements Built<AdjustStockInput, AdjustStockIn
 
   AdjustStockInput._();
 
-  factory AdjustStockInput([void updates(AdjustStockInputBuilder b)]) = _$AdjustStockInput;
+  factory AdjustStockInput([void updates(AdjustStockInputBuilder b)]) =
+      _$AdjustStockInput;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdjustStockInputBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdjustStockInput> get serializer => _$AdjustStockInputSerializer();
+  static Serializer<AdjustStockInput> get serializer =>
+      _$AdjustStockInputSerializer();
 }
 
-class _$AdjustStockInputSerializer implements PrimitiveSerializer<AdjustStockInput> {
+class _$AdjustStockInputSerializer
+    implements PrimitiveSerializer<AdjustStockInput> {
   @override
   final Iterable<Type> types = const [AdjustStockInput, _$AdjustStockInput];
 
@@ -73,7 +77,11 @@ class _$AdjustStockInputSerializer implements PrimitiveSerializer<AdjustStockInp
     AdjustStockInput object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -89,24 +97,30 @@ class _$AdjustStockInputSerializer implements PrimitiveSerializer<AdjustStockInp
       final value = serializedList[i + 1];
       switch (key) {
         case r'warehouseId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.warehouseId = valueDes;
           break;
         case r'quantity':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.quantity = valueDes;
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         default:
@@ -137,4 +151,3 @@ class _$AdjustStockInputSerializer implements PrimitiveSerializer<AdjustStockInp
     return result.build();
   }
 }
-

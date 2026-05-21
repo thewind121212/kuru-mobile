@@ -9,14 +9,16 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
 
 void main() {
-  testWidgets('CreateOrgScreen renders title + business name field',
-      (tester) async {
+  testWidgets('CreateOrgScreen renders title + business name field', (
+    tester,
+  ) async {
     const user = UserInfo(email: 'a@b.com');
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          appBootstrapProvider
-              .overrideWith((ref) async => const BootstrapAuthed(user)),
+          appBootstrapProvider.overrideWith(
+            (ref) async => const BootstrapAuthed(user),
+          ),
         ],
         child: MaterialApp(
           locale: const Locale('vi'),

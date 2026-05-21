@@ -11,18 +11,19 @@ part 'container_lot_response.g.dart';
 /// ContainerLotResponse
 ///
 /// Properties:
-/// * [id] 
-/// * [orgId] 
-/// * [warehouseId] 
-/// * [productId] 
-/// * [qtyInitial] 
-/// * [qtyRemaining] 
-/// * [barcode] 
-/// * [variantId] 
-/// * [variantName] 
-/// * [createdAt] 
+/// * [id]
+/// * [orgId]
+/// * [warehouseId]
+/// * [productId]
+/// * [qtyInitial]
+/// * [qtyRemaining]
+/// * [barcode]
+/// * [variantId]
+/// * [variantName]
+/// * [createdAt]
 @BuiltValue()
-abstract class ContainerLotResponse implements Built<ContainerLotResponse, ContainerLotResponseBuilder> {
+abstract class ContainerLotResponse
+    implements Built<ContainerLotResponse, ContainerLotResponseBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -55,18 +56,24 @@ abstract class ContainerLotResponse implements Built<ContainerLotResponse, Conta
 
   ContainerLotResponse._();
 
-  factory ContainerLotResponse([void updates(ContainerLotResponseBuilder b)]) = _$ContainerLotResponse;
+  factory ContainerLotResponse([void updates(ContainerLotResponseBuilder b)]) =
+      _$ContainerLotResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ContainerLotResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ContainerLotResponse> get serializer => _$ContainerLotResponseSerializer();
+  static Serializer<ContainerLotResponse> get serializer =>
+      _$ContainerLotResponseSerializer();
 }
 
-class _$ContainerLotResponseSerializer implements PrimitiveSerializer<ContainerLotResponse> {
+class _$ContainerLotResponseSerializer
+    implements PrimitiveSerializer<ContainerLotResponse> {
   @override
-  final Iterable<Type> types = const [ContainerLotResponse, _$ContainerLotResponse];
+  final Iterable<Type> types = const [
+    ContainerLotResponse,
+    _$ContainerLotResponse,
+  ];
 
   @override
   final String wireName = r'ContainerLotResponse';
@@ -140,7 +147,11 @@ class _$ContainerLotResponseSerializer implements PrimitiveSerializer<ContainerL
     ContainerLotResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -156,73 +167,93 @@ class _$ContainerLotResponseSerializer implements PrimitiveSerializer<ContainerL
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'warehouseId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.warehouseId = valueDes;
           break;
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'qtyInitial':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.qtyInitial = valueDes;
           break;
         case r'qtyRemaining':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.qtyRemaining = valueDes;
           break;
         case r'barcode':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.barcode = valueDes;
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         case r'variantName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantName = valueDes;
           break;
         case r'createdAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.createdAt = valueDes;
           break;
         default:
@@ -253,4 +284,3 @@ class _$ContainerLotResponseSerializer implements PrimitiveSerializer<ContainerL
     return result.build();
   }
 }
-

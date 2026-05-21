@@ -86,4 +86,3 @@ export 'package:kuru_product_api/src/model/update_product_variant_response.dart'
 export 'package:kuru_product_api/src/model/upsert_barcode_input.dart';
 export 'package:kuru_product_api/src/model/upsert_umo_input.dart';
 export 'package:kuru_product_api/src/model/variant_input.dart';
-

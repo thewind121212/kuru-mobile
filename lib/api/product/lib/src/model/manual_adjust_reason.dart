@@ -10,7 +10,6 @@ import 'package:built_value/serializer.dart';
 part 'manual_adjust_reason.g.dart';
 
 class ManualAdjustReason extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'STOCK_TAKE')
   static const ManualAdjustReason STOCK_TAKE = _$STOCK_TAKE;
   @BuiltValueEnumConst(wireName: r'DAMAGE')
@@ -24,9 +23,10 @@ class ManualAdjustReason extends EnumClass {
   @BuiltValueEnumConst(wireName: r'OTHER')
   static const ManualAdjustReason OTHER = _$OTHER;
 
-  static Serializer<ManualAdjustReason> get serializer => _$manualAdjustReasonSerializer;
+  static Serializer<ManualAdjustReason> get serializer =>
+      _$manualAdjustReasonSerializer;
 
-  const ManualAdjustReason._(String name): super(name);
+  const ManualAdjustReason._(String name) : super(name);
 
   static BuiltSet<ManualAdjustReason> get values => _$values;
   static ManualAdjustReason valueOf(String name) => _$valueOf(name);
@@ -39,4 +39,3 @@ class ManualAdjustReason extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class ManualAdjustReasonMixin = Object with _$ManualAdjustReasonMixin;
-

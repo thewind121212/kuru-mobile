@@ -13,11 +13,13 @@ part 'save_product_variants_request.g.dart';
 /// SaveProductVariantsRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [variants] 
-/// * [deleteVariantIds] 
+/// * [productId]
+/// * [variants]
+/// * [deleteVariantIds]
 @BuiltValue()
-abstract class SaveProductVariantsRequest implements Built<SaveProductVariantsRequest, SaveProductVariantsRequestBuilder> {
+abstract class SaveProductVariantsRequest
+    implements
+        Built<SaveProductVariantsRequest, SaveProductVariantsRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -29,18 +31,25 @@ abstract class SaveProductVariantsRequest implements Built<SaveProductVariantsRe
 
   SaveProductVariantsRequest._();
 
-  factory SaveProductVariantsRequest([void updates(SaveProductVariantsRequestBuilder b)]) = _$SaveProductVariantsRequest;
+  factory SaveProductVariantsRequest([
+    void updates(SaveProductVariantsRequestBuilder b),
+  ]) = _$SaveProductVariantsRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SaveProductVariantsRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SaveProductVariantsRequest> get serializer => _$SaveProductVariantsRequestSerializer();
+  static Serializer<SaveProductVariantsRequest> get serializer =>
+      _$SaveProductVariantsRequestSerializer();
 }
 
-class _$SaveProductVariantsRequestSerializer implements PrimitiveSerializer<SaveProductVariantsRequest> {
+class _$SaveProductVariantsRequestSerializer
+    implements PrimitiveSerializer<SaveProductVariantsRequest> {
   @override
-  final Iterable<Type> types = const [SaveProductVariantsRequest, _$SaveProductVariantsRequest];
+  final Iterable<Type> types = const [
+    SaveProductVariantsRequest,
+    _$SaveProductVariantsRequest,
+  ];
 
   @override
   final String wireName = r'SaveProductVariantsRequest';
@@ -77,7 +86,11 @@ class _$SaveProductVariantsRequestSerializer implements PrimitiveSerializer<Save
     SaveProductVariantsRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -93,24 +106,34 @@ class _$SaveProductVariantsRequestSerializer implements PrimitiveSerializer<Save
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'variants':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(VariantInput)]),
-          ) as BuiltList<VariantInput>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(VariantInput),
+                    ]),
+                  )
+                  as BuiltList<VariantInput>;
           result.variants.replace(valueDes);
           break;
         case r'deleteVariantIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.deleteVariantIds.replace(valueDes);
           break;
         default:
@@ -141,4 +164,3 @@ class _$SaveProductVariantsRequestSerializer implements PrimitiveSerializer<Save
     return result.build();
   }
 }
-

@@ -11,10 +11,12 @@ part 'create_product_stock_request.g.dart';
 /// CreateProductStockRequest
 ///
 /// Properties:
-/// * [warehouseId] 
-/// * [qty] 
+/// * [warehouseId]
+/// * [qty]
 @BuiltValue()
-abstract class CreateProductStockRequest implements Built<CreateProductStockRequest, CreateProductStockRequestBuilder> {
+abstract class CreateProductStockRequest
+    implements
+        Built<CreateProductStockRequest, CreateProductStockRequestBuilder> {
   @BuiltValueField(wireName: r'warehouseId')
   String get warehouseId;
 
@@ -23,18 +25,25 @@ abstract class CreateProductStockRequest implements Built<CreateProductStockRequ
 
   CreateProductStockRequest._();
 
-  factory CreateProductStockRequest([void updates(CreateProductStockRequestBuilder b)]) = _$CreateProductStockRequest;
+  factory CreateProductStockRequest([
+    void updates(CreateProductStockRequestBuilder b),
+  ]) = _$CreateProductStockRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateProductStockRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateProductStockRequest> get serializer => _$CreateProductStockRequestSerializer();
+  static Serializer<CreateProductStockRequest> get serializer =>
+      _$CreateProductStockRequestSerializer();
 }
 
-class _$CreateProductStockRequestSerializer implements PrimitiveSerializer<CreateProductStockRequest> {
+class _$CreateProductStockRequestSerializer
+    implements PrimitiveSerializer<CreateProductStockRequest> {
   @override
-  final Iterable<Type> types = const [CreateProductStockRequest, _$CreateProductStockRequest];
+  final Iterable<Type> types = const [
+    CreateProductStockRequest,
+    _$CreateProductStockRequest,
+  ];
 
   @override
   final String wireName = r'CreateProductStockRequest';
@@ -62,7 +71,11 @@ class _$CreateProductStockRequestSerializer implements PrimitiveSerializer<Creat
     CreateProductStockRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -78,17 +91,21 @@ class _$CreateProductStockRequestSerializer implements PrimitiveSerializer<Creat
       final value = serializedList[i + 1];
       switch (key) {
         case r'warehouseId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.warehouseId = valueDes;
           break;
         case r'qty':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.qty = valueDes;
           break;
         default:
@@ -119,4 +136,3 @@ class _$CreateProductStockRequestSerializer implements PrimitiveSerializer<Creat
     return result.build();
   }
 }
-

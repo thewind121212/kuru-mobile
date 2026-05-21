@@ -12,11 +12,12 @@ part 'delete_brand200_response.g.dart';
 /// DeleteBrand200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class DeleteBrand200Response implements Built<DeleteBrand200Response, DeleteBrand200ResponseBuilder> {
+abstract class DeleteBrand200Response
+    implements Built<DeleteBrand200Response, DeleteBrand200ResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +29,25 @@ abstract class DeleteBrand200Response implements Built<DeleteBrand200Response, D
 
   DeleteBrand200Response._();
 
-  factory DeleteBrand200Response([void updates(DeleteBrand200ResponseBuilder b)]) = _$DeleteBrand200Response;
+  factory DeleteBrand200Response([
+    void updates(DeleteBrand200ResponseBuilder b),
+  ]) = _$DeleteBrand200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeleteBrand200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeleteBrand200Response> get serializer => _$DeleteBrand200ResponseSerializer();
+  static Serializer<DeleteBrand200Response> get serializer =>
+      _$DeleteBrand200ResponseSerializer();
 }
 
-class _$DeleteBrand200ResponseSerializer implements PrimitiveSerializer<DeleteBrand200Response> {
+class _$DeleteBrand200ResponseSerializer
+    implements PrimitiveSerializer<DeleteBrand200Response> {
   @override
-  final Iterable<Type> types = const [DeleteBrand200Response, _$DeleteBrand200Response];
+  final Iterable<Type> types = const [
+    DeleteBrand200Response,
+    _$DeleteBrand200Response,
+  ];
 
   @override
   final String wireName = r'DeleteBrand200Response';
@@ -72,7 +80,11 @@ class _$DeleteBrand200ResponseSerializer implements PrimitiveSerializer<DeleteBr
     DeleteBrand200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +100,30 @@ class _$DeleteBrand200ResponseSerializer implements PrimitiveSerializer<DeleteBr
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DeleteBrandResponse),
-          ) as DeleteBrandResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DeleteBrandResponse),
+                  )
+                  as DeleteBrandResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +154,3 @@ class _$DeleteBrand200ResponseSerializer implements PrimitiveSerializer<DeleteBr
     return result.build();
   }
 }
-

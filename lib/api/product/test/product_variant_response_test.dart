@@ -86,6 +86,5 @@ void main() {
     test('to test the property `totalQtyImported`', () async {
       // TODO
     });
-
   });
 }

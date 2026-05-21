@@ -11,26 +11,34 @@ part 'get_category_by_id_request.g.dart';
 /// GetCategoryByIdRequest
 ///
 /// Properties:
-/// * [categoryId] 
+/// * [categoryId]
 @BuiltValue()
-abstract class GetCategoryByIdRequest implements Built<GetCategoryByIdRequest, GetCategoryByIdRequestBuilder> {
+abstract class GetCategoryByIdRequest
+    implements Built<GetCategoryByIdRequest, GetCategoryByIdRequestBuilder> {
   @BuiltValueField(wireName: r'categoryId')
   String get categoryId;
 
   GetCategoryByIdRequest._();
 
-  factory GetCategoryByIdRequest([void updates(GetCategoryByIdRequestBuilder b)]) = _$GetCategoryByIdRequest;
+  factory GetCategoryByIdRequest([
+    void updates(GetCategoryByIdRequestBuilder b),
+  ]) = _$GetCategoryByIdRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetCategoryByIdRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetCategoryByIdRequest> get serializer => _$GetCategoryByIdRequestSerializer();
+  static Serializer<GetCategoryByIdRequest> get serializer =>
+      _$GetCategoryByIdRequestSerializer();
 }
 
-class _$GetCategoryByIdRequestSerializer implements PrimitiveSerializer<GetCategoryByIdRequest> {
+class _$GetCategoryByIdRequestSerializer
+    implements PrimitiveSerializer<GetCategoryByIdRequest> {
   @override
-  final Iterable<Type> types = const [GetCategoryByIdRequest, _$GetCategoryByIdRequest];
+  final Iterable<Type> types = const [
+    GetCategoryByIdRequest,
+    _$GetCategoryByIdRequest,
+  ];
 
   @override
   final String wireName = r'GetCategoryByIdRequest';
@@ -53,7 +61,11 @@ class _$GetCategoryByIdRequestSerializer implements PrimitiveSerializer<GetCateg
     GetCategoryByIdRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +81,12 @@ class _$GetCategoryByIdRequestSerializer implements PrimitiveSerializer<GetCateg
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.categoryId = valueDes;
           break;
         default:
@@ -103,4 +117,3 @@ class _$GetCategoryByIdRequestSerializer implements PrimitiveSerializer<GetCateg
     return result.build();
   }
 }
-

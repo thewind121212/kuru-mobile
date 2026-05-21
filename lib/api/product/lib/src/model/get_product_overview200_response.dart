@@ -12,11 +12,16 @@ part 'get_product_overview200_response.g.dart';
 /// GetProductOverview200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class GetProductOverview200Response implements Built<GetProductOverview200Response, GetProductOverview200ResponseBuilder> {
+abstract class GetProductOverview200Response
+    implements
+        Built<
+          GetProductOverview200Response,
+          GetProductOverview200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class GetProductOverview200Response implements Built<GetProductOverview
 
   GetProductOverview200Response._();
 
-  factory GetProductOverview200Response([void updates(GetProductOverview200ResponseBuilder b)]) = _$GetProductOverview200Response;
+  factory GetProductOverview200Response([
+    void updates(GetProductOverview200ResponseBuilder b),
+  ]) = _$GetProductOverview200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetProductOverview200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetProductOverview200Response> get serializer => _$GetProductOverview200ResponseSerializer();
+  static Serializer<GetProductOverview200Response> get serializer =>
+      _$GetProductOverview200ResponseSerializer();
 }
 
-class _$GetProductOverview200ResponseSerializer implements PrimitiveSerializer<GetProductOverview200Response> {
+class _$GetProductOverview200ResponseSerializer
+    implements PrimitiveSerializer<GetProductOverview200Response> {
   @override
-  final Iterable<Type> types = const [GetProductOverview200Response, _$GetProductOverview200Response];
+  final Iterable<Type> types = const [
+    GetProductOverview200Response,
+    _$GetProductOverview200Response,
+  ];
 
   @override
   final String wireName = r'GetProductOverview200Response';
@@ -72,7 +84,11 @@ class _$GetProductOverview200ResponseSerializer implements PrimitiveSerializer<G
     GetProductOverview200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,30 @@ class _$GetProductOverview200ResponseSerializer implements PrimitiveSerializer<G
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(GetProductOverviewResponse),
-          ) as GetProductOverviewResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(GetProductOverviewResponse),
+                  )
+                  as GetProductOverviewResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +158,3 @@ class _$GetProductOverview200ResponseSerializer implements PrimitiveSerializer<G
     return result.build();
   }
 }
-

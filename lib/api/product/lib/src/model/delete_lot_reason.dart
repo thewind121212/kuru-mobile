@@ -10,7 +10,6 @@ import 'package:built_value/serializer.dart';
 part 'delete_lot_reason.g.dart';
 
 class DeleteLotReason extends EnumClass {
-
   @BuiltValueEnumConst(wireName: r'LOSS')
   static const DeleteLotReason LOSS = _$LOSS;
   @BuiltValueEnumConst(wireName: r'STOCK_TAKE')
@@ -20,9 +19,10 @@ class DeleteLotReason extends EnumClass {
   @BuiltValueEnumConst(wireName: r'OTHER')
   static const DeleteLotReason OTHER = _$OTHER;
 
-  static Serializer<DeleteLotReason> get serializer => _$deleteLotReasonSerializer;
+  static Serializer<DeleteLotReason> get serializer =>
+      _$deleteLotReasonSerializer;
 
-  const DeleteLotReason._(String name): super(name);
+  const DeleteLotReason._(String name) : super(name);
 
   static BuiltSet<DeleteLotReason> get values => _$values;
   static DeleteLotReason valueOf(String name) => _$valueOf(name);
@@ -35,4 +35,3 @@ class DeleteLotReason extends EnumClass {
 ///
 /// Trigger mixin generation by writing a line like this one next to your enum.
 abstract class DeleteLotReasonMixin = Object with _$DeleteLotReasonMixin;
-

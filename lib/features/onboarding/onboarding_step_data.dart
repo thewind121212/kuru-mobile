@@ -20,34 +20,34 @@ class OnboardingStep {
 }
 
 List<OnboardingStep> buildOnboardingSteps(AppLocalizations l) => [
-      OnboardingStep(
-        title: l.onboardingStep1Title,
-        body: l.onboardingStep1Body,
-        illustration: const ScanIllustration(),
-      ),
-      OnboardingStep(
-        title: l.onboardingStep2Title,
-        body: l.onboardingStep2Body,
-        illustration: const InventoryIllustration(),
-      ),
-      OnboardingStep(
-        title: l.onboardingStep3Title,
-        body: l.onboardingStep3Body,
-        illustration: const ChartIllustration(),
-      ),
-      OnboardingStep(
-        title: l.onboardingStep4Title,
-        body: l.onboardingStep4Body,
-        illustration: const PaymentIllustration(),
-      ),
-      OnboardingStep(
-        title: l.onboardingStep5Title,
-        body: l.onboardingStep5Body,
-        illustration: const MultiStoreIllustration(),
-      ),
-      OnboardingStep(
-        title: l.onboardingStep6Title,
-        body: l.onboardingStep6Body,
-        illustration: const CustomerIllustration(),
-      ),
-    ];
+  OnboardingStep(
+    title: l.onboardingStep1Title,
+    body: l.onboardingStep1Body,
+    illustration: const ScanIllustration(),
+  ),
+  OnboardingStep(
+    title: l.onboardingStep2Title,
+    body: l.onboardingStep2Body,
+    illustration: const InventoryIllustration(),
+  ),
+  OnboardingStep(
+    title: l.onboardingStep3Title,
+    body: l.onboardingStep3Body,
+    illustration: const ChartIllustration(),
+  ),
+  OnboardingStep(
+    title: l.onboardingStep4Title,
+    body: l.onboardingStep4Body,
+    illustration: const PaymentIllustration(),
+  ),
+  OnboardingStep(
+    title: l.onboardingStep5Title,
+    body: l.onboardingStep5Body,
+    illustration: const MultiStoreIllustration(),
+  ),
+  OnboardingStep(
+    title: l.onboardingStep6Title,
+    body: l.onboardingStep6Body,
+    illustration: const CustomerIllustration(),
+  ),
+];

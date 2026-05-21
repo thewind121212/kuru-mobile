@@ -12,11 +12,16 @@ part 'save_product_variants200_response.g.dart';
 /// SaveProductVariants200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class SaveProductVariants200Response implements Built<SaveProductVariants200Response, SaveProductVariants200ResponseBuilder> {
+abstract class SaveProductVariants200Response
+    implements
+        Built<
+          SaveProductVariants200Response,
+          SaveProductVariants200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class SaveProductVariants200Response implements Built<SaveProductVarian
 
   SaveProductVariants200Response._();
 
-  factory SaveProductVariants200Response([void updates(SaveProductVariants200ResponseBuilder b)]) = _$SaveProductVariants200Response;
+  factory SaveProductVariants200Response([
+    void updates(SaveProductVariants200ResponseBuilder b),
+  ]) = _$SaveProductVariants200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SaveProductVariants200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SaveProductVariants200Response> get serializer => _$SaveProductVariants200ResponseSerializer();
+  static Serializer<SaveProductVariants200Response> get serializer =>
+      _$SaveProductVariants200ResponseSerializer();
 }
 
-class _$SaveProductVariants200ResponseSerializer implements PrimitiveSerializer<SaveProductVariants200Response> {
+class _$SaveProductVariants200ResponseSerializer
+    implements PrimitiveSerializer<SaveProductVariants200Response> {
   @override
-  final Iterable<Type> types = const [SaveProductVariants200Response, _$SaveProductVariants200Response];
+  final Iterable<Type> types = const [
+    SaveProductVariants200Response,
+    _$SaveProductVariants200Response,
+  ];
 
   @override
   final String wireName = r'SaveProductVariants200Response';
@@ -72,7 +84,11 @@ class _$SaveProductVariants200ResponseSerializer implements PrimitiveSerializer<
     SaveProductVariants200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,30 @@ class _$SaveProductVariants200ResponseSerializer implements PrimitiveSerializer<
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(SaveProductVariantsResponse),
-          ) as SaveProductVariantsResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(SaveProductVariantsResponse),
+                  )
+                  as SaveProductVariantsResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +158,3 @@ class _$SaveProductVariants200ResponseSerializer implements PrimitiveSerializer<
     return result.build();
   }
 }
-

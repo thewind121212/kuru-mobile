@@ -35,14 +35,16 @@ class _KColorPickerBody extends StatefulWidget {
 class _KColorPickerBodyState extends State<_KColorPickerBody> {
   late final String _current = widget.initialSelected;
 
-  String get _currentLabel => kAllColors.firstWhere(
+  String get _currentLabel => kAllColors
+      .firstWhere(
         (c) => c.id == _current,
         orElse: () => const KColorOption(
           id: '',
           label: 'Custom',
           swatch: Colors.transparent,
         ),
-      ).label;
+      )
+      .label;
 
   @override
   Widget build(BuildContext context) {
@@ -75,9 +77,7 @@ class _KColorPickerBodyState extends State<_KColorPickerBody> {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          children: [
-            for (final option in kAllColors) _swatch(option),
-          ],
+          children: [for (final option in kAllColors) _swatch(option)],
         ),
       ],
     );
@@ -101,8 +101,7 @@ class _KColorPickerBodyState extends State<_KColorPickerBody> {
           duration: const Duration(milliseconds: 150),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            border:
-                isSelected ? Border.all(color: opt.swatch, width: 4) : null,
+            border: isSelected ? Border.all(color: opt.swatch, width: 4) : null,
           ),
           padding: isSelected ? const EdgeInsets.all(2) : EdgeInsets.zero,
           child: Container(

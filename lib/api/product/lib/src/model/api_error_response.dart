@@ -12,11 +12,12 @@ part 'api_error_response.g.dart';
 /// ApiErrorResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
-/// * [timestamp] 
+/// * [success]
+/// * [error]
+/// * [timestamp]
 @BuiltValue()
-abstract class ApiErrorResponse implements Built<ApiErrorResponse, ApiErrorResponseBuilder> {
+abstract class ApiErrorResponse
+    implements Built<ApiErrorResponse, ApiErrorResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,16 +29,19 @@ abstract class ApiErrorResponse implements Built<ApiErrorResponse, ApiErrorRespo
 
   ApiErrorResponse._();
 
-  factory ApiErrorResponse([void updates(ApiErrorResponseBuilder b)]) = _$ApiErrorResponse;
+  factory ApiErrorResponse([void updates(ApiErrorResponseBuilder b)]) =
+      _$ApiErrorResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ApiErrorResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ApiErrorResponse> get serializer => _$ApiErrorResponseSerializer();
+  static Serializer<ApiErrorResponse> get serializer =>
+      _$ApiErrorResponseSerializer();
 }
 
-class _$ApiErrorResponseSerializer implements PrimitiveSerializer<ApiErrorResponse> {
+class _$ApiErrorResponseSerializer
+    implements PrimitiveSerializer<ApiErrorResponse> {
   @override
   final Iterable<Type> types = const [ApiErrorResponse, _$ApiErrorResponse];
 
@@ -72,7 +76,11 @@ class _$ApiErrorResponseSerializer implements PrimitiveSerializer<ApiErrorRespon
     ApiErrorResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +96,30 @@ class _$ApiErrorResponseSerializer implements PrimitiveSerializer<ApiErrorRespon
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ApiErrorResponseError),
-          ) as ApiErrorResponseError;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(ApiErrorResponseError),
+                  )
+                  as ApiErrorResponseError;
           result.error.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +150,3 @@ class _$ApiErrorResponseSerializer implements PrimitiveSerializer<ApiErrorRespon
     return result.build();
   }
 }
-

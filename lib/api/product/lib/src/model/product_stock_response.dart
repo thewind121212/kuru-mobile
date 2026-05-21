@@ -11,13 +11,14 @@ part 'product_stock_response.g.dart';
 /// ProductStockResponse
 ///
 /// Properties:
-/// * [orgId] 
-/// * [productId] 
-/// * [warehouseId] 
-/// * [qty] 
-/// * [variantId] 
+/// * [orgId]
+/// * [productId]
+/// * [warehouseId]
+/// * [qty]
+/// * [variantId]
 @BuiltValue()
-abstract class ProductStockResponse implements Built<ProductStockResponse, ProductStockResponseBuilder> {
+abstract class ProductStockResponse
+    implements Built<ProductStockResponse, ProductStockResponseBuilder> {
   @BuiltValueField(wireName: r'orgId')
   String get orgId;
 
@@ -35,18 +36,24 @@ abstract class ProductStockResponse implements Built<ProductStockResponse, Produ
 
   ProductStockResponse._();
 
-  factory ProductStockResponse([void updates(ProductStockResponseBuilder b)]) = _$ProductStockResponse;
+  factory ProductStockResponse([void updates(ProductStockResponseBuilder b)]) =
+      _$ProductStockResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(ProductStockResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<ProductStockResponse> get serializer => _$ProductStockResponseSerializer();
+  static Serializer<ProductStockResponse> get serializer =>
+      _$ProductStockResponseSerializer();
 }
 
-class _$ProductStockResponseSerializer implements PrimitiveSerializer<ProductStockResponse> {
+class _$ProductStockResponseSerializer
+    implements PrimitiveSerializer<ProductStockResponse> {
   @override
-  final Iterable<Type> types = const [ProductStockResponse, _$ProductStockResponse];
+  final Iterable<Type> types = const [
+    ProductStockResponse,
+    _$ProductStockResponse,
+  ];
 
   @override
   final String wireName = r'ProductStockResponse';
@@ -91,7 +98,11 @@ class _$ProductStockResponseSerializer implements PrimitiveSerializer<ProductSto
     ProductStockResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -107,38 +118,48 @@ class _$ProductStockResponseSerializer implements PrimitiveSerializer<ProductSto
       final value = serializedList[i + 1];
       switch (key) {
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'warehouseId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.warehouseId = valueDes;
           break;
         case r'qty':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.qty = valueDes;
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         default:
@@ -169,4 +190,3 @@ class _$ProductStockResponseSerializer implements PrimitiveSerializer<ProductSto
     return result.build();
   }
 }
-

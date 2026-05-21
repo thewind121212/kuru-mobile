@@ -11,10 +11,11 @@ part 'delete_brand_response.g.dart';
 /// DeleteBrandResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
+/// * [success]
+/// * [error]
 @BuiltValue()
-abstract class DeleteBrandResponse implements Built<DeleteBrandResponse, DeleteBrandResponseBuilder> {
+abstract class DeleteBrandResponse
+    implements Built<DeleteBrandResponse, DeleteBrandResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -23,18 +24,24 @@ abstract class DeleteBrandResponse implements Built<DeleteBrandResponse, DeleteB
 
   DeleteBrandResponse._();
 
-  factory DeleteBrandResponse([void updates(DeleteBrandResponseBuilder b)]) = _$DeleteBrandResponse;
+  factory DeleteBrandResponse([void updates(DeleteBrandResponseBuilder b)]) =
+      _$DeleteBrandResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeleteBrandResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeleteBrandResponse> get serializer => _$DeleteBrandResponseSerializer();
+  static Serializer<DeleteBrandResponse> get serializer =>
+      _$DeleteBrandResponseSerializer();
 }
 
-class _$DeleteBrandResponseSerializer implements PrimitiveSerializer<DeleteBrandResponse> {
+class _$DeleteBrandResponseSerializer
+    implements PrimitiveSerializer<DeleteBrandResponse> {
   @override
-  final Iterable<Type> types = const [DeleteBrandResponse, _$DeleteBrandResponse];
+  final Iterable<Type> types = const [
+    DeleteBrandResponse,
+    _$DeleteBrandResponse,
+  ];
 
   @override
   final String wireName = r'DeleteBrandResponse';
@@ -64,7 +71,11 @@ class _$DeleteBrandResponseSerializer implements PrimitiveSerializer<DeleteBrand
     DeleteBrandResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +91,21 @@ class _$DeleteBrandResponseSerializer implements PrimitiveSerializer<DeleteBrand
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.error = valueDes;
           break;
         default:
@@ -121,4 +136,3 @@ class _$DeleteBrandResponseSerializer implements PrimitiveSerializer<DeleteBrand
     return result.build();
   }
 }
-

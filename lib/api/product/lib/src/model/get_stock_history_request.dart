@@ -11,16 +11,17 @@ part 'get_stock_history_request.g.dart';
 /// GetStockHistoryRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [warehouseId] 
-/// * [fromDate] 
-/// * [toDate] 
-/// * [page] 
-/// * [limit] 
-/// * [variantId] 
-/// * [type] 
+/// * [productId]
+/// * [warehouseId]
+/// * [fromDate]
+/// * [toDate]
+/// * [page]
+/// * [limit]
+/// * [variantId]
+/// * [type]
 @BuiltValue()
-abstract class GetStockHistoryRequest implements Built<GetStockHistoryRequest, GetStockHistoryRequestBuilder> {
+abstract class GetStockHistoryRequest
+    implements Built<GetStockHistoryRequest, GetStockHistoryRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String? get productId;
 
@@ -47,18 +48,25 @@ abstract class GetStockHistoryRequest implements Built<GetStockHistoryRequest, G
 
   GetStockHistoryRequest._();
 
-  factory GetStockHistoryRequest([void updates(GetStockHistoryRequestBuilder b)]) = _$GetStockHistoryRequest;
+  factory GetStockHistoryRequest([
+    void updates(GetStockHistoryRequestBuilder b),
+  ]) = _$GetStockHistoryRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetStockHistoryRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetStockHistoryRequest> get serializer => _$GetStockHistoryRequestSerializer();
+  static Serializer<GetStockHistoryRequest> get serializer =>
+      _$GetStockHistoryRequestSerializer();
 }
 
-class _$GetStockHistoryRequestSerializer implements PrimitiveSerializer<GetStockHistoryRequest> {
+class _$GetStockHistoryRequestSerializer
+    implements PrimitiveSerializer<GetStockHistoryRequest> {
   @override
-  final Iterable<Type> types = const [GetStockHistoryRequest, _$GetStockHistoryRequest];
+  final Iterable<Type> types = const [
+    GetStockHistoryRequest,
+    _$GetStockHistoryRequest,
+  ];
 
   @override
   final String wireName = r'GetStockHistoryRequest';
@@ -132,7 +140,11 @@ class _$GetStockHistoryRequestSerializer implements PrimitiveSerializer<GetStock
     GetStockHistoryRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -148,59 +160,69 @@ class _$GetStockHistoryRequestSerializer implements PrimitiveSerializer<GetStock
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'warehouseId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.warehouseId = valueDes;
           break;
         case r'fromDate':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.fromDate = valueDes;
           break;
         case r'toDate':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.toDate = valueDes;
           break;
         case r'page':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.page = valueDes;
           break;
         case r'limit':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.limit = valueDes;
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.type = valueDes;
           break;
         default:
@@ -231,4 +253,3 @@ class _$GetStockHistoryRequestSerializer implements PrimitiveSerializer<GetStock
     return result.build();
   }
 }
-

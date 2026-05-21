@@ -57,10 +57,10 @@ class _KPrimaryBtnState extends State<KPrimaryBtn>
   }
 
   Color _bg(KuruColors c) => switch (widget.tone) {
-        KBtnTone.primary => c.primary,
-        KBtnTone.success => c.success,
-        KBtnTone.danger => c.danger,
-      };
+    KBtnTone.primary => c.primary,
+    KBtnTone.success => c.success,
+    KBtnTone.danger => c.danger,
+  };
 
   @override
   Widget build(BuildContext context) {

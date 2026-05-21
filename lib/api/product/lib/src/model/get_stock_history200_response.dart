@@ -12,11 +12,13 @@ part 'get_stock_history200_response.g.dart';
 /// GetStockHistory200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class GetStockHistory200Response implements Built<GetStockHistory200Response, GetStockHistory200ResponseBuilder> {
+abstract class GetStockHistory200Response
+    implements
+        Built<GetStockHistory200Response, GetStockHistory200ResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +30,25 @@ abstract class GetStockHistory200Response implements Built<GetStockHistory200Res
 
   GetStockHistory200Response._();
 
-  factory GetStockHistory200Response([void updates(GetStockHistory200ResponseBuilder b)]) = _$GetStockHistory200Response;
+  factory GetStockHistory200Response([
+    void updates(GetStockHistory200ResponseBuilder b),
+  ]) = _$GetStockHistory200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetStockHistory200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetStockHistory200Response> get serializer => _$GetStockHistory200ResponseSerializer();
+  static Serializer<GetStockHistory200Response> get serializer =>
+      _$GetStockHistory200ResponseSerializer();
 }
 
-class _$GetStockHistory200ResponseSerializer implements PrimitiveSerializer<GetStockHistory200Response> {
+class _$GetStockHistory200ResponseSerializer
+    implements PrimitiveSerializer<GetStockHistory200Response> {
   @override
-  final Iterable<Type> types = const [GetStockHistory200Response, _$GetStockHistory200Response];
+  final Iterable<Type> types = const [
+    GetStockHistory200Response,
+    _$GetStockHistory200Response,
+  ];
 
   @override
   final String wireName = r'GetStockHistory200Response';
@@ -72,7 +81,11 @@ class _$GetStockHistory200ResponseSerializer implements PrimitiveSerializer<GetS
     GetStockHistory200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +101,30 @@ class _$GetStockHistory200ResponseSerializer implements PrimitiveSerializer<GetS
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(GetStockHistoryResponse),
-          ) as GetStockHistoryResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(GetStockHistoryResponse),
+                  )
+                  as GetStockHistoryResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +155,3 @@ class _$GetStockHistory200ResponseSerializer implements PrimitiveSerializer<GetS
     return result.build();
   }
 }
-

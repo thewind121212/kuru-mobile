@@ -11,13 +11,15 @@ part 'create_product_variant_request.g.dart';
 /// CreateProductVariantRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [name] 
-/// * [sellPrice] 
-/// * [exportPrice] 
-/// * [importPrice] 
+/// * [productId]
+/// * [name]
+/// * [sellPrice]
+/// * [exportPrice]
+/// * [importPrice]
 @BuiltValue()
-abstract class CreateProductVariantRequest implements Built<CreateProductVariantRequest, CreateProductVariantRequestBuilder> {
+abstract class CreateProductVariantRequest
+    implements
+        Built<CreateProductVariantRequest, CreateProductVariantRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -35,18 +37,25 @@ abstract class CreateProductVariantRequest implements Built<CreateProductVariant
 
   CreateProductVariantRequest._();
 
-  factory CreateProductVariantRequest([void updates(CreateProductVariantRequestBuilder b)]) = _$CreateProductVariantRequest;
+  factory CreateProductVariantRequest([
+    void updates(CreateProductVariantRequestBuilder b),
+  ]) = _$CreateProductVariantRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateProductVariantRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateProductVariantRequest> get serializer => _$CreateProductVariantRequestSerializer();
+  static Serializer<CreateProductVariantRequest> get serializer =>
+      _$CreateProductVariantRequestSerializer();
 }
 
-class _$CreateProductVariantRequestSerializer implements PrimitiveSerializer<CreateProductVariantRequest> {
+class _$CreateProductVariantRequestSerializer
+    implements PrimitiveSerializer<CreateProductVariantRequest> {
   @override
-  final Iterable<Type> types = const [CreateProductVariantRequest, _$CreateProductVariantRequest];
+  final Iterable<Type> types = const [
+    CreateProductVariantRequest,
+    _$CreateProductVariantRequest,
+  ];
 
   @override
   final String wireName = r'CreateProductVariantRequest';
@@ -95,7 +104,11 @@ class _$CreateProductVariantRequestSerializer implements PrimitiveSerializer<Cre
     CreateProductVariantRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -111,38 +124,48 @@ class _$CreateProductVariantRequestSerializer implements PrimitiveSerializer<Cre
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'sellPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.sellPrice = valueDes;
           break;
         case r'exportPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.exportPrice = valueDes;
           break;
         case r'importPrice':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.importPrice = valueDes;
           break;
         default:
@@ -173,4 +196,3 @@ class _$CreateProductVariantRequestSerializer implements PrimitiveSerializer<Cre
     return result.build();
   }
 }
-

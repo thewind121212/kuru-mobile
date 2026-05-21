@@ -91,8 +91,7 @@ class _StoreIllustrationState extends State<StoreIllustration>
                             for (final on in const [true, true, true, false])
                               DecoratedBox(
                                 decoration: BoxDecoration(
-                                  color:
-                                      on ? c.primarySoft : c.secondarySoft,
+                                  color: on ? c.primarySoft : c.secondarySoft,
                                   borderRadius: BorderRadius.circular(3),
                                 ),
                               ),
@@ -111,9 +110,7 @@ class _StoreIllustrationState extends State<StoreIllustration>
                   width: 126,
                   height: 18,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [c.primary, c.secondary],
-                    ),
+                    gradient: LinearGradient(colors: [c.primary, c.secondary]),
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(14),
                       topRight: Radius.circular(14),

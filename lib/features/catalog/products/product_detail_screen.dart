@@ -111,7 +111,10 @@ class ProductDetailScreen extends ConsumerWidget {
     if (picked == null || !context.mounted) return;
     switch (picked) {
       case 'edit':
-        await context.push('/catalog/products/${detail.id}/edit', extra: detail);
+        await context.push(
+          '/catalog/products/${detail.id}/edit',
+          extra: detail,
+        );
       case 'reactivate':
         final repo = ref.read(productRepositoryProvider);
         final result = await repo.updateInfo(

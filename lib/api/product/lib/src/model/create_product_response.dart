@@ -11,26 +11,34 @@ part 'create_product_response.g.dart';
 /// CreateProductResponse
 ///
 /// Properties:
-/// * [productId] 
+/// * [productId]
 @BuiltValue()
-abstract class CreateProductResponse implements Built<CreateProductResponse, CreateProductResponseBuilder> {
+abstract class CreateProductResponse
+    implements Built<CreateProductResponse, CreateProductResponseBuilder> {
   @BuiltValueField(wireName: r'productId')
   String? get productId;
 
   CreateProductResponse._();
 
-  factory CreateProductResponse([void updates(CreateProductResponseBuilder b)]) = _$CreateProductResponse;
+  factory CreateProductResponse([
+    void updates(CreateProductResponseBuilder b),
+  ]) = _$CreateProductResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateProductResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateProductResponse> get serializer => _$CreateProductResponseSerializer();
+  static Serializer<CreateProductResponse> get serializer =>
+      _$CreateProductResponseSerializer();
 }
 
-class _$CreateProductResponseSerializer implements PrimitiveSerializer<CreateProductResponse> {
+class _$CreateProductResponseSerializer
+    implements PrimitiveSerializer<CreateProductResponse> {
   @override
-  final Iterable<Type> types = const [CreateProductResponse, _$CreateProductResponse];
+  final Iterable<Type> types = const [
+    CreateProductResponse,
+    _$CreateProductResponse,
+  ];
 
   @override
   final String wireName = r'CreateProductResponse';
@@ -55,7 +63,11 @@ class _$CreateProductResponseSerializer implements PrimitiveSerializer<CreatePro
     CreateProductResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +83,12 @@ class _$CreateProductResponseSerializer implements PrimitiveSerializer<CreatePro
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         default:
@@ -105,4 +119,3 @@ class _$CreateProductResponseSerializer implements PrimitiveSerializer<CreatePro
     return result.build();
   }
 }
-

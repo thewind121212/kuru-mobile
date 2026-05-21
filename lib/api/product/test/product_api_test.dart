@@ -1,7 +1,6 @@
 import 'package:test/test.dart';
 import 'package:kuru_product_api/kuru_product_api.dart';
 
-
 /// tests for ProductApi
 void main() {
   final instance = KuruProductApi().getProductApi();
@@ -132,6 +131,5 @@ void main() {
     test('test updateProductVariant', () async {
       // TODO
     });
-
   });
 }

@@ -11,26 +11,33 @@ part 'delete_product_request.g.dart';
 /// DeleteProductRequest
 ///
 /// Properties:
-/// * [productId] 
+/// * [productId]
 @BuiltValue()
-abstract class DeleteProductRequest implements Built<DeleteProductRequest, DeleteProductRequestBuilder> {
+abstract class DeleteProductRequest
+    implements Built<DeleteProductRequest, DeleteProductRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
   DeleteProductRequest._();
 
-  factory DeleteProductRequest([void updates(DeleteProductRequestBuilder b)]) = _$DeleteProductRequest;
+  factory DeleteProductRequest([void updates(DeleteProductRequestBuilder b)]) =
+      _$DeleteProductRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeleteProductRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeleteProductRequest> get serializer => _$DeleteProductRequestSerializer();
+  static Serializer<DeleteProductRequest> get serializer =>
+      _$DeleteProductRequestSerializer();
 }
 
-class _$DeleteProductRequestSerializer implements PrimitiveSerializer<DeleteProductRequest> {
+class _$DeleteProductRequestSerializer
+    implements PrimitiveSerializer<DeleteProductRequest> {
   @override
-  final Iterable<Type> types = const [DeleteProductRequest, _$DeleteProductRequest];
+  final Iterable<Type> types = const [
+    DeleteProductRequest,
+    _$DeleteProductRequest,
+  ];
 
   @override
   final String wireName = r'DeleteProductRequest';
@@ -53,7 +60,11 @@ class _$DeleteProductRequestSerializer implements PrimitiveSerializer<DeleteProd
     DeleteProductRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +80,12 @@ class _$DeleteProductRequestSerializer implements PrimitiveSerializer<DeleteProd
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         default:
@@ -103,4 +116,3 @@ class _$DeleteProductRequestSerializer implements PrimitiveSerializer<DeleteProd
     return result.build();
   }
 }
-

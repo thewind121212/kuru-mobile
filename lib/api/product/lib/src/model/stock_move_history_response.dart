@@ -13,27 +13,29 @@ part 'stock_move_history_response.g.dart';
 /// StockMoveHistoryResponse
 ///
 /// Properties:
-/// * [id] 
-/// * [orgId] 
-/// * [productId] 
-/// * [type] 
-/// * [sourceType] 
-/// * [qtyBase] 
-/// * [uomLabel] 
-/// * [uomQty] 
-/// * [uomRatio] 
-/// * [createdAt] 
-/// * [actorUserId] 
-/// * [allocations] 
-/// * [variantId] 
-/// * [variantName] 
-/// * [warehouseName] 
-/// * [fromWarehouseName] 
-/// * [toWarehouseName] 
-/// * [reason] 
-/// * [note] 
+/// * [id]
+/// * [orgId]
+/// * [productId]
+/// * [type]
+/// * [sourceType]
+/// * [qtyBase]
+/// * [uomLabel]
+/// * [uomQty]
+/// * [uomRatio]
+/// * [createdAt]
+/// * [actorUserId]
+/// * [allocations]
+/// * [variantId]
+/// * [variantName]
+/// * [warehouseName]
+/// * [fromWarehouseName]
+/// * [toWarehouseName]
+/// * [reason]
+/// * [note]
 @BuiltValue()
-abstract class StockMoveHistoryResponse implements Built<StockMoveHistoryResponse, StockMoveHistoryResponseBuilder> {
+abstract class StockMoveHistoryResponse
+    implements
+        Built<StockMoveHistoryResponse, StockMoveHistoryResponseBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -93,18 +95,25 @@ abstract class StockMoveHistoryResponse implements Built<StockMoveHistoryRespons
 
   StockMoveHistoryResponse._();
 
-  factory StockMoveHistoryResponse([void updates(StockMoveHistoryResponseBuilder b)]) = _$StockMoveHistoryResponse;
+  factory StockMoveHistoryResponse([
+    void updates(StockMoveHistoryResponseBuilder b),
+  ]) = _$StockMoveHistoryResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(StockMoveHistoryResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<StockMoveHistoryResponse> get serializer => _$StockMoveHistoryResponseSerializer();
+  static Serializer<StockMoveHistoryResponse> get serializer =>
+      _$StockMoveHistoryResponseSerializer();
 }
 
-class _$StockMoveHistoryResponseSerializer implements PrimitiveSerializer<StockMoveHistoryResponse> {
+class _$StockMoveHistoryResponseSerializer
+    implements PrimitiveSerializer<StockMoveHistoryResponse> {
   @override
-  final Iterable<Type> types = const [StockMoveHistoryResponse, _$StockMoveHistoryResponse];
+  final Iterable<Type> types = const [
+    StockMoveHistoryResponse,
+    _$StockMoveHistoryResponse,
+  ];
 
   @override
   final String wireName = r'StockMoveHistoryResponse';
@@ -179,7 +188,9 @@ class _$StockMoveHistoryResponseSerializer implements PrimitiveSerializer<StockM
       yield r'allocations';
       yield serializers.serialize(
         object.allocations,
-        specifiedType: const FullType(BuiltList, [FullType(StockMoveAllocationResponse)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(StockMoveAllocationResponse),
+        ]),
       );
     }
     if (object.variantId != null) {
@@ -239,7 +250,11 @@ class _$StockMoveHistoryResponseSerializer implements PrimitiveSerializer<StockM
     StockMoveHistoryResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -255,136 +270,176 @@ class _$StockMoveHistoryResponseSerializer implements PrimitiveSerializer<StockM
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'type':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.type = valueDes;
           break;
         case r'sourceType':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.sourceType = valueDes;
           break;
         case r'qtyBase':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.qtyBase = valueDes;
           break;
         case r'uomLabel':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.uomLabel = valueDes;
           break;
         case r'uomQty':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.uomQty = valueDes;
           break;
         case r'uomRatio':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(double),
-          ) as double;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(double),
+                  )
+                  as double;
           result.uomRatio = valueDes;
           break;
         case r'createdAt':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.createdAt = valueDes;
           break;
         case r'actorUserId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.actorUserId = valueDes;
           break;
         case r'allocations':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(StockMoveAllocationResponse)]),
-          ) as BuiltList<StockMoveAllocationResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(StockMoveAllocationResponse),
+                    ]),
+                  )
+                  as BuiltList<StockMoveAllocationResponse>;
           result.allocations.replace(valueDes);
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         case r'variantName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantName = valueDes;
           break;
         case r'warehouseName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.warehouseName = valueDes;
           break;
         case r'fromWarehouseName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.fromWarehouseName = valueDes;
           break;
         case r'toWarehouseName':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.toWarehouseName = valueDes;
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.reason = valueDes;
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.note = valueDes;
           break;
         default:
@@ -415,4 +470,3 @@ class _$StockMoveHistoryResponseSerializer implements PrimitiveSerializer<StockM
     return result.build();
   }
 }
-

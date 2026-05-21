@@ -11,10 +11,11 @@ part 'delete_product_response.g.dart';
 /// DeleteProductResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
+/// * [success]
+/// * [error]
 @BuiltValue()
-abstract class DeleteProductResponse implements Built<DeleteProductResponse, DeleteProductResponseBuilder> {
+abstract class DeleteProductResponse
+    implements Built<DeleteProductResponse, DeleteProductResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -23,18 +24,25 @@ abstract class DeleteProductResponse implements Built<DeleteProductResponse, Del
 
   DeleteProductResponse._();
 
-  factory DeleteProductResponse([void updates(DeleteProductResponseBuilder b)]) = _$DeleteProductResponse;
+  factory DeleteProductResponse([
+    void updates(DeleteProductResponseBuilder b),
+  ]) = _$DeleteProductResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeleteProductResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeleteProductResponse> get serializer => _$DeleteProductResponseSerializer();
+  static Serializer<DeleteProductResponse> get serializer =>
+      _$DeleteProductResponseSerializer();
 }
 
-class _$DeleteProductResponseSerializer implements PrimitiveSerializer<DeleteProductResponse> {
+class _$DeleteProductResponseSerializer
+    implements PrimitiveSerializer<DeleteProductResponse> {
   @override
-  final Iterable<Type> types = const [DeleteProductResponse, _$DeleteProductResponse];
+  final Iterable<Type> types = const [
+    DeleteProductResponse,
+    _$DeleteProductResponse,
+  ];
 
   @override
   final String wireName = r'DeleteProductResponse';
@@ -64,7 +72,11 @@ class _$DeleteProductResponseSerializer implements PrimitiveSerializer<DeletePro
     DeleteProductResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +92,21 @@ class _$DeleteProductResponseSerializer implements PrimitiveSerializer<DeletePro
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.error = valueDes;
           break;
         default:
@@ -121,4 +137,3 @@ class _$DeleteProductResponseSerializer implements PrimitiveSerializer<DeletePro
     return result.build();
   }
 }
-

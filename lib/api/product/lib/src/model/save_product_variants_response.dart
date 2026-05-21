@@ -13,11 +13,13 @@ part 'save_product_variants_response.g.dart';
 /// SaveProductVariantsResponse
 ///
 /// Properties:
-/// * [success] 
-/// * [error] 
-/// * [variants] 
+/// * [success]
+/// * [error]
+/// * [variants]
 @BuiltValue()
-abstract class SaveProductVariantsResponse implements Built<SaveProductVariantsResponse, SaveProductVariantsResponseBuilder> {
+abstract class SaveProductVariantsResponse
+    implements
+        Built<SaveProductVariantsResponse, SaveProductVariantsResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -29,18 +31,25 @@ abstract class SaveProductVariantsResponse implements Built<SaveProductVariantsR
 
   SaveProductVariantsResponse._();
 
-  factory SaveProductVariantsResponse([void updates(SaveProductVariantsResponseBuilder b)]) = _$SaveProductVariantsResponse;
+  factory SaveProductVariantsResponse([
+    void updates(SaveProductVariantsResponseBuilder b),
+  ]) = _$SaveProductVariantsResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(SaveProductVariantsResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<SaveProductVariantsResponse> get serializer => _$SaveProductVariantsResponseSerializer();
+  static Serializer<SaveProductVariantsResponse> get serializer =>
+      _$SaveProductVariantsResponseSerializer();
 }
 
-class _$SaveProductVariantsResponseSerializer implements PrimitiveSerializer<SaveProductVariantsResponse> {
+class _$SaveProductVariantsResponseSerializer
+    implements PrimitiveSerializer<SaveProductVariantsResponse> {
   @override
-  final Iterable<Type> types = const [SaveProductVariantsResponse, _$SaveProductVariantsResponse];
+  final Iterable<Type> types = const [
+    SaveProductVariantsResponse,
+    _$SaveProductVariantsResponse,
+  ];
 
   @override
   final String wireName = r'SaveProductVariantsResponse';
@@ -66,7 +75,9 @@ class _$SaveProductVariantsResponseSerializer implements PrimitiveSerializer<Sav
       yield r'variants';
       yield serializers.serialize(
         object.variants,
-        specifiedType: const FullType(BuiltList, [FullType(ProductVariantResponse)]),
+        specifiedType: const FullType(BuiltList, [
+          FullType(ProductVariantResponse),
+        ]),
       );
     }
   }
@@ -77,7 +88,11 @@ class _$SaveProductVariantsResponseSerializer implements PrimitiveSerializer<Sav
     SaveProductVariantsResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -93,24 +108,32 @@ class _$SaveProductVariantsResponseSerializer implements PrimitiveSerializer<Sav
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'error':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.error = valueDes;
           break;
         case r'variants':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(ProductVariantResponse)]),
-          ) as BuiltList<ProductVariantResponse>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(ProductVariantResponse),
+                    ]),
+                  )
+                  as BuiltList<ProductVariantResponse>;
           result.variants.replace(valueDes);
           break;
         default:
@@ -141,4 +164,3 @@ class _$SaveProductVariantsResponseSerializer implements PrimitiveSerializer<Sav
     return result.build();
   }
 }
-

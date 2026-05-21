@@ -12,11 +12,16 @@ part 'update_product_barcodes200_response.g.dart';
 /// UpdateProductBarcodes200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class UpdateProductBarcodes200Response implements Built<UpdateProductBarcodes200Response, UpdateProductBarcodes200ResponseBuilder> {
+abstract class UpdateProductBarcodes200Response
+    implements
+        Built<
+          UpdateProductBarcodes200Response,
+          UpdateProductBarcodes200ResponseBuilder
+        > {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +33,25 @@ abstract class UpdateProductBarcodes200Response implements Built<UpdateProductBa
 
   UpdateProductBarcodes200Response._();
 
-  factory UpdateProductBarcodes200Response([void updates(UpdateProductBarcodes200ResponseBuilder b)]) = _$UpdateProductBarcodes200Response;
+  factory UpdateProductBarcodes200Response([
+    void updates(UpdateProductBarcodes200ResponseBuilder b),
+  ]) = _$UpdateProductBarcodes200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateProductBarcodes200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateProductBarcodes200Response> get serializer => _$UpdateProductBarcodes200ResponseSerializer();
+  static Serializer<UpdateProductBarcodes200Response> get serializer =>
+      _$UpdateProductBarcodes200ResponseSerializer();
 }
 
-class _$UpdateProductBarcodes200ResponseSerializer implements PrimitiveSerializer<UpdateProductBarcodes200Response> {
+class _$UpdateProductBarcodes200ResponseSerializer
+    implements PrimitiveSerializer<UpdateProductBarcodes200Response> {
   @override
-  final Iterable<Type> types = const [UpdateProductBarcodes200Response, _$UpdateProductBarcodes200Response];
+  final Iterable<Type> types = const [
+    UpdateProductBarcodes200Response,
+    _$UpdateProductBarcodes200Response,
+  ];
 
   @override
   final String wireName = r'UpdateProductBarcodes200Response';
@@ -72,7 +84,11 @@ class _$UpdateProductBarcodes200ResponseSerializer implements PrimitiveSerialize
     UpdateProductBarcodes200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +104,32 @@ class _$UpdateProductBarcodes200ResponseSerializer implements PrimitiveSerialize
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(UpdateProductBarcodesResponse),
-          ) as UpdateProductBarcodesResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(
+                      UpdateProductBarcodesResponse,
+                    ),
+                  )
+                  as UpdateProductBarcodesResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +160,3 @@ class _$UpdateProductBarcodes200ResponseSerializer implements PrimitiveSerialize
     return result.build();
   }
 }
-

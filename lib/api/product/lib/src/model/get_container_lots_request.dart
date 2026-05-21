@@ -11,10 +11,11 @@ part 'get_container_lots_request.g.dart';
 /// GetContainerLotsRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [variantId] 
+/// * [productId]
+/// * [variantId]
 @BuiltValue()
-abstract class GetContainerLotsRequest implements Built<GetContainerLotsRequest, GetContainerLotsRequestBuilder> {
+abstract class GetContainerLotsRequest
+    implements Built<GetContainerLotsRequest, GetContainerLotsRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -23,18 +24,25 @@ abstract class GetContainerLotsRequest implements Built<GetContainerLotsRequest,
 
   GetContainerLotsRequest._();
 
-  factory GetContainerLotsRequest([void updates(GetContainerLotsRequestBuilder b)]) = _$GetContainerLotsRequest;
+  factory GetContainerLotsRequest([
+    void updates(GetContainerLotsRequestBuilder b),
+  ]) = _$GetContainerLotsRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetContainerLotsRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetContainerLotsRequest> get serializer => _$GetContainerLotsRequestSerializer();
+  static Serializer<GetContainerLotsRequest> get serializer =>
+      _$GetContainerLotsRequestSerializer();
 }
 
-class _$GetContainerLotsRequestSerializer implements PrimitiveSerializer<GetContainerLotsRequest> {
+class _$GetContainerLotsRequestSerializer
+    implements PrimitiveSerializer<GetContainerLotsRequest> {
   @override
-  final Iterable<Type> types = const [GetContainerLotsRequest, _$GetContainerLotsRequest];
+  final Iterable<Type> types = const [
+    GetContainerLotsRequest,
+    _$GetContainerLotsRequest,
+  ];
 
   @override
   final String wireName = r'GetContainerLotsRequest';
@@ -64,7 +72,11 @@ class _$GetContainerLotsRequestSerializer implements PrimitiveSerializer<GetCont
     GetContainerLotsRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -80,17 +92,21 @@ class _$GetContainerLotsRequestSerializer implements PrimitiveSerializer<GetCont
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'variantId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.variantId = valueDes;
           break;
         default:
@@ -121,4 +137,3 @@ class _$GetContainerLotsRequestSerializer implements PrimitiveSerializer<GetCont
     return result.build();
   }
 }
-

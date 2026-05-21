@@ -27,7 +27,6 @@ class OnboardingSeenController extends Notifier<bool> {
   }
 }
 
-final onboardingSeenProvider =
-    NotifierProvider<OnboardingSeenController, bool>(
+final onboardingSeenProvider = NotifierProvider<OnboardingSeenController, bool>(
   OnboardingSeenController.new,
 );

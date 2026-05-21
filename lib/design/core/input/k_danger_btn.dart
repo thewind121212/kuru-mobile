@@ -82,9 +82,7 @@ class KDangerBtn extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: c.danger.withValues(alpha: 0.3),
-              ),
+              border: Border.all(color: c.danger.withValues(alpha: 0.3)),
             ),
             child: child,
           ),

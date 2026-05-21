@@ -30,4 +30,3 @@ export 'package:kuru_brand_api/src/model/get_brand_overview_response.dart';
 export 'package:kuru_brand_api/src/model/update_brand200_response.dart';
 export 'package:kuru_brand_api/src/model/update_brand_request.dart';
 export 'package:kuru_brand_api/src/model/update_brand_response.dart';
-

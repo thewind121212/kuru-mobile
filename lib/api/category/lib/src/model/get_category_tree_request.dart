@@ -11,26 +11,34 @@ part 'get_category_tree_request.g.dart';
 /// GetCategoryTreeRequest
 ///
 /// Properties:
-/// * [categoryId] 
+/// * [categoryId]
 @BuiltValue()
-abstract class GetCategoryTreeRequest implements Built<GetCategoryTreeRequest, GetCategoryTreeRequestBuilder> {
+abstract class GetCategoryTreeRequest
+    implements Built<GetCategoryTreeRequest, GetCategoryTreeRequestBuilder> {
   @BuiltValueField(wireName: r'categoryId')
   String get categoryId;
 
   GetCategoryTreeRequest._();
 
-  factory GetCategoryTreeRequest([void updates(GetCategoryTreeRequestBuilder b)]) = _$GetCategoryTreeRequest;
+  factory GetCategoryTreeRequest([
+    void updates(GetCategoryTreeRequestBuilder b),
+  ]) = _$GetCategoryTreeRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetCategoryTreeRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetCategoryTreeRequest> get serializer => _$GetCategoryTreeRequestSerializer();
+  static Serializer<GetCategoryTreeRequest> get serializer =>
+      _$GetCategoryTreeRequestSerializer();
 }
 
-class _$GetCategoryTreeRequestSerializer implements PrimitiveSerializer<GetCategoryTreeRequest> {
+class _$GetCategoryTreeRequestSerializer
+    implements PrimitiveSerializer<GetCategoryTreeRequest> {
   @override
-  final Iterable<Type> types = const [GetCategoryTreeRequest, _$GetCategoryTreeRequest];
+  final Iterable<Type> types = const [
+    GetCategoryTreeRequest,
+    _$GetCategoryTreeRequest,
+  ];
 
   @override
   final String wireName = r'GetCategoryTreeRequest';
@@ -53,7 +61,11 @@ class _$GetCategoryTreeRequestSerializer implements PrimitiveSerializer<GetCateg
     GetCategoryTreeRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +81,12 @@ class _$GetCategoryTreeRequestSerializer implements PrimitiveSerializer<GetCateg
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.categoryId = valueDes;
           break;
         default:
@@ -103,4 +117,3 @@ class _$GetCategoryTreeRequestSerializer implements PrimitiveSerializer<GetCateg
     return result.build();
   }
 }
-

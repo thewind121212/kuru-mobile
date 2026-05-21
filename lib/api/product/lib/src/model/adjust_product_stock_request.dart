@@ -14,12 +14,14 @@ part 'adjust_product_stock_request.g.dart';
 /// AdjustProductStockRequest
 ///
 /// Properties:
-/// * [productId] 
-/// * [stocks] 
-/// * [reason] 
-/// * [note] 
+/// * [productId]
+/// * [stocks]
+/// * [reason]
+/// * [note]
 @BuiltValue()
-abstract class AdjustProductStockRequest implements Built<AdjustProductStockRequest, AdjustProductStockRequestBuilder> {
+abstract class AdjustProductStockRequest
+    implements
+        Built<AdjustProductStockRequest, AdjustProductStockRequestBuilder> {
   @BuiltValueField(wireName: r'productId')
   String get productId;
 
@@ -35,18 +37,25 @@ abstract class AdjustProductStockRequest implements Built<AdjustProductStockRequ
 
   AdjustProductStockRequest._();
 
-  factory AdjustProductStockRequest([void updates(AdjustProductStockRequestBuilder b)]) = _$AdjustProductStockRequest;
+  factory AdjustProductStockRequest([
+    void updates(AdjustProductStockRequestBuilder b),
+  ]) = _$AdjustProductStockRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(AdjustProductStockRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<AdjustProductStockRequest> get serializer => _$AdjustProductStockRequestSerializer();
+  static Serializer<AdjustProductStockRequest> get serializer =>
+      _$AdjustProductStockRequestSerializer();
 }
 
-class _$AdjustProductStockRequestSerializer implements PrimitiveSerializer<AdjustProductStockRequest> {
+class _$AdjustProductStockRequestSerializer
+    implements PrimitiveSerializer<AdjustProductStockRequest> {
   @override
-  final Iterable<Type> types = const [AdjustProductStockRequest, _$AdjustProductStockRequest];
+  final Iterable<Type> types = const [
+    AdjustProductStockRequest,
+    _$AdjustProductStockRequest,
+  ];
 
   @override
   final String wireName = r'AdjustProductStockRequest';
@@ -88,7 +97,11 @@ class _$AdjustProductStockRequestSerializer implements PrimitiveSerializer<Adjus
     AdjustProductStockRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -104,31 +117,41 @@ class _$AdjustProductStockRequestSerializer implements PrimitiveSerializer<Adjus
       final value = serializedList[i + 1];
       switch (key) {
         case r'productId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.productId = valueDes;
           break;
         case r'stocks':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(AdjustStockInput)]),
-          ) as BuiltList<AdjustStockInput>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(AdjustStockInput),
+                    ]),
+                  )
+                  as BuiltList<AdjustStockInput>;
           result.stocks.replace(valueDes);
           break;
         case r'reason':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(ManualAdjustReason),
-          ) as ManualAdjustReason;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(ManualAdjustReason),
+                  )
+                  as ManualAdjustReason;
           result.reason = valueDes;
           break;
         case r'note':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.note = valueDes;
           break;
         default:
@@ -159,4 +182,3 @@ class _$AdjustProductStockRequestSerializer implements PrimitiveSerializer<Adjus
     return result.build();
   }
 }
-

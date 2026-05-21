@@ -43,8 +43,12 @@ class InventoryIllustration extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        HSLColor.fromAHSL(1, hue.toDouble(), 0.6, 0.55)
-                            .toColor(),
+                        HSLColor.fromAHSL(
+                          1,
+                          hue.toDouble(),
+                          0.6,
+                          0.55,
+                        ).toColor(),
                         HSLColor.fromAHSL(
                           1,
                           (hue + 30).toDouble() % 360,
@@ -106,10 +110,7 @@ class InventoryIllustration extends StatelessWidget {
             right: 40,
             bottom: 130,
             child: Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 10,
-                vertical: 6,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
                 color: c.surfaceElev,
