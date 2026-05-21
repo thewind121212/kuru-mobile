@@ -25,6 +25,7 @@ class ProductCard extends StatelessWidget {
     symbol: 'đ',
     decimalDigits: 0,
   );
+  static final _qty = NumberFormat.decimalPattern('vi_VN');
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +123,7 @@ class ProductCard extends StatelessWidget {
   );
 
   Widget _priceAndStock(KuruColors c) {
-    final (bg, fg, label) = _stockTone;
+    final unitLabel = resolveUomLabel(product.baseUnitCode);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -138,41 +139,162 @@ class ProductCard extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: bg,
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Text(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w700,
-              color: fg,
-            ),
-          ),
+        _StockProgressBar(
+          current: product.currentStock,
+          demand: product.demandStock > 0 ? product.demandStock : null,
+          unitLabel: unitLabel,
+          formatQty: _formatQty,
         ),
       ],
     );
   }
 
-  (Color, Color, String) get _stockTone {
-    final unitLabel = resolveUomLabel(product.baseUnitCode);
-    return switch (product.currentStock) {
-      0 => (const Color(0xFFFBE9EC), const Color(0xFFE11D48), 'Hết hàng'),
-      _ when product.currentStock < product.demandStock => (
-        const Color(0xFFFEF6E5),
-        const Color(0xFFD97706),
-        '${product.currentStock} $unitLabel',
-      ),
-      _ => (
-        const Color(0xFFE6F7F0),
-        const Color(0xFF10B981),
-        '${product.currentStock} $unitLabel',
-      ),
-    };
+  static String _formatQty(num value) => _qty.format(value);
+}
+
+class _StockProgressBar extends StatelessWidget {
+  const _StockProgressBar({
+    required this.current,
+    required this.demand,
+    required this.unitLabel,
+    required this.formatQty,
+  });
+
+  final num current;
+  final num? demand;
+  final String unitLabel;
+  final String Function(num value) formatQty;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final hasDemand = demand != null;
+    final isEmpty = current <= 0;
+    final isUnderDemand = hasDemand && current < demand!;
+    final isTargetMet = hasDemand && current >= demand!;
+    final stockColor = isEmpty
+        ? c.danger
+        : isUnderDemand
+        ? c.warning
+        : c.success;
+    final stockLabel = isEmpty
+        ? 'Hết hàng'
+        : '${formatQty(current)} $unitLabel';
+
+    final maxValue = hasDemand
+        ? <num>[current, demand!, 1].reduce((a, b) => a > b ? a : b)
+        : 1;
+    final scaleMax = hasDemand ? maxValue * 1.15 : 1;
+    final currentFraction = hasDemand
+        ? (current / scaleMax).clamp(0, 1).toDouble()
+        : isEmpty
+        ? 1.0
+        : 1.0;
+    final demandFraction = hasDemand
+        ? (demand! / scaleMax).clamp(0, 1).toDouble()
+        : 0.0;
+
+    return Column(
+      key: const ValueKey('product-card-stock-progress'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                stockLabel,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 10,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                  color: stockColor,
+                ),
+              ),
+            ),
+            if (hasDemand) ...[
+              const SizedBox(width: 5),
+              Text(
+                'Cần ${formatQty(demand!)}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 9,
+                  height: 1.1,
+                  fontWeight: FontWeight.w800,
+                  color: isTargetMet ? c.success : c.textMuted,
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 6),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth.isFinite
+                ? constraints.maxWidth
+                : 120.0;
+            final markerLeft = (width * demandFraction).clamp(0.0, width);
+            final fillWidth = current > 0
+                ? (width * currentFraction).clamp(4.0, width)
+                : width;
+
+            return SizedBox(
+              height: 13,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned.fill(
+                    top: 2.5,
+                    bottom: 2.5,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: c.textMuted.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(999),
+                        border: Border.all(
+                          color: c.border.withValues(alpha: 0.55),
+                          width: 0.7,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 0,
+                            top: 0,
+                            bottom: 0,
+                            width: fillWidth,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: isEmpty ? c.dangerSoft : stockColor,
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (hasDemand)
+                    Positioned(
+                      left: markerLeft - 2.5,
+                      top: 0,
+                      bottom: 0,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: isTargetMet ? c.success : c.textPrimary,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: const SizedBox(width: 3),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
+      ],
+    );
   }
 }

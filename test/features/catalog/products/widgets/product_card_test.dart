@@ -48,6 +48,30 @@ void main() {
     expect(find.text('Hết hàng'), findsOneWidget);
   });
 
+  testWidgets('renders stock progress with demand marker when demand set', (
+    t,
+  ) async {
+    await t.pumpWidget(
+      _harness(ProductCard(product: _ps(stock: 4, demand: 10), onTap: () {})),
+    );
+
+    expect(
+      find.byKey(const ValueKey('product-card-stock-progress')),
+      findsOneWidget,
+    );
+    expect(find.text('4 Cái'), findsOneWidget);
+    expect(find.text('Cần 10'), findsOneWidget);
+  });
+
+  testWidgets('hides demand marker copy when demand is unset', (t) async {
+    await t.pumpWidget(
+      _harness(ProductCard(product: _ps(stock: 4, demand: 0), onTap: () {})),
+    );
+
+    expect(find.text('4 Cái'), findsOneWidget);
+    expect(find.text('Cần 0'), findsNothing);
+  });
+
   testWidgets('uses placeholder when imageUrl null', (t) async {
     await t.pumpWidget(_harness(ProductCard(product: _ps(), onTap: () {})));
     expect(
