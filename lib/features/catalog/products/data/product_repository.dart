@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
@@ -27,8 +28,21 @@ class ProductRepository {
       if (filter.search != null && filter.search!.isNotEmpty) {
         q['searchString'] = filter.search;
       }
-      if (filter.categoryId != null) q['categoryIds'] = [filter.categoryId];
-      if (filter.brandId != null) q['brandIds'] = [filter.brandId];
+      if (filter.categoryIds.isNotEmpty) q['categoryIds'] = filter.categoryIds;
+      if (filter.brandIds.isNotEmpty) q['brandIds'] = filter.brandIds;
+      if (filter.warehouseIds.isNotEmpty) {
+        q['warehouseIds'] = filter.warehouseIds;
+      }
+      if (filter.attributeFilters.isNotEmpty) {
+        q['attributeFilters'] = filter.attributeFilters.map((filter) {
+          return jsonEncode(<String, dynamic>{
+            'attributeId': filter.attributeId,
+            'valueIds': filter.valueIds,
+          });
+        }).toList();
+      }
+      if (filter.minPrice != null) q['minPrice'] = filter.minPrice;
+      if (filter.maxPrice != null) q['maxPrice'] = filter.maxPrice;
 
       final res = await _dio.get<dynamic>(
         '/product/GetProductOverview',
@@ -47,6 +61,7 @@ class ProductRepository {
           limit: limit,
           totalProducts:
               (data['totalProducts'] as num?)?.toInt() ?? items.length,
+          maxSellPrice: (data['maxSellPrice'] as num?) ?? 0,
         ),
       );
     } on DioException catch (e) {

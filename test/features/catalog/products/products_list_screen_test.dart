@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
+import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
@@ -44,6 +46,10 @@ void main() {
           ),
         ),
         canWriteProductsProvider.overrideWithValue(false),
+        categoryOverviewProvider.overrideWith((ref) async => const []),
+        brandOverviewProvider.overrideWith((ref) async => const []),
+        variantAttributeOverviewProvider.overrideWith((ref) async => const []),
+        productWarehouseOptionsProvider.overrideWith((ref) async => const []),
       ]),
     );
     await t.pump();
@@ -66,6 +72,10 @@ void main() {
           ),
         ),
         canWriteProductsProvider.overrideWithValue(true),
+        categoryOverviewProvider.overrideWith((ref) async => const []),
+        brandOverviewProvider.overrideWith((ref) async => const []),
+        variantAttributeOverviewProvider.overrideWith((ref) async => const []),
+        productWarehouseOptionsProvider.overrideWith((ref) async => const []),
       ]),
     );
     await t.pump();
@@ -87,6 +97,10 @@ void main() {
           ),
         ),
         canWriteProductsProvider.overrideWithValue(false),
+        categoryOverviewProvider.overrideWith((ref) async => const []),
+        brandOverviewProvider.overrideWith((ref) async => const []),
+        variantAttributeOverviewProvider.overrideWith((ref) async => const []),
+        productWarehouseOptionsProvider.overrideWith((ref) async => const []),
       ]),
     );
     await t.pump();

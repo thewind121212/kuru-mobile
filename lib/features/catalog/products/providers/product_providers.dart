@@ -7,10 +7,14 @@ import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart';
 import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
+import 'package:kuru_mobile/features/catalog/products/data/variant_attribute_repository.dart';
+import 'package:kuru_mobile/features/catalog/products/data/warehouse_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant_attribute.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 
 /// Dio configured with `${apiBaseUrl}/api/v1` base — same pattern as
 /// brand/category api clients in this catalog.
@@ -25,6 +29,30 @@ final productDioProvider = Provider<Dio>((ref) {
 final productRepositoryProvider = Provider<ProductRepository>((ref) {
   return ProductRepository(ref.watch(productDioProvider));
 });
+
+final variantAttributeRepositoryProvider = Provider<VariantAttributeRepository>(
+  (ref) {
+    return VariantAttributeRepository(ref.watch(productDioProvider));
+  },
+);
+
+final variantAttributeOverviewProvider =
+    FutureProvider<List<ProductVariantAttribute>>((ref) async {
+      ref.watch(currentOrgIdProvider);
+      final repo = ref.watch(variantAttributeRepositoryProvider);
+      return repo.getOverview().unwrap();
+    });
+
+final warehouseRepositoryProvider = Provider<WarehouseRepository>((ref) {
+  return WarehouseRepository(ref.watch(productDioProvider));
+});
+
+final productWarehouseOptionsProvider =
+    FutureProvider<List<ProductWarehouseOption>>((ref) async {
+      ref.watch(currentOrgIdProvider);
+      final repo = ref.watch(warehouseRepositoryProvider);
+      return repo.getBranches().unwrap();
+    });
 
 class ProductListNotifier
     extends FamilyAsyncNotifier<ProductListPage, ProductListFilter> {
@@ -63,6 +91,7 @@ class ProductListNotifier
           page: _page,
           limit: _limit,
           totalProducts: next.totalProducts,
+          maxSellPrice: next.maxSellPrice,
         ),
       );
     } on Object catch (e, st) {

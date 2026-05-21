@@ -21,6 +21,7 @@ mixin _$ProductListPage {
   int get page => throw _privateConstructorUsedError;
   int get limit => throw _privateConstructorUsedError;
   int get totalProducts => throw _privateConstructorUsedError;
+  num get maxSellPrice => throw _privateConstructorUsedError;
 
   /// Create a copy of ProductListPage
   /// with the given fields replaced by the non-null parameter values.
@@ -41,6 +42,7 @@ abstract class $ProductListPageCopyWith<$Res> {
     int page,
     int limit,
     int totalProducts,
+    num maxSellPrice,
   });
 }
 
@@ -63,6 +65,7 @@ class _$ProductListPageCopyWithImpl<$Res, $Val extends ProductListPage>
     Object? page = null,
     Object? limit = null,
     Object? totalProducts = null,
+    Object? maxSellPrice = null,
   }) {
     return _then(
       _value.copyWith(
@@ -82,6 +85,10 @@ class _$ProductListPageCopyWithImpl<$Res, $Val extends ProductListPage>
                 ? _value.totalProducts
                 : totalProducts // ignore: cast_nullable_to_non_nullable
                       as int,
+            maxSellPrice: null == maxSellPrice
+                ? _value.maxSellPrice
+                : maxSellPrice // ignore: cast_nullable_to_non_nullable
+                      as num,
           )
           as $Val,
     );
@@ -102,6 +109,7 @@ abstract class _$$ProductListPageImplCopyWith<$Res>
     int page,
     int limit,
     int totalProducts,
+    num maxSellPrice,
   });
 }
 
@@ -123,6 +131,7 @@ class __$$ProductListPageImplCopyWithImpl<$Res>
     Object? page = null,
     Object? limit = null,
     Object? totalProducts = null,
+    Object? maxSellPrice = null,
   }) {
     return _then(
       _$ProductListPageImpl(
@@ -142,6 +151,10 @@ class __$$ProductListPageImplCopyWithImpl<$Res>
             ? _value.totalProducts
             : totalProducts // ignore: cast_nullable_to_non_nullable
                   as int,
+        maxSellPrice: null == maxSellPrice
+            ? _value.maxSellPrice
+            : maxSellPrice // ignore: cast_nullable_to_non_nullable
+                  as num,
       ),
     );
   }
@@ -155,6 +168,7 @@ class _$ProductListPageImpl extends _ProductListPage {
     required this.page,
     required this.limit,
     required this.totalProducts,
+    this.maxSellPrice = 0,
   }) : _items = items,
        super._();
 
@@ -172,10 +186,13 @@ class _$ProductListPageImpl extends _ProductListPage {
   final int limit;
   @override
   final int totalProducts;
+  @override
+  @JsonKey()
+  final num maxSellPrice;
 
   @override
   String toString() {
-    return 'ProductListPage(items: $items, page: $page, limit: $limit, totalProducts: $totalProducts)';
+    return 'ProductListPage(items: $items, page: $page, limit: $limit, totalProducts: $totalProducts, maxSellPrice: $maxSellPrice)';
   }
 
   @override
@@ -187,7 +204,9 @@ class _$ProductListPageImpl extends _ProductListPage {
             (identical(other.page, page) || other.page == page) &&
             (identical(other.limit, limit) || other.limit == limit) &&
             (identical(other.totalProducts, totalProducts) ||
-                other.totalProducts == totalProducts));
+                other.totalProducts == totalProducts) &&
+            (identical(other.maxSellPrice, maxSellPrice) ||
+                other.maxSellPrice == maxSellPrice));
   }
 
   @override
@@ -197,6 +216,7 @@ class _$ProductListPageImpl extends _ProductListPage {
     page,
     limit,
     totalProducts,
+    maxSellPrice,
   );
 
   /// Create a copy of ProductListPage
@@ -217,6 +237,7 @@ abstract class _ProductListPage extends ProductListPage {
     required final int page,
     required final int limit,
     required final int totalProducts,
+    final num maxSellPrice,
   }) = _$ProductListPageImpl;
   const _ProductListPage._() : super._();
 
@@ -228,6 +249,8 @@ abstract class _ProductListPage extends ProductListPage {
   int get limit;
   @override
   int get totalProducts;
+  @override
+  num get maxSellPrice;
 
   /// Create a copy of ProductListPage
   /// with the given fields replaced by the non-null parameter values.

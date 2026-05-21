@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
@@ -79,6 +81,7 @@ void main() {
       expect(page.items.length, 1);
       expect(page.items.first.name, 'A');
       expect(page.totalProducts, 1);
+      expect(page.maxSellPrice, 1000);
     });
 
     test('401 → UnauthorizedException', () async {
@@ -96,7 +99,7 @@ void main() {
       );
     });
 
-    test('passes search + categoryId + brandId as query params', () async {
+    test('passes layered filters as query params', () async {
       when(
         () => dio.get<dynamic>(
           any(),
@@ -114,8 +117,18 @@ void main() {
       await repo.getOverview(
         filter: const ProductListFilter(
           search: 'cà',
-          categoryId: 'c-1',
-          brandId: 'b-1',
+          categoryIds: ['c-1', 'c-2'],
+          brandIds: ['b-1'],
+          warehouseIds: ['w-1'],
+          attributeFilters: [
+            ProductAttributeFilter(
+              attributeId: 'a-1',
+              valueIds: ['v-1', 'v-2'],
+            ),
+            ProductAttributeFilter(attributeId: 'a-2', valueIds: ['v-3']),
+          ],
+          minPrice: 1000,
+          maxPrice: 9000,
         ),
         page: 2,
       );
@@ -128,8 +141,20 @@ void main() {
               ).captured.single
               as Map<String, dynamic>;
       expect(captured['searchString'], 'cà');
-      expect(captured['categoryIds'], ['c-1']);
+      expect(captured['categoryIds'], ['c-1', 'c-2']);
       expect(captured['brandIds'], ['b-1']);
+      expect(captured['warehouseIds'], ['w-1']);
+      final attributeFilters = captured['attributeFilters'] as List<String>;
+      expect(jsonDecode(attributeFilters[0]), {
+        'attributeId': 'a-1',
+        'valueIds': ['v-1', 'v-2'],
+      });
+      expect(jsonDecode(attributeFilters[1]), {
+        'attributeId': 'a-2',
+        'valueIds': ['v-3'],
+      });
+      expect(captured['minPrice'], 1000);
+      expect(captured['maxPrice'], 9000);
       expect(captured['page'], 2);
       expect(captured['limit'], 50);
     });

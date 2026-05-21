@@ -48,8 +48,26 @@ void main() {
 
   group('ProductListFilter', () {
     test('value equality (same args)', () {
-      const a = ProductListFilter(search: 'cà', categoryId: 'c-1');
-      const b = ProductListFilter(search: 'cà', categoryId: 'c-1');
+      const a = ProductListFilter(
+        search: 'cà',
+        categoryIds: ['c-1'],
+        brandIds: ['b-1'],
+        warehouseIds: ['w-1'],
+        attributeFilters: [
+          ProductAttributeFilter(attributeId: 'a-1', valueIds: ['v-1', 'v-2']),
+        ],
+        minPrice: 1000,
+      );
+      const b = ProductListFilter(
+        search: 'cà',
+        categoryIds: ['c-1'],
+        brandIds: ['b-1'],
+        warehouseIds: ['w-1'],
+        attributeFilters: [
+          ProductAttributeFilter(attributeId: 'a-1', valueIds: ['v-1', 'v-2']),
+        ],
+        minPrice: 1000,
+      );
       expect(a, b);
       expect(a.hashCode, b.hashCode);
     });

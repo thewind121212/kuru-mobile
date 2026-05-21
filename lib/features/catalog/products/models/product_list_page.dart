@@ -10,6 +10,7 @@ class ProductListPage with _$ProductListPage {
     required int page,
     required int limit,
     required int totalProducts,
+    @Default(0) num maxSellPrice,
   }) = _ProductListPage;
 
   const ProductListPage._();
