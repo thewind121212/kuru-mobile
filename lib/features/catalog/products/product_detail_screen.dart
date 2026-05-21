@@ -308,21 +308,59 @@ class _Hero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
+    final imageUrl = detail.hasImage
+        ? '${Env.imageBaseUrl}/product-avatar/${detail.imageUrl}'
+        : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: SizedBox(
-            height: 220,
-            width: double.infinity,
-            child: detail.hasImage
-                ? Image.network(
-                    '${Env.imageBaseUrl}/product-avatar/${detail.imageUrl}',
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholder(),
-                  )
-                : _placeholder(),
+        Semantics(
+          button: imageUrl != null,
+          label: imageUrl == null ? null : 'Xem ảnh sản phẩm',
+          child: GestureDetector(
+            key: const ValueKey('product-detail-image'),
+            onTap: imageUrl == null
+                ? null
+                : () => _showProductImageViewer(context, detail.name, imageUrl),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: SizedBox(
+                height: 220,
+                width: double.infinity,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (imageUrl == null)
+                      _placeholder()
+                    else
+                      Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => _placeholder(),
+                      ),
+                    if (imageUrl != null)
+                      Positioned(
+                        right: 10,
+                        bottom: 10,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.54),
+                            borderRadius: BorderRadius.circular(999),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Icon(
+                              TablerIcons.arrows_maximize,
+                              size: 18,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -346,4 +384,68 @@ class _Hero extends StatelessWidget {
       child: Icon(TablerIcons.package, size: 64, color: Color(0xFF94A3B8)),
     ),
   );
+
+  Future<void> _showProductImageViewer(
+    BuildContext context,
+    String title,
+    String imageUrl,
+  ) {
+    return showDialog<void>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.92),
+      builder: (context) => Dialog.fullscreen(
+        key: const ValueKey('product-image-viewer'),
+        backgroundColor: Colors.black,
+        child: SafeArea(
+          child: Stack(
+            children: [
+              Center(
+                child: InteractiveViewer(
+                  minScale: 1,
+                  maxScale: 4,
+                  child: Image.network(
+                    imageUrl,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(
+                      TablerIcons.photo_off,
+                      color: Colors.white54,
+                      size: 56,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                left: 16,
+                right: 64,
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 4,
+                right: 8,
+                child: IconButton.filled(
+                  tooltip: 'Đóng ảnh',
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(TablerIcons.x),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.white.withValues(alpha: 0.14),
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
