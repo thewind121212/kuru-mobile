@@ -30,12 +30,14 @@ class ProductListNotifier
     extends FamilyAsyncNotifier<ProductListPage, ProductListFilter> {
   static const int _limit = 50;
   int _page = 1;
+  bool _isLoadingMore = false;
   List<ProductSummary> _accum = [];
 
   @override
   Future<ProductListPage> build(ProductListFilter arg) async {
     ref.watch(currentOrgIdProvider);
     _page = 1;
+    _isLoadingMore = false;
     _accum = [];
     final repo = ref.watch(productRepositoryProvider);
     final result = await repo.getOverview(filter: arg, page: _page).unwrap();
@@ -45,7 +47,8 @@ class ProductListNotifier
 
   Future<void> loadMore() async {
     final current = state.valueOrNull;
-    if (current == null || !current.hasMore) return;
+    if (_isLoadingMore || current == null || !current.hasMore) return;
+    _isLoadingMore = true;
     state = const AsyncValue<ProductListPage>.loading().copyWithPrevious(state);
     try {
       final repo = ref.read(productRepositoryProvider);
@@ -64,6 +67,8 @@ class ProductListNotifier
       );
     } on Object catch (e, st) {
       state = AsyncValue<ProductListPage>.error(e, st).copyWithPrevious(state);
+    } finally {
+      _isLoadingMore = false;
     }
   }
 }

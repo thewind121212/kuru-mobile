@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
@@ -58,7 +59,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
   void _onScroll() {
     if (!_scrollCtrl.hasClients) return;
     final pos = _scrollCtrl.position;
-    if (pos.pixels >= pos.maxScrollExtent - 200) {
+    if (pos.pixels >= pos.maxScrollExtent - 600) {
       ref.read(productListProvider(_filter).notifier).loadMore();
     }
   }
@@ -117,93 +118,107 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async => ref.invalidate(productListProvider(_filter)),
-          child: ListView(
+          child: CustomScrollView(
             controller: _scrollCtrl,
-            padding: const EdgeInsets.only(bottom: 96),
-            children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(24, 12, 24, 4),
-                child: Text(
-                  'Sản phẩm',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: -0.8,
+            cacheExtent: 900,
+            slivers: [
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(24, 12, 24, 4),
+                  child: Text(
+                    'Sản phẩm',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.8,
+                    ),
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
-                child: Text(
-                  async.maybeWhen(
-                    data: (p) => '${p.totalProducts} sản phẩm',
-                    orElse: () => 'Đang tải…',
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
+                  child: Text(
+                    async.maybeWhen(
+                      data: (p) => '${p.totalProducts} sản phẩm',
+                      orElse: () => 'Đang tải…',
+                    ),
+                    style: TextStyle(fontSize: 13, color: c.textMuted),
                   ),
-                  style: TextStyle(fontSize: 13, color: c.textMuted),
                 ),
               ),
-              ProductFilterBar(
-                searchController: _searchCtrl,
-                categoryLabel: _categoryLabel,
-                brandLabel: _brandLabel,
-                onCategoryTap: _pickCategory,
-                onBrandTap: _pickBrand,
+              SliverToBoxAdapter(
+                child: ProductFilterBar(
+                  searchController: _searchCtrl,
+                  categoryLabel: _categoryLabel,
+                  brandLabel: _brandLabel,
+                  onCategoryTap: _pickCategory,
+                  onBrandTap: _pickBrand,
+                ),
               ),
               async.when(
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(48),
-                  child: Center(child: CircularProgressIndicator()),
+                loading: () => const SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.all(48),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
                 ),
-                error: (e, _) => Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(child: Text('Không tải được danh sách: $e')),
+                error: (e, _) => SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Center(child: Text('Không tải được danh sách: $e')),
+                  ),
                 ),
                 data: (page) {
                   if (page.items.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 48),
-                      child: Column(
-                        children: [
-                          const Icon(
-                            TablerIcons.package,
-                            size: 56,
-                            color: Color(0xFF94A3B8),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'Chưa có sản phẩm',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: c.textPrimary,
+                    return SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 48),
+                        child: Column(
+                          children: [
+                            const Icon(
+                              TablerIcons.package,
+                              size: 56,
+                              color: Color(0xFF94A3B8),
                             ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Tạo sản phẩm đầu tiên để bắt đầu.',
-                            style: TextStyle(fontSize: 13, color: c.textMuted),
-                          ),
-                          if (canWrite) ...[
                             const SizedBox(height: 16),
-                            FilledButton(
-                              onPressed: () async {
-                                final newId = await showCreateEditProductSheet(
-                                  context,
-                                );
-                                if (!context.mounted) return;
-                                if (newId != null) {
-                                  unawaited(
-                                    context.push('/catalog/products/$newId'),
-                                  );
-                                }
-                              },
-                              child: const Text('Tạo sản phẩm'),
+                            Text(
+                              'Chưa có sản phẩm',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: c.textPrimary,
+                              ),
                             ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Tạo sản phẩm đầu tiên để bắt đầu.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: c.textMuted,
+                              ),
+                            ),
+                            if (canWrite) ...[
+                              const SizedBox(height: 16),
+                              FilledButton(
+                                onPressed: () async {
+                                  final newId =
+                                      await showCreateEditProductSheet(context);
+                                  if (!context.mounted) return;
+                                  if (newId != null) {
+                                    unawaited(
+                                      context.push('/catalog/products/$newId'),
+                                    );
+                                  }
+                                },
+                                child: const Text('Tạo sản phẩm'),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
                     );
                   }
-                  return _ProductMasonryGrid(
+                  return _ProductMasonrySliver(
                     items: page.items,
                     hasMore: page.hasMore,
                     onProductTap: (item) =>
@@ -211,6 +226,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
                   );
                 },
               ),
+              const SliverToBoxAdapter(child: SizedBox(height: 96)),
             ],
           ),
         ),
@@ -232,8 +248,8 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
   }
 }
 
-class _ProductMasonryGrid extends StatelessWidget {
-  const _ProductMasonryGrid({
+class _ProductMasonrySliver extends StatelessWidget {
+  const _ProductMasonrySliver({
     required this.items,
     required this.hasMore,
     required this.onProductTap,
@@ -247,82 +263,37 @@ class _ProductMasonryGrid extends StatelessWidget {
   static const _gap = 6.0;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, constraints) {
-      final columnCount = switch (constraints.maxWidth) {
-        < 340 => 1,
-        >= 700 => 3,
-        _ => 2,
-      };
-      final columnWidth =
-          (constraints.maxWidth -
-              (_horizontalPadding * 2) -
-              (_gap * (columnCount - 1))) /
-          columnCount;
-      final columns = _columnsFor(columnCount, columnWidth);
+  Widget build(BuildContext context) => SliverPadding(
+    padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+    sliver: SliverMasonryGrid.count(
+      crossAxisCount: _columnCountFor(MediaQuery.sizeOf(context).width),
+      mainAxisSpacing: _gap,
+      crossAxisSpacing: _gap,
+      childCount: items.length + (hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index >= items.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
 
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (var i = 0; i < columns.length; i++) ...[
-                  if (i > 0) const SizedBox(width: _gap),
-                  Expanded(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (final tile in columns[i]) ...[
-                          ProductCard(
-                            product: tile.product,
-                            imageAspectRatio: tile.imageAspectRatio,
-                            onTap: () => onProductTap(tile.product),
-                          ),
-                          const SizedBox(height: _gap),
-                        ],
-                      ],
-                    ),
-                  ),
-                ],
-              ],
-            ),
-            if (hasMore)
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-          ],
-        ),
-      );
-    },
+        final item = items[index];
+        return ProductCard(
+          key: ValueKey(item.id),
+          product: item,
+          imageAspectRatio: _imageAspectRatio(item, index),
+          onTap: () => onProductTap(item),
+        );
+      },
+    ),
   );
 
-  List<List<_MasonryTile>> _columnsFor(int columnCount, double columnWidth) {
-    final columns = List.generate(columnCount, (_) => <_MasonryTile>[]);
-    final heights = List<double>.filled(columnCount, 0);
-
-    for (var i = 0; i < items.length; i++) {
-      final product = items[i];
-      final ratio = _imageAspectRatio(product, i);
-      final target = _shortestColumnIndex(heights);
-      columns[target].add(
-        _MasonryTile(product: product, imageAspectRatio: ratio),
-      );
-      heights[target] += (columnWidth / ratio) + _estimatedInfoHeight(product);
-    }
-
-    return columns;
-  }
-
-  static int _shortestColumnIndex(List<double> heights) {
-    var index = 0;
-    for (var i = 1; i < heights.length; i++) {
-      if (heights[i] < heights[index]) index = i;
-    }
-    return index;
-  }
+  static int _columnCountFor(double width) => switch (width) {
+    < 340 => 1,
+    >= 700 => 3,
+    _ => 2,
+  };
 
   static double _imageAspectRatio(ProductSummary product, int index) {
     if (!product.hasImage) return 0.95;
@@ -333,16 +304,4 @@ class _ProductMasonryGrid extends StatelessWidget {
     );
     return ratios[seed % ratios.length];
   }
-
-  static double _estimatedInfoHeight(ProductSummary product) {
-    final nameRows = product.name.length > 22 ? 2 : 1;
-    return 70 + (nameRows * 15) + _gap;
-  }
-}
-
-class _MasonryTile {
-  const _MasonryTile({required this.product, required this.imageAspectRatio});
-
-  final ProductSummary product;
-  final double imageAspectRatio;
 }

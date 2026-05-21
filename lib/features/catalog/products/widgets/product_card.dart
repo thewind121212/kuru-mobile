@@ -65,6 +65,7 @@ class ProductCard extends StatelessWidget {
           ? constraints.maxWidth
           : 180.0;
       final imageHeight = (width / imageAspectRatio).clamp(136.0, 260.0);
+      final pixelRatio = MediaQuery.devicePixelRatioOf(context);
 
       return SizedBox(
         width: double.infinity,
@@ -76,6 +77,8 @@ class ProductCard extends StatelessWidget {
                   '${Env.imageBaseUrl}/product-avatar/${product.imageUrl}',
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  cacheWidth: (width * pixelRatio).round(),
+                  cacheHeight: (imageHeight * pixelRatio).round(),
                   errorBuilder: (_, _, _) => _placeholder(c),
                 )
               : _placeholder(c),

@@ -54,6 +54,9 @@ dependencies:
   # Icons — port of Tabler icon set, matches kuru-web's @tabler/icons-react
   flutter_tabler_icons: ^1.43.0
 
+  # Lazy masonry grid for large product catalogs.
+  flutter_staggered_grid_view: ^0.7.0
+
   # Native iOS/Android context menus — paired with KPopupMenu, sits
   # alongside KActionSheet for bottom-sheet-vs-popup choice per use case.
   # TEMPORARILY REMOVED 2026-05-18 — its Rust binding is the prime suspect
