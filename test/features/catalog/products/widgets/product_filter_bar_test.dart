@@ -10,38 +10,40 @@ void main() {
     home: Scaffold(body: child),
   );
 
-  testWidgets(
-    'renders chip labels with "Tất cả" fallback when nothing picked',
-    (t) async {
-      await t.pumpWidget(
-        wrap(
-          ProductFilterBar(
-            searchController: TextEditingController(),
-            categoryLabel: null,
-            brandLabel: null,
-            onCategoryTap: () {},
-            onBrandTap: () {},
-          ),
-        ),
-      );
-      expect(find.text('Danh mục: Tất cả'), findsOneWidget);
-      expect(find.text('Thương hiệu: Tất cả'), findsOneWidget);
-    },
-  );
-
-  testWidgets('uses selected names when present', (t) async {
+  testWidgets('renders search field and zero count', (t) async {
     await t.pumpWidget(
       wrap(
         ProductFilterBar(
           searchController: TextEditingController(),
-          categoryLabel: 'Đồ uống',
-          brandLabel: 'A',
-          onCategoryTap: () {},
-          onBrandTap: () {},
+          activeCount: 0,
+          activeChips: const [],
+          onFilterTap: () {},
+          onClearAll: () {},
         ),
       ),
     );
-    expect(find.text('Danh mục: Đồ uống'), findsOneWidget);
-    expect(find.text('Thương hiệu: A'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+    expect(find.text('0'), findsNothing); // 0 shouldn't display
+  });
+
+  testWidgets('renders active chips and clear button', (t) async {
+    await t.pumpWidget(
+      wrap(
+        ProductFilterBar(
+          searchController: TextEditingController(),
+          activeCount: 2,
+          activeChips: [
+            ProductFilterChipData(label: 'Test Chip 1', onRemove: () {}),
+            ProductFilterChipData(label: 'Test Chip 2', onRemove: () {}),
+          ],
+          onFilterTap: () {},
+          onClearAll: () {},
+        ),
+      ),
+    );
+    expect(find.text('2'), findsOneWidget);
+    expect(find.text('Test Chip 1'), findsOneWidget);
+    expect(find.text('Test Chip 2'), findsOneWidget);
+    expect(find.text('Xóa lọc'), findsOneWidget);
   });
 }
