@@ -33,10 +33,12 @@ Widget _harness(Widget child) => MaterialApp(
 );
 
 void main() {
-  testWidgets('renders name + category + brand subtitle', (t) async {
+  testWidgets('renders compact name without category + brand subtitle', (
+    t,
+  ) async {
     await t.pumpWidget(_harness(ProductCard(product: _ps(), onTap: () {})));
     expect(find.text('Cà phê'), findsOneWidget);
-    expect(find.text('Đồ uống · A'), findsOneWidget);
+    expect(find.text('Đồ uống · A'), findsNothing);
   });
 
   testWidgets('stock 0 → "Hết hàng"', (t) async {

@@ -10,6 +10,7 @@ import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/category_brand_picker_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/create_edit_product_sheet.dart';
@@ -202,25 +203,11 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
                       ),
                     );
                   }
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        for (final item in page.items) ...[
-                          ProductCard(
-                            product: item,
-                            onTap: () =>
-                                context.push('/catalog/products/${item.id}'),
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                        if (page.hasMore)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                      ],
-                    ),
+                  return _ProductMasonryGrid(
+                    items: page.items,
+                    hasMore: page.hasMore,
+                    onProductTap: (item) =>
+                        context.push('/catalog/products/${item.id}'),
                   );
                 },
               ),
@@ -243,4 +230,119 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
           : null,
     );
   }
+}
+
+class _ProductMasonryGrid extends StatelessWidget {
+  const _ProductMasonryGrid({
+    required this.items,
+    required this.hasMore,
+    required this.onProductTap,
+  });
+
+  final List<ProductSummary> items;
+  final bool hasMore;
+  final ValueChanged<ProductSummary> onProductTap;
+
+  static const _horizontalPadding = 6.0;
+  static const _gap = 6.0;
+
+  @override
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (context, constraints) {
+      final columnCount = switch (constraints.maxWidth) {
+        < 340 => 1,
+        >= 700 => 3,
+        _ => 2,
+      };
+      final columnWidth =
+          (constraints.maxWidth -
+              (_horizontalPadding * 2) -
+              (_gap * (columnCount - 1))) /
+          columnCount;
+      final columns = _columnsFor(columnCount, columnWidth);
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: _horizontalPadding),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var i = 0; i < columns.length; i++) ...[
+                  if (i > 0) const SizedBox(width: _gap),
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        for (final tile in columns[i]) ...[
+                          ProductCard(
+                            product: tile.product,
+                            imageAspectRatio: tile.imageAspectRatio,
+                            onTap: () => onProductTap(tile.product),
+                          ),
+                          const SizedBox(height: _gap),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            if (hasMore)
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 24),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+          ],
+        ),
+      );
+    },
+  );
+
+  List<List<_MasonryTile>> _columnsFor(int columnCount, double columnWidth) {
+    final columns = List.generate(columnCount, (_) => <_MasonryTile>[]);
+    final heights = List<double>.filled(columnCount, 0);
+
+    for (var i = 0; i < items.length; i++) {
+      final product = items[i];
+      final ratio = _imageAspectRatio(product, i);
+      final target = _shortestColumnIndex(heights);
+      columns[target].add(
+        _MasonryTile(product: product, imageAspectRatio: ratio),
+      );
+      heights[target] += (columnWidth / ratio) + _estimatedInfoHeight(product);
+    }
+
+    return columns;
+  }
+
+  static int _shortestColumnIndex(List<double> heights) {
+    var index = 0;
+    for (var i = 1; i < heights.length; i++) {
+      if (heights[i] < heights[index]) index = i;
+    }
+    return index;
+  }
+
+  static double _imageAspectRatio(ProductSummary product, int index) {
+    if (!product.hasImage) return 0.95;
+    const ratios = [0.78, 0.9, 1.05, 0.84, 0.98];
+    final seed = product.id.codeUnits.fold<int>(
+      index,
+      (value, unit) => value + unit,
+    );
+    return ratios[seed % ratios.length];
+  }
+
+  static double _estimatedInfoHeight(ProductSummary product) {
+    final nameRows = product.name.length > 22 ? 2 : 1;
+    return 70 + (nameRows * 15) + _gap;
+  }
+}
+
+class _MasonryTile {
+  const _MasonryTile({required this.product, required this.imageAspectRatio});
+
+  final ProductSummary product;
+  final double imageAspectRatio;
 }
