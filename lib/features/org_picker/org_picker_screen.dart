@@ -17,9 +17,8 @@ class OrgPickerScreen extends ConsumerWidget {
     final currentOrgId = ref.watch(currentOrgIdProvider);
 
     return bootstrap.when(
-      loading: () => const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      ),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: Center(child: Text('Error: $e'))),
       data: (state) {
         if (state is! BootstrapAuthed) {
@@ -74,10 +73,7 @@ class OrgPickerScreen extends ConsumerWidget {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: c.border,
-                        width: 2,
-                      ),
+                      border: Border.all(color: c.border, width: 2),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,

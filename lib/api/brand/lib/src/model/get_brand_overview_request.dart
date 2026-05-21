@@ -11,11 +11,12 @@ part 'get_brand_overview_request.g.dart';
 /// GetBrandOverviewRequest
 ///
 /// Properties:
-/// * [searchString] 
-/// * [page] 
-/// * [limit] 
+/// * [searchString]
+/// * [page]
+/// * [limit]
 @BuiltValue()
-abstract class GetBrandOverviewRequest implements Built<GetBrandOverviewRequest, GetBrandOverviewRequestBuilder> {
+abstract class GetBrandOverviewRequest
+    implements Built<GetBrandOverviewRequest, GetBrandOverviewRequestBuilder> {
   @BuiltValueField(wireName: r'searchString')
   String? get searchString;
 
@@ -27,18 +28,25 @@ abstract class GetBrandOverviewRequest implements Built<GetBrandOverviewRequest,
 
   GetBrandOverviewRequest._();
 
-  factory GetBrandOverviewRequest([void updates(GetBrandOverviewRequestBuilder b)]) = _$GetBrandOverviewRequest;
+  factory GetBrandOverviewRequest([
+    void updates(GetBrandOverviewRequestBuilder b),
+  ]) = _$GetBrandOverviewRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetBrandOverviewRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetBrandOverviewRequest> get serializer => _$GetBrandOverviewRequestSerializer();
+  static Serializer<GetBrandOverviewRequest> get serializer =>
+      _$GetBrandOverviewRequestSerializer();
 }
 
-class _$GetBrandOverviewRequestSerializer implements PrimitiveSerializer<GetBrandOverviewRequest> {
+class _$GetBrandOverviewRequestSerializer
+    implements PrimitiveSerializer<GetBrandOverviewRequest> {
   @override
-  final Iterable<Type> types = const [GetBrandOverviewRequest, _$GetBrandOverviewRequest];
+  final Iterable<Type> types = const [
+    GetBrandOverviewRequest,
+    _$GetBrandOverviewRequest,
+  ];
 
   @override
   final String wireName = r'GetBrandOverviewRequest';
@@ -77,7 +85,11 @@ class _$GetBrandOverviewRequestSerializer implements PrimitiveSerializer<GetBran
     GetBrandOverviewRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -93,24 +105,24 @@ class _$GetBrandOverviewRequestSerializer implements PrimitiveSerializer<GetBran
       final value = serializedList[i + 1];
       switch (key) {
         case r'searchString':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.searchString = valueDes;
           break;
         case r'page':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.page = valueDes;
           break;
         case r'limit':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.limit = valueDes;
           break;
         default:
@@ -141,4 +153,3 @@ class _$GetBrandOverviewRequestSerializer implements PrimitiveSerializer<GetBran
     return result.build();
   }
 }
-

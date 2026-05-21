@@ -17,8 +17,9 @@ Widget wrap(Widget child, {Locale locale = const Locale('en')}) {
 
 void main() {
   group('KFormField eye toggle', () {
-    testWidgets('does not render the toggle when obscureText is false',
-        (tester) async {
+    testWidgets('does not render the toggle when obscureText is false', (
+      tester,
+    ) async {
       final controller = TextEditingController();
       await tester.pumpWidget(
         wrap(KFormField(label: 'Email', controller: controller)),
@@ -29,8 +30,7 @@ void main() {
       expect(find.byIcon(Icons.visibility_off_outlined), findsNothing);
     });
 
-    testWidgets(
-        'renders a visibility toggle when obscureText is true, '
+    testWidgets('renders a visibility toggle when obscureText is true, '
         'initially hidden', (tester) async {
       final controller = TextEditingController();
       await tester.pumpWidget(
@@ -98,8 +98,9 @@ void main() {
       expect(textField.obscureText, isTrue);
     });
 
-    testWidgets('tooltip is localized (en: Show / Hide password)',
-        (tester) async {
+    testWidgets('tooltip is localized (en: Show / Hide password)', (
+      tester,
+    ) async {
       final controller = TextEditingController();
       await tester.pumpWidget(
         wrap(

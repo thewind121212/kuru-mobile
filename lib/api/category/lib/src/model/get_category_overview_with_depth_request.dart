@@ -11,26 +11,38 @@ part 'get_category_overview_with_depth_request.g.dart';
 /// GetCategoryOverviewWithDepthRequest
 ///
 /// Properties:
-/// * [depth] 
+/// * [depth]
 @BuiltValue()
-abstract class GetCategoryOverviewWithDepthRequest implements Built<GetCategoryOverviewWithDepthRequest, GetCategoryOverviewWithDepthRequestBuilder> {
+abstract class GetCategoryOverviewWithDepthRequest
+    implements
+        Built<
+          GetCategoryOverviewWithDepthRequest,
+          GetCategoryOverviewWithDepthRequestBuilder
+        > {
   @BuiltValueField(wireName: r'depth')
   int get depth;
 
   GetCategoryOverviewWithDepthRequest._();
 
-  factory GetCategoryOverviewWithDepthRequest([void updates(GetCategoryOverviewWithDepthRequestBuilder b)]) = _$GetCategoryOverviewWithDepthRequest;
+  factory GetCategoryOverviewWithDepthRequest([
+    void updates(GetCategoryOverviewWithDepthRequestBuilder b),
+  ]) = _$GetCategoryOverviewWithDepthRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetCategoryOverviewWithDepthRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetCategoryOverviewWithDepthRequest> get serializer => _$GetCategoryOverviewWithDepthRequestSerializer();
+  static Serializer<GetCategoryOverviewWithDepthRequest> get serializer =>
+      _$GetCategoryOverviewWithDepthRequestSerializer();
 }
 
-class _$GetCategoryOverviewWithDepthRequestSerializer implements PrimitiveSerializer<GetCategoryOverviewWithDepthRequest> {
+class _$GetCategoryOverviewWithDepthRequestSerializer
+    implements PrimitiveSerializer<GetCategoryOverviewWithDepthRequest> {
   @override
-  final Iterable<Type> types = const [GetCategoryOverviewWithDepthRequest, _$GetCategoryOverviewWithDepthRequest];
+  final Iterable<Type> types = const [
+    GetCategoryOverviewWithDepthRequest,
+    _$GetCategoryOverviewWithDepthRequest,
+  ];
 
   @override
   final String wireName = r'GetCategoryOverviewWithDepthRequest';
@@ -53,7 +65,11 @@ class _$GetCategoryOverviewWithDepthRequestSerializer implements PrimitiveSerial
     GetCategoryOverviewWithDepthRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +85,9 @@ class _$GetCategoryOverviewWithDepthRequestSerializer implements PrimitiveSerial
       final value = serializedList[i + 1];
       switch (key) {
         case r'depth':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.depth = valueDes;
           break;
         default:
@@ -103,4 +118,3 @@ class _$GetCategoryOverviewWithDepthRequestSerializer implements PrimitiveSerial
     return result.build();
   }
 }
-

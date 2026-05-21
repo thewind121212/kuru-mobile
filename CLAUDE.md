@@ -68,6 +68,14 @@ Always read these in order:
 - `/auth/*` routes live at host **root**, `/api/v1/*` are mounted under `/api/v1`. dio's baseUrl is the host root; each call writes its own prefix.
 - VerifyTotpCode + UseRecoveryCode return **HTTP 400** for wrong codes (not `200 + verified:false`). Web FE treats any error during verify as wrong code; mobile mirrors that in `AuthRepository._interpretMfaError`.
 
+### Mirroring web — constants
+
+When porting a web feature, scan `fe/src/components/<module>/constants.ts` (and adjacent) for hardcoded business constants. Web owns lookup lists that BE doesn't expose via endpoint (units, color palette, status labels). Port verbatim into `lib/features/<module>/data/`. Cross-check before assuming a constant comes from BE.
+
+### OpenAPI is transport, not contract
+
+Generated dart-dio in `lib/api/` is the wire transport. The request body and field set are governed by BE Zod DTO (`be/core/domains/<domain>/dto/`), not by the generated request type. When the two disagree, hand-build the request map in the repository — do not pass generated request models blindly. See `lib/features/catalog/products/data/product_repository.dart` for the reference pattern.
+
 ## UX patterns (use these instead of reinventing)
 
 | Need | Pattern |

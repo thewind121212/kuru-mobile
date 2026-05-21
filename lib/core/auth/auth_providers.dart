@@ -14,8 +14,7 @@ class CurrentOrgIdController extends Notifier<String?> {
   void clear() => state = null;
 }
 
-final currentOrgIdProvider =
-    NotifierProvider<CurrentOrgIdController, String?>(
+final currentOrgIdProvider = NotifierProvider<CurrentOrgIdController, String?>(
   CurrentOrgIdController.new,
 );
 
@@ -39,23 +38,23 @@ final appBootstrapProvider = FutureProvider<BootstrapResult>((ref) async {
   final result = await repo.getUserInfo();
   return switch (result) {
     ApiSuccess<UserInfo>(:final data) => () {
-        // BE returns totpEnabled=true ONLY while the session's mfaCompleted
-        // flag is still false. Once VerifyTotpCode (or UseRecoveryCode)
-        // succeeds, the next getUserInfo call returns totpEnabled=false and
-        // we transition into BootstrapAuthed on the next invalidate.
-        if (data.totpEnabled) {
-          return BootstrapMfaPending(data);
-        }
-        // Auto-pick first org for MVP; OrgPicker handles 2+ orgs.
-        if (data.orgInfos.isNotEmpty) {
-          Future.microtask(() {
-            ref.read(currentOrgIdProvider.notifier).orgId =
-                data.orgInfos.first.id;
-          });
-        }
-        return BootstrapAuthed(data);
-      }(),
-      ApiFailure<UserInfo>() => const BootstrapUnauthed(),
+      // BE returns totpEnabled=true ONLY while the session's mfaCompleted
+      // flag is still false. Once VerifyTotpCode (or UseRecoveryCode)
+      // succeeds, the next getUserInfo call returns totpEnabled=false and
+      // we transition into BootstrapAuthed on the next invalidate.
+      if (data.totpEnabled) {
+        return BootstrapMfaPending(data);
+      }
+      // Auto-pick first org for MVP; OrgPicker handles 2+ orgs.
+      if (data.orgInfos.isNotEmpty) {
+        Future.microtask(() {
+          ref.read(currentOrgIdProvider.notifier).orgId =
+              data.orgInfos.first.id;
+        });
+      }
+      return BootstrapAuthed(data);
+    }(),
+    ApiFailure<UserInfo>() => const BootstrapUnauthed(),
   };
 });
 

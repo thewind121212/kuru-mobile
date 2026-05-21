@@ -55,12 +55,13 @@ part 'serializers.g.dart';
   UpdateBrandRequest,
   UpdateBrandResponse,
 ])
-Serializers serializers = (_$serializers.toBuilder()
-      ..add(const OneOfSerializer())
-      ..add(const AnyOfSerializer())
-      ..add(const DateSerializer())
-      ..add(Iso8601DateTimeSerializer()))
-    .build();
+Serializers serializers =
+    (_$serializers.toBuilder()
+          ..add(const OneOfSerializer())
+          ..add(const AnyOfSerializer())
+          ..add(const DateSerializer())
+          ..add(Iso8601DateTimeSerializer()))
+        .build();
 
 Serializers standardSerializers =
     (serializers.toBuilder()..addPlugin(StandardJsonPlugin())).build();

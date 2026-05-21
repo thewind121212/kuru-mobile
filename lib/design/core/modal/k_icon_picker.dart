@@ -54,9 +54,7 @@ class _KIconPickerBodyState extends State<_KIconPickerBody> {
           physics: const NeverScrollableScrollPhysics(),
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          children: [
-            for (final entry in results) _iconButton(c, entry),
-          ],
+          children: [for (final entry in results) _iconButton(c, entry)],
         ),
       ],
     );

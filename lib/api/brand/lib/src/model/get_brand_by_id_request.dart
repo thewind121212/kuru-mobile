@@ -11,26 +11,33 @@ part 'get_brand_by_id_request.g.dart';
 /// GetBrandByIdRequest
 ///
 /// Properties:
-/// * [brandId] 
+/// * [brandId]
 @BuiltValue()
-abstract class GetBrandByIdRequest implements Built<GetBrandByIdRequest, GetBrandByIdRequestBuilder> {
+abstract class GetBrandByIdRequest
+    implements Built<GetBrandByIdRequest, GetBrandByIdRequestBuilder> {
   @BuiltValueField(wireName: r'brandId')
   String get brandId;
 
   GetBrandByIdRequest._();
 
-  factory GetBrandByIdRequest([void updates(GetBrandByIdRequestBuilder b)]) = _$GetBrandByIdRequest;
+  factory GetBrandByIdRequest([void updates(GetBrandByIdRequestBuilder b)]) =
+      _$GetBrandByIdRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetBrandByIdRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetBrandByIdRequest> get serializer => _$GetBrandByIdRequestSerializer();
+  static Serializer<GetBrandByIdRequest> get serializer =>
+      _$GetBrandByIdRequestSerializer();
 }
 
-class _$GetBrandByIdRequestSerializer implements PrimitiveSerializer<GetBrandByIdRequest> {
+class _$GetBrandByIdRequestSerializer
+    implements PrimitiveSerializer<GetBrandByIdRequest> {
   @override
-  final Iterable<Type> types = const [GetBrandByIdRequest, _$GetBrandByIdRequest];
+  final Iterable<Type> types = const [
+    GetBrandByIdRequest,
+    _$GetBrandByIdRequest,
+  ];
 
   @override
   final String wireName = r'GetBrandByIdRequest';
@@ -53,7 +60,11 @@ class _$GetBrandByIdRequestSerializer implements PrimitiveSerializer<GetBrandByI
     GetBrandByIdRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +80,12 @@ class _$GetBrandByIdRequestSerializer implements PrimitiveSerializer<GetBrandByI
       final value = serializedList[i + 1];
       switch (key) {
         case r'brandId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.brandId = valueDes;
           break;
         default:
@@ -103,4 +116,3 @@ class _$GetBrandByIdRequestSerializer implements PrimitiveSerializer<GetBrandByI
     return result.build();
   }
 }
-

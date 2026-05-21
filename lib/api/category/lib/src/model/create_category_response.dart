@@ -11,26 +11,34 @@ part 'create_category_response.g.dart';
 /// CreateCategoryResponse
 ///
 /// Properties:
-/// * [categoryId] 
+/// * [categoryId]
 @BuiltValue()
-abstract class CreateCategoryResponse implements Built<CreateCategoryResponse, CreateCategoryResponseBuilder> {
+abstract class CreateCategoryResponse
+    implements Built<CreateCategoryResponse, CreateCategoryResponseBuilder> {
   @BuiltValueField(wireName: r'categoryId')
   String? get categoryId;
 
   CreateCategoryResponse._();
 
-  factory CreateCategoryResponse([void updates(CreateCategoryResponseBuilder b)]) = _$CreateCategoryResponse;
+  factory CreateCategoryResponse([
+    void updates(CreateCategoryResponseBuilder b),
+  ]) = _$CreateCategoryResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(CreateCategoryResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<CreateCategoryResponse> get serializer => _$CreateCategoryResponseSerializer();
+  static Serializer<CreateCategoryResponse> get serializer =>
+      _$CreateCategoryResponseSerializer();
 }
 
-class _$CreateCategoryResponseSerializer implements PrimitiveSerializer<CreateCategoryResponse> {
+class _$CreateCategoryResponseSerializer
+    implements PrimitiveSerializer<CreateCategoryResponse> {
   @override
-  final Iterable<Type> types = const [CreateCategoryResponse, _$CreateCategoryResponse];
+  final Iterable<Type> types = const [
+    CreateCategoryResponse,
+    _$CreateCategoryResponse,
+  ];
 
   @override
   final String wireName = r'CreateCategoryResponse';
@@ -55,7 +63,11 @@ class _$CreateCategoryResponseSerializer implements PrimitiveSerializer<CreateCa
     CreateCategoryResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -71,10 +83,12 @@ class _$CreateCategoryResponseSerializer implements PrimitiveSerializer<CreateCa
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.categoryId = valueDes;
           break;
         default:
@@ -105,4 +119,3 @@ class _$CreateCategoryResponseSerializer implements PrimitiveSerializer<CreateCa
     return result.build();
   }
 }
-

@@ -5,9 +5,9 @@ import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/design/auth/auth_logo.dart';
 
 Widget wrap(Widget child) => MaterialApp(
-      theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-      home: Scaffold(body: Center(child: child)),
-    );
+  theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+  home: Scaffold(body: Center(child: child)),
+);
 
 void main() {
   group('AuthLogo', () {
@@ -36,8 +36,9 @@ void main() {
       expect(find.byType(Image), findsOneWidget);
     });
 
-    testWidgets('disposes the animation controller cleanly when removed',
-        (tester) async {
+    testWidgets('disposes the animation controller cleanly when removed', (
+      tester,
+    ) async {
       // Mount, then replace — leaked tickers throw at test teardown.
       await tester.pumpWidget(wrap(const AuthLogo()));
       await tester.pump();

@@ -11,24 +11,28 @@ part 'delete_brand_request.g.dart';
 /// DeleteBrandRequest
 ///
 /// Properties:
-/// * [brandId] 
+/// * [brandId]
 @BuiltValue()
-abstract class DeleteBrandRequest implements Built<DeleteBrandRequest, DeleteBrandRequestBuilder> {
+abstract class DeleteBrandRequest
+    implements Built<DeleteBrandRequest, DeleteBrandRequestBuilder> {
   @BuiltValueField(wireName: r'brandId')
   String get brandId;
 
   DeleteBrandRequest._();
 
-  factory DeleteBrandRequest([void updates(DeleteBrandRequestBuilder b)]) = _$DeleteBrandRequest;
+  factory DeleteBrandRequest([void updates(DeleteBrandRequestBuilder b)]) =
+      _$DeleteBrandRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(DeleteBrandRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<DeleteBrandRequest> get serializer => _$DeleteBrandRequestSerializer();
+  static Serializer<DeleteBrandRequest> get serializer =>
+      _$DeleteBrandRequestSerializer();
 }
 
-class _$DeleteBrandRequestSerializer implements PrimitiveSerializer<DeleteBrandRequest> {
+class _$DeleteBrandRequestSerializer
+    implements PrimitiveSerializer<DeleteBrandRequest> {
   @override
   final Iterable<Type> types = const [DeleteBrandRequest, _$DeleteBrandRequest];
 
@@ -53,7 +57,11 @@ class _$DeleteBrandRequestSerializer implements PrimitiveSerializer<DeleteBrandR
     DeleteBrandRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -69,10 +77,12 @@ class _$DeleteBrandRequestSerializer implements PrimitiveSerializer<DeleteBrandR
       final value = serializedList[i + 1];
       switch (key) {
         case r'brandId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.brandId = valueDes;
           break;
         default:
@@ -103,4 +113,3 @@ class _$DeleteBrandRequestSerializer implements PrimitiveSerializer<DeleteBrandR
     return result.build();
   }
 }
-

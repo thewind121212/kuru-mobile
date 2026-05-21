@@ -16,8 +16,9 @@ PwStrength passwordStrength(String pw) {
   if (pw.length >= 8) bars++;
   final hasUpper = pw.contains(RegExp('[A-Z]'));
   final hasDigit = pw.contains(RegExp('[0-9]'));
-  final hasSymbol =
-      pw.contains(RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=/\\\[\]~`]'));
+  final hasSymbol = pw.contains(
+    RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=/\\\[\]~`]'),
+  );
   if (hasUpper && hasDigit) bars++;
   if (hasSymbol) bars++;
   if (pw.length >= 12) bars++;
@@ -42,11 +43,11 @@ class PasswordStrengthMeter extends StatelessWidget {
   final int minChars;
 
   String _labelText(PwLabel l, AppLocalizations loc) => switch (l) {
-        PwLabel.weak => loc.registerStrengthWeak,
-        PwLabel.fair => loc.registerStrengthFair,
-        PwLabel.good => loc.registerStrengthGood,
-        PwLabel.strong => loc.registerStrengthStrong,
-      };
+    PwLabel.weak => loc.registerStrengthWeak,
+    PwLabel.fair => loc.registerStrengthFair,
+    PwLabel.good => loc.registerStrengthGood,
+    PwLabel.strong => loc.registerStrengthStrong,
+  };
 
   @override
   Widget build(BuildContext context) {

@@ -21,8 +21,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          appBootstrapProvider
-              .overrideWith((ref) async => const BootstrapAuthed(user)),
+          appBootstrapProvider.overrideWith(
+            (ref) async => const BootstrapAuthed(user),
+          ),
         ],
         child: MaterialApp(
           locale: const Locale('vi'),

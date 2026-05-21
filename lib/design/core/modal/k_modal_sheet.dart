@@ -40,6 +40,7 @@ Future<T?> showKModalSheet<T>({
     isDismissible: isDismissible,
     enableDrag: enableDrag,
     backgroundColor: Colors.transparent,
+    useSafeArea: true,
     builder: (ctx) => _KModalSheet<T>(
       title: title,
       subtitle: subtitle,
@@ -127,8 +128,10 @@ class _KModalSheetState<T> extends State<_KModalSheet<T>> {
               _buildHeader(c),
               Flexible(
                 child: SingleChildScrollView(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 16,
+                  ),
                   child: widget.loadingBody ?? Builder(builder: widget.builder),
                 ),
               ),
@@ -141,79 +144,80 @@ class _KModalSheetState<T> extends State<_KModalSheet<T>> {
   }
 
   Widget _buildHandle(KuruColors c) => Container(
-        margin: const EdgeInsets.only(top: 8),
-        width: 40,
-        height: 4,
-        decoration: BoxDecoration(
-          color: c.surfaceHover,
-          borderRadius: BorderRadius.circular(999),
-        ),
-      );
+    margin: const EdgeInsets.only(top: 8),
+    width: 40,
+    height: 4,
+    decoration: BoxDecoration(
+      color: c.surfaceHover,
+      borderRadius: BorderRadius.circular(999),
+    ),
+  );
 
   Widget _buildHeader(KuruColors c) => Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    widget.title,
-                    style: TextStyle(
-                      color: c.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  if (widget.subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      widget.subtitle!,
-                      style: TextStyle(color: c.textMuted, fontSize: 12),
-                    ),
-                  ],
-                ],
+    padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+    child: Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                widget.title,
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            Semantics(
-              label: 'Close',
-              button: true,
-              child: IconButton(
-                icon: Icon(TablerIcons.x, color: c.textMuted, size: 20),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-          ],
+              if (widget.subtitle != null) ...[
+                const SizedBox(height: 2),
+                Text(
+                  widget.subtitle!,
+                  style: TextStyle(color: c.textMuted, fontSize: 12),
+                ),
+              ],
+            ],
+          ),
         ),
-      );
+        Semantics(
+          label: 'Close',
+          button: true,
+          child: IconButton(
+            icon: Icon(TablerIcons.x, color: c.textMuted, size: 20),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _buildFooter(KuruColors c) => Container(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-        decoration: BoxDecoration(
-          border: Border(top: BorderSide(color: c.borderSoft)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            if (widget.showCancel) ...[
-              KSecondaryBtn(
-                label: widget.cancelLabel,
-                size: KBtnSize.md,
-                fullWidth: false,
-                onPressed: _busy ? null : () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(width: 8),
-            ],
-            _buildConfirmButton(c),
-          ],
-        ),
-      );
+    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+    decoration: BoxDecoration(
+      border: Border(top: BorderSide(color: c.borderSoft)),
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        if (widget.showCancel) ...[
+          KSecondaryBtn(
+            label: widget.cancelLabel,
+            size: KBtnSize.md,
+            fullWidth: false,
+            onPressed: _busy ? null : () => Navigator.of(context).pop(),
+          ),
+          const SizedBox(width: 8),
+        ],
+        _buildConfirmButton(c),
+      ],
+    ),
+  );
 
   Widget _buildConfirmButton(KuruColors c) {
-    final bg =
-        widget.confirmTone == KConfirmTone.danger ? c.danger : c.accent600;
+    final bg = widget.confirmTone == KConfirmTone.danger
+        ? c.danger
+        : c.accent600;
     final disabled = _busy || widget.disableConfirm;
     return SizedBox(
       height: 40,

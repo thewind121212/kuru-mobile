@@ -38,8 +38,9 @@ class SettingsHomeScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: c.pageBg,
       body: SafeArea(
+        bottom: false,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 32),
+          padding: const EdgeInsets.only(bottom: 96),
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(24, 12, 24, 18),

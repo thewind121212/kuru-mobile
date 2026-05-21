@@ -11,14 +11,15 @@ part 'brand_overview_item.g.dart';
 /// BrandOverviewItem
 ///
 /// Properties:
-/// * [id] 
-/// * [orgId] 
-/// * [name] 
-/// * [slug] 
-/// * [logoUrl] 
-/// * [productCount] 
+/// * [id]
+/// * [orgId]
+/// * [name]
+/// * [slug]
+/// * [logoUrl]
+/// * [productCount]
 @BuiltValue()
-abstract class BrandOverviewItem implements Built<BrandOverviewItem, BrandOverviewItemBuilder> {
+abstract class BrandOverviewItem
+    implements Built<BrandOverviewItem, BrandOverviewItemBuilder> {
   @BuiltValueField(wireName: r'id')
   String get id;
 
@@ -39,16 +40,19 @@ abstract class BrandOverviewItem implements Built<BrandOverviewItem, BrandOvervi
 
   BrandOverviewItem._();
 
-  factory BrandOverviewItem([void updates(BrandOverviewItemBuilder b)]) = _$BrandOverviewItem;
+  factory BrandOverviewItem([void updates(BrandOverviewItemBuilder b)]) =
+      _$BrandOverviewItem;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(BrandOverviewItemBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<BrandOverviewItem> get serializer => _$BrandOverviewItemSerializer();
+  static Serializer<BrandOverviewItem> get serializer =>
+      _$BrandOverviewItemSerializer();
 }
 
-class _$BrandOverviewItemSerializer implements PrimitiveSerializer<BrandOverviewItem> {
+class _$BrandOverviewItemSerializer
+    implements PrimitiveSerializer<BrandOverviewItem> {
   @override
   final Iterable<Type> types = const [BrandOverviewItem, _$BrandOverviewItem];
 
@@ -102,7 +106,11 @@ class _$BrandOverviewItemSerializer implements PrimitiveSerializer<BrandOverview
     BrandOverviewItem object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -118,45 +126,54 @@ class _$BrandOverviewItemSerializer implements PrimitiveSerializer<BrandOverview
       final value = serializedList[i + 1];
       switch (key) {
         case r'id':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.id = valueDes;
           break;
         case r'orgId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.orgId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'slug':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.slug = valueDes;
           break;
         case r'logoUrl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.logoUrl = valueDes;
           break;
         case r'productCount':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.productCount = valueDes;
           break;
         default:
@@ -187,4 +204,3 @@ class _$BrandOverviewItemSerializer implements PrimitiveSerializer<BrandOverview
     return result.build();
   }
 }
-

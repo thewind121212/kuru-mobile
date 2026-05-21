@@ -8,10 +8,13 @@ void main() {
   });
 
   test('kAllColors first 5 ids are the "quick" set', () {
-    expect(
-      kAllColors.take(5).map((c) => c.id).toList(),
-      ['slate-400', 'red-400', 'orange-400', 'amber-400', 'yellow-400'],
-    );
+    expect(kAllColors.take(5).map((c) => c.id).toList(), [
+      'slate-400',
+      'red-400',
+      'orange-400',
+      'amber-400',
+      'yellow-400',
+    ]);
   });
 
   test('every entry has unique id, label, and resolved swatch', () {

@@ -13,12 +13,14 @@ part 'get_brand_overview_response.g.dart';
 /// GetBrandOverviewResponse
 ///
 /// Properties:
-/// * [brands] 
-/// * [total] 
-/// * [page] 
-/// * [limit] 
+/// * [brands]
+/// * [total]
+/// * [page]
+/// * [limit]
 @BuiltValue()
-abstract class GetBrandOverviewResponse implements Built<GetBrandOverviewResponse, GetBrandOverviewResponseBuilder> {
+abstract class GetBrandOverviewResponse
+    implements
+        Built<GetBrandOverviewResponse, GetBrandOverviewResponseBuilder> {
   @BuiltValueField(wireName: r'brands')
   BuiltList<BrandOverviewItem>? get brands;
 
@@ -33,18 +35,25 @@ abstract class GetBrandOverviewResponse implements Built<GetBrandOverviewRespons
 
   GetBrandOverviewResponse._();
 
-  factory GetBrandOverviewResponse([void updates(GetBrandOverviewResponseBuilder b)]) = _$GetBrandOverviewResponse;
+  factory GetBrandOverviewResponse([
+    void updates(GetBrandOverviewResponseBuilder b),
+  ]) = _$GetBrandOverviewResponse;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetBrandOverviewResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetBrandOverviewResponse> get serializer => _$GetBrandOverviewResponseSerializer();
+  static Serializer<GetBrandOverviewResponse> get serializer =>
+      _$GetBrandOverviewResponseSerializer();
 }
 
-class _$GetBrandOverviewResponseSerializer implements PrimitiveSerializer<GetBrandOverviewResponse> {
+class _$GetBrandOverviewResponseSerializer
+    implements PrimitiveSerializer<GetBrandOverviewResponse> {
   @override
-  final Iterable<Type> types = const [GetBrandOverviewResponse, _$GetBrandOverviewResponse];
+  final Iterable<Type> types = const [
+    GetBrandOverviewResponse,
+    _$GetBrandOverviewResponse,
+  ];
 
   @override
   final String wireName = r'GetBrandOverviewResponse';
@@ -84,7 +93,11 @@ class _$GetBrandOverviewResponseSerializer implements PrimitiveSerializer<GetBra
     GetBrandOverviewResponse object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -100,31 +113,32 @@ class _$GetBrandOverviewResponseSerializer implements PrimitiveSerializer<GetBra
       final value = serializedList[i + 1];
       switch (key) {
         case r'brands':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(BrandOverviewItem)]),
-          ) as BuiltList<BrandOverviewItem>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(BrandOverviewItem),
+                    ]),
+                  )
+                  as BuiltList<BrandOverviewItem>;
           result.brands.replace(valueDes);
           break;
         case r'total':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.total = valueDes;
           break;
         case r'page':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.page = valueDes;
           break;
         case r'limit':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(int),
-          ) as int;
+          final valueDes =
+              serializers.deserialize(value, specifiedType: const FullType(int))
+                  as int;
           result.limit = valueDes;
           break;
         default:
@@ -155,4 +169,3 @@ class _$GetBrandOverviewResponseSerializer implements PrimitiveSerializer<GetBra
     return result.build();
   }
 }
-

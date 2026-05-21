@@ -87,8 +87,9 @@ class _KConfirmDialogState extends State<_KConfirmDialog> {
     final isDestructive = widget.tone == KConfirmDialogTone.destructive;
     final iconBg = isDestructive ? c.dangerSoft : c.accent50;
     final iconColor = isDestructive ? c.danger : c.accent600;
-    final icon =
-        isDestructive ? TablerIcons.alert_triangle : TablerIcons.info_circle;
+    final icon = isDestructive
+        ? TablerIcons.alert_triangle
+        : TablerIcons.info_circle;
 
     return Dialog(
       backgroundColor: c.surfaceElev,
@@ -103,8 +104,10 @@ class _KConfirmDialogState extends State<_KConfirmDialog> {
               Container(
                 width: 56,
                 height: 56,
-                decoration:
-                    BoxDecoration(color: iconBg, shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                  color: iconBg,
+                  shape: BoxShape.circle,
+                ),
                 child: Icon(icon, size: 24, color: iconColor),
               ),
               const SizedBox(height: 16),
@@ -132,8 +135,9 @@ class _KConfirmDialogState extends State<_KConfirmDialog> {
                     child: KSecondaryBtn(
                       label: widget.cancelLabel,
                       size: KBtnSize.md,
-                      onPressed:
-                          _busy ? null : () => Navigator.of(context).pop(),
+                      onPressed: _busy
+                          ? null
+                          : () => Navigator.of(context).pop(),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -143,8 +147,9 @@ class _KConfirmDialogState extends State<_KConfirmDialog> {
                       child: ElevatedButton(
                         onPressed: _busy ? null : _handleConfirm,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              isDestructive ? c.danger : c.accent600,
+                          backgroundColor: isDestructive
+                              ? c.danger
+                              : c.accent600,
                           disabledBackgroundColor:
                               (isDestructive ? c.danger : c.accent600)
                                   .withValues(alpha: 0.5),

@@ -11,12 +11,13 @@ part 'update_brand_request.g.dart';
 /// UpdateBrandRequest
 ///
 /// Properties:
-/// * [brandId] 
-/// * [name] 
-/// * [slug] 
-/// * [logoUrl] 
+/// * [brandId]
+/// * [name]
+/// * [slug]
+/// * [logoUrl]
 @BuiltValue()
-abstract class UpdateBrandRequest implements Built<UpdateBrandRequest, UpdateBrandRequestBuilder> {
+abstract class UpdateBrandRequest
+    implements Built<UpdateBrandRequest, UpdateBrandRequestBuilder> {
   @BuiltValueField(wireName: r'brandId')
   String get brandId;
 
@@ -31,16 +32,19 @@ abstract class UpdateBrandRequest implements Built<UpdateBrandRequest, UpdateBra
 
   UpdateBrandRequest._();
 
-  factory UpdateBrandRequest([void updates(UpdateBrandRequestBuilder b)]) = _$UpdateBrandRequest;
+  factory UpdateBrandRequest([void updates(UpdateBrandRequestBuilder b)]) =
+      _$UpdateBrandRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(UpdateBrandRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<UpdateBrandRequest> get serializer => _$UpdateBrandRequestSerializer();
+  static Serializer<UpdateBrandRequest> get serializer =>
+      _$UpdateBrandRequestSerializer();
 }
 
-class _$UpdateBrandRequestSerializer implements PrimitiveSerializer<UpdateBrandRequest> {
+class _$UpdateBrandRequestSerializer
+    implements PrimitiveSerializer<UpdateBrandRequest> {
   @override
   final Iterable<Type> types = const [UpdateBrandRequest, _$UpdateBrandRequest];
 
@@ -86,7 +90,11 @@ class _$UpdateBrandRequestSerializer implements PrimitiveSerializer<UpdateBrandR
     UpdateBrandRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -102,31 +110,39 @@ class _$UpdateBrandRequestSerializer implements PrimitiveSerializer<UpdateBrandR
       final value = serializedList[i + 1];
       switch (key) {
         case r'brandId':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.brandId = valueDes;
           break;
         case r'name':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.name = valueDes;
           break;
         case r'slug':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.slug = valueDes;
           break;
         case r'logoUrl':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(String),
-          ) as String;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(String),
+                  )
+                  as String;
           result.logoUrl = valueDes;
           break;
         default:
@@ -157,4 +173,3 @@ class _$UpdateBrandRequestSerializer implements PrimitiveSerializer<UpdateBrandR
     return result.build();
   }
 }
-

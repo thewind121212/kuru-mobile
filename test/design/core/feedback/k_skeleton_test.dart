@@ -6,12 +6,14 @@ import 'package:kuru_mobile/design/core/feedback/k_skeleton.dart';
 
 void main() {
   testWidgets('KSkeleton renders a Container with given size', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-      home: const Scaffold(
-        body: Center(child: KSkeleton(width: 100, height: 12)),
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: const Scaffold(
+          body: Center(child: KSkeleton(width: 100, height: 12)),
+        ),
       ),
-    ));
+    );
     // Pulse never settles — use pump twice.
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
@@ -21,12 +23,15 @@ void main() {
     expect(box.height, 12);
   });
 
-  testWidgets('KSkeleton.circle renders a square of given diameter',
-      (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-      home: const Scaffold(body: Center(child: KSkeleton.circle(40))),
-    ));
+  testWidgets('KSkeleton.circle renders a square of given diameter', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: const Scaffold(body: Center(child: KSkeleton.circle(40))),
+      ),
+    );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
@@ -36,10 +41,12 @@ void main() {
   });
 
   testWidgets('KSkeleton disposes its AnimationController', (tester) async {
-    await tester.pumpWidget(MaterialApp(
-      theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-      home: const Scaffold(body: Center(child: KSkeleton(width: 100))),
-    ));
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+        home: const Scaffold(body: Center(child: KSkeleton(width: 100))),
+      ),
+    );
     await tester.pump();
     // Remove the widget — pumpWidget with a different child triggers dispose.
     await tester.pumpWidget(const MaterialApp(home: SizedBox.shrink()));

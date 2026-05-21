@@ -21,6 +21,7 @@ class CatalogLauncherScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: c.pageBg,
       body: SafeArea(
+        bottom: false,
         child: ListView(
           padding: const EdgeInsets.only(bottom: 96),
           children: [
@@ -58,12 +59,12 @@ class CatalogLauncherScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _LauncherCard(
-                    icon: TablerIcons.truck,
-                    iconBg: const Color(0xFFE6F7F0),
-                    iconFg: const Color(0xFF10B981),
-                    title: l.catalogHubDistributorsTitle,
-                    subtitle: l.catalogHubComingSoon,
-                    disabled: true,
+                    icon: TablerIcons.package,
+                    iconBg: const Color(0xFFEEF0FF),
+                    iconFg: const Color(0xFF6366F1),
+                    title: 'Sản phẩm',
+                    subtitle: 'Quản lý kho hàng',
+                    onTap: () => context.go('/catalog/products'),
                   ),
                   const SizedBox(height: 12),
                   _LauncherCard(

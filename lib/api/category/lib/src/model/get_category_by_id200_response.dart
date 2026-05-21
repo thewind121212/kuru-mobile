@@ -12,11 +12,13 @@ part 'get_category_by_id200_response.g.dart';
 /// GetCategoryById200Response
 ///
 /// Properties:
-/// * [success] 
-/// * [data] 
-/// * [timestamp] 
+/// * [success]
+/// * [data]
+/// * [timestamp]
 @BuiltValue()
-abstract class GetCategoryById200Response implements Built<GetCategoryById200Response, GetCategoryById200ResponseBuilder> {
+abstract class GetCategoryById200Response
+    implements
+        Built<GetCategoryById200Response, GetCategoryById200ResponseBuilder> {
   @BuiltValueField(wireName: r'success')
   bool get success;
 
@@ -28,18 +30,25 @@ abstract class GetCategoryById200Response implements Built<GetCategoryById200Res
 
   GetCategoryById200Response._();
 
-  factory GetCategoryById200Response([void updates(GetCategoryById200ResponseBuilder b)]) = _$GetCategoryById200Response;
+  factory GetCategoryById200Response([
+    void updates(GetCategoryById200ResponseBuilder b),
+  ]) = _$GetCategoryById200Response;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(GetCategoryById200ResponseBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<GetCategoryById200Response> get serializer => _$GetCategoryById200ResponseSerializer();
+  static Serializer<GetCategoryById200Response> get serializer =>
+      _$GetCategoryById200ResponseSerializer();
 }
 
-class _$GetCategoryById200ResponseSerializer implements PrimitiveSerializer<GetCategoryById200Response> {
+class _$GetCategoryById200ResponseSerializer
+    implements PrimitiveSerializer<GetCategoryById200Response> {
   @override
-  final Iterable<Type> types = const [GetCategoryById200Response, _$GetCategoryById200Response];
+  final Iterable<Type> types = const [
+    GetCategoryById200Response,
+    _$GetCategoryById200Response,
+  ];
 
   @override
   final String wireName = r'GetCategoryById200Response';
@@ -72,7 +81,11 @@ class _$GetCategoryById200ResponseSerializer implements PrimitiveSerializer<GetC
     GetCategoryById200Response object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -88,24 +101,30 @@ class _$GetCategoryById200ResponseSerializer implements PrimitiveSerializer<GetC
       final value = serializedList[i + 1];
       switch (key) {
         case r'success':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(bool),
-          ) as bool;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(bool),
+                  )
+                  as bool;
           result.success = valueDes;
           break;
         case r'data':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(CategoryResponse),
-          ) as CategoryResponse;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(CategoryResponse),
+                  )
+                  as CategoryResponse;
           result.data.replace(valueDes);
           break;
         case r'timestamp':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(DateTime),
-          ) as DateTime;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(DateTime),
+                  )
+                  as DateTime;
           result.timestamp = valueDes;
           break;
         default:
@@ -136,4 +155,3 @@ class _$GetCategoryById200ResponseSerializer implements PrimitiveSerializer<GetC
     return result.build();
   }
 }
-

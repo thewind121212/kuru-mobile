@@ -8,19 +8,14 @@ import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 /// Use the default constructor for rectangular skeletons (text lines,
 /// thumbnails, badges). Use [KSkeleton.circle] for avatar placeholders.
 class KSkeleton extends StatefulWidget {
-  const KSkeleton({
-    super.key,
-    this.width,
-    this.height = 16,
-    this.radius = 8,
-  });
+  const KSkeleton({super.key, this.width, this.height = 16, this.radius = 8});
 
   /// Square block sized [diameter]×[diameter] with full corner radius.
   /// Used in place of avatar / category-icon circles while loading.
   const KSkeleton.circle(double diameter, {super.key})
-      : width = diameter,
-        height = diameter,
-        radius = diameter / 2;
+    : width = diameter,
+      height = diameter,
+      radius = diameter / 2;
 
   final double? width;
   final double height;

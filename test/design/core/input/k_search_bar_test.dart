@@ -6,32 +6,31 @@ import 'package:kuru_mobile/design/core/input/k_search_bar.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
-        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-        home: Scaffold(body: child),
-      );
+    theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+    home: Scaffold(body: child),
+  );
 
   testWidgets('KSearchBar shows hint text', (tester) async {
-    await tester.pumpWidget(wrap(KSearchBar(
-      hint: 'Search brands',
-      onChanged: (_) {},
-    )));
+    await tester.pumpWidget(
+      wrap(KSearchBar(hint: 'Search brands', onChanged: (_) {})),
+    );
     await tester.pump();
     expect(find.text('Search brands'), findsOneWidget);
   });
 
   testWidgets('KSearchBar fires onChanged on text entry', (tester) async {
     String? captured;
-    await tester.pumpWidget(wrap(KSearchBar(
-      hint: '',
-      onChanged: (v) => captured = v,
-    )));
+    await tester.pumpWidget(
+      wrap(KSearchBar(hint: '', onChanged: (v) => captured = v)),
+    );
     await tester.pump();
     await tester.enterText(find.byType(TextField), 'cof');
     expect(captured, 'cof');
   });
 
-  testWidgets('KSearchBar shows clear button when text is non-empty',
-      (tester) async {
+  testWidgets('KSearchBar shows clear button when text is non-empty', (
+    tester,
+  ) async {
     await tester.pumpWidget(wrap(KSearchBar(hint: '', onChanged: (_) {})));
     await tester.pump();
 
@@ -42,13 +41,13 @@ void main() {
     expect(find.byTooltip('Clear'), findsOneWidget);
   });
 
-  testWidgets('KSearchBar clear button empties text and fires onChanged("")',
-      (tester) async {
+  testWidgets('KSearchBar clear button empties text and fires onChanged("")', (
+    tester,
+  ) async {
     String? captured;
-    await tester.pumpWidget(wrap(KSearchBar(
-      hint: '',
-      onChanged: (v) => captured = v,
-    )));
+    await tester.pumpWidget(
+      wrap(KSearchBar(hint: '', onChanged: (v) => captured = v)),
+    );
     await tester.pump();
 
     await tester.enterText(find.byType(TextField), 'cof');

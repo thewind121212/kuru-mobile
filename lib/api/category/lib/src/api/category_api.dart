@@ -22,7 +22,6 @@ import 'package:kuru_category_api/src/model/update_category200_response.dart';
 import 'package:kuru_category_api/src/model/update_category_request.dart';
 
 class CategoryApi {
-
   final Dio _dio;
 
   final Serializers _serializers;
@@ -30,10 +29,10 @@ class CategoryApi {
   const CategoryApi(this._dio, this._serializers);
 
   /// CreateCategory
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [createCategoryRequest] 
+  /// * [createCategoryRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -43,7 +42,7 @@ class CategoryApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CreateCategory200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CreateCategory200Response>> createCategory({ 
+  Future<Response<CreateCategory200Response>> createCategory({
     required CreateCategoryRequest createCategoryRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -55,9 +54,7 @@ class CategoryApi {
     final _path = r'/category/CreateCategory';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -77,14 +74,13 @@ class CategoryApi {
 
     try {
       const _type = FullType(CreateCategoryRequest);
-      _bodyData = _serializers.serialize(createCategoryRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        createCategoryRequest,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -104,11 +100,13 @@ class CategoryApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CreateCategory200Response),
-      ) as CreateCategory200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CreateCategory200Response),
+                )
+                as CreateCategory200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -132,10 +130,10 @@ class CategoryApi {
   }
 
   /// GetCategoryById
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [getCategoryByIdRequest] 
+  /// * [getCategoryByIdRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -145,7 +143,7 @@ class CategoryApi {
   ///
   /// Returns a [Future] containing a [Response] with a [GetCategoryById200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetCategoryById200Response>> getCategoryById({ 
+  Future<Response<GetCategoryById200Response>> getCategoryById({
     required GetCategoryByIdRequest getCategoryByIdRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -157,9 +155,7 @@ class CategoryApi {
     final _path = r'/category/GetCategoryById';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -179,14 +175,13 @@ class CategoryApi {
 
     try {
       const _type = FullType(GetCategoryByIdRequest);
-      _bodyData = _serializers.serialize(getCategoryByIdRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        getCategoryByIdRequest,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -206,11 +201,13 @@ class CategoryApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(GetCategoryById200Response),
-      ) as GetCategoryById200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(GetCategoryById200Response),
+                )
+                as GetCategoryById200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -234,7 +231,7 @@ class CategoryApi {
   }
 
   /// GetCategoryOverview
-  /// 
+  ///
   ///
   /// Parameters:
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
@@ -246,7 +243,7 @@ class CategoryApi {
   ///
   /// Returns a [Future] containing a [Response] with a [GetCategoryOverview200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetCategoryOverview200Response>> getCategoryOverview({ 
+  Future<Response<GetCategoryOverview200Response>> getCategoryOverview({
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
     Map<String, dynamic>? extra,
@@ -257,9 +254,7 @@ class CategoryApi {
     final _path = r'/category/GetCategoryOverview';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -286,11 +281,13 @@ class CategoryApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(GetCategoryOverview200Response),
-      ) as GetCategoryOverview200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(GetCategoryOverview200Response),
+                )
+                as GetCategoryOverview200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -314,10 +311,10 @@ class CategoryApi {
   }
 
   /// GetCategoryOverviewWithDepth
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [depth] 
+  /// * [depth]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -327,7 +324,8 @@ class CategoryApi {
   ///
   /// Returns a [Future] containing a [Response] with a [GetCategoryOverview200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetCategoryOverview200Response>> getCategoryOverviewWithDepth({ 
+  Future<Response<GetCategoryOverview200Response>>
+  getCategoryOverviewWithDepth({
     required int depth,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -339,9 +337,7 @@ class CategoryApi {
     final _path = r'/category/GetCategoryOverviewWithDepth';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -373,11 +369,13 @@ class CategoryApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(GetCategoryOverview200Response),
-      ) as GetCategoryOverview200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(GetCategoryOverview200Response),
+                )
+                as GetCategoryOverview200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -401,10 +399,10 @@ class CategoryApi {
   }
 
   /// GetCategoryTree
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [categoryId] 
+  /// * [categoryId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -414,7 +412,7 @@ class CategoryApi {
   ///
   /// Returns a [Future] containing a [Response] with a [GetCategoryTree200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetCategoryTree200Response>> getCategoryTree({ 
+  Future<Response<GetCategoryTree200Response>> getCategoryTree({
     required String categoryId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -426,9 +424,7 @@ class CategoryApi {
     final _path = r'/category/GetCategoryTree';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -444,7 +440,11 @@ class CategoryApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      r'categoryId': encodeQueryParameter(_serializers, categoryId, const FullType(String)),
+      r'categoryId': encodeQueryParameter(
+        _serializers,
+        categoryId,
+        const FullType(String),
+      ),
     };
 
     final _response = await _dio.request<Object>(
@@ -460,11 +460,13 @@ class CategoryApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(GetCategoryTree200Response),
-      ) as GetCategoryTree200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(GetCategoryTree200Response),
+                )
+                as GetCategoryTree200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -488,10 +490,10 @@ class CategoryApi {
   }
 
   /// RemoveCategory
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [removeCategoryRequest] 
+  /// * [removeCategoryRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -501,7 +503,7 @@ class CategoryApi {
   ///
   /// Returns a [Future] containing a [Response] with a [RemoveCategory200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<RemoveCategory200Response>> removeCategory({ 
+  Future<Response<RemoveCategory200Response>> removeCategory({
     required RemoveCategoryRequest removeCategoryRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -513,9 +515,7 @@ class CategoryApi {
     final _path = r'/category/RemoveCategory';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -535,14 +535,13 @@ class CategoryApi {
 
     try {
       const _type = FullType(RemoveCategoryRequest);
-      _bodyData = _serializers.serialize(removeCategoryRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        removeCategoryRequest,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -562,11 +561,13 @@ class CategoryApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(RemoveCategory200Response),
-      ) as RemoveCategory200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(RemoveCategory200Response),
+                )
+                as RemoveCategory200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -590,10 +591,10 @@ class CategoryApi {
   }
 
   /// UpdateCategory
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [updateCategoryRequest] 
+  /// * [updateCategoryRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -603,7 +604,7 @@ class CategoryApi {
   ///
   /// Returns a [Future] containing a [Response] with a [UpdateCategory200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<UpdateCategory200Response>> updateCategory({ 
+  Future<Response<UpdateCategory200Response>> updateCategory({
     required UpdateCategoryRequest updateCategoryRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -615,9 +616,7 @@ class CategoryApi {
     final _path = r'/category/UpdateCategory';
     final _options = Options(
       method: r'PUT',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -637,14 +636,13 @@ class CategoryApi {
 
     try {
       const _type = FullType(UpdateCategoryRequest);
-      _bodyData = _serializers.serialize(updateCategoryRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        updateCategoryRequest,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -664,11 +662,13 @@ class CategoryApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(UpdateCategory200Response),
-      ) as UpdateCategory200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(UpdateCategory200Response),
+                )
+                as UpdateCategory200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -690,5 +690,4 @@ class CategoryApi {
       extra: _response.extra,
     );
   }
-
 }

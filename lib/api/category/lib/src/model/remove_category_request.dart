@@ -12,26 +12,34 @@ part 'remove_category_request.g.dart';
 /// RemoveCategoryRequest
 ///
 /// Properties:
-/// * [categoryIds] 
+/// * [categoryIds]
 @BuiltValue()
-abstract class RemoveCategoryRequest implements Built<RemoveCategoryRequest, RemoveCategoryRequestBuilder> {
+abstract class RemoveCategoryRequest
+    implements Built<RemoveCategoryRequest, RemoveCategoryRequestBuilder> {
   @BuiltValueField(wireName: r'categoryIds')
   BuiltList<String>? get categoryIds;
 
   RemoveCategoryRequest._();
 
-  factory RemoveCategoryRequest([void updates(RemoveCategoryRequestBuilder b)]) = _$RemoveCategoryRequest;
+  factory RemoveCategoryRequest([
+    void updates(RemoveCategoryRequestBuilder b),
+  ]) = _$RemoveCategoryRequest;
 
   @BuiltValueHook(initializeBuilder: true)
   static void _defaults(RemoveCategoryRequestBuilder b) => b;
 
   @BuiltValueSerializer(custom: true)
-  static Serializer<RemoveCategoryRequest> get serializer => _$RemoveCategoryRequestSerializer();
+  static Serializer<RemoveCategoryRequest> get serializer =>
+      _$RemoveCategoryRequestSerializer();
 }
 
-class _$RemoveCategoryRequestSerializer implements PrimitiveSerializer<RemoveCategoryRequest> {
+class _$RemoveCategoryRequestSerializer
+    implements PrimitiveSerializer<RemoveCategoryRequest> {
   @override
-  final Iterable<Type> types = const [RemoveCategoryRequest, _$RemoveCategoryRequest];
+  final Iterable<Type> types = const [
+    RemoveCategoryRequest,
+    _$RemoveCategoryRequest,
+  ];
 
   @override
   final String wireName = r'RemoveCategoryRequest';
@@ -56,7 +64,11 @@ class _$RemoveCategoryRequestSerializer implements PrimitiveSerializer<RemoveCat
     RemoveCategoryRequest object, {
     FullType specifiedType = FullType.unspecified,
   }) {
-    return _serializeProperties(serializers, object, specifiedType: specifiedType).toList();
+    return _serializeProperties(
+      serializers,
+      object,
+      specifiedType: specifiedType,
+    ).toList();
   }
 
   void _deserializeProperties(
@@ -72,10 +84,14 @@ class _$RemoveCategoryRequestSerializer implements PrimitiveSerializer<RemoveCat
       final value = serializedList[i + 1];
       switch (key) {
         case r'categoryIds':
-          final valueDes = serializers.deserialize(
-            value,
-            specifiedType: const FullType(BuiltList, [FullType(String)]),
-          ) as BuiltList<String>;
+          final valueDes =
+              serializers.deserialize(
+                    value,
+                    specifiedType: const FullType(BuiltList, [
+                      FullType(String),
+                    ]),
+                  )
+                  as BuiltList<String>;
           result.categoryIds.replace(valueDes);
           break;
         default:
@@ -106,4 +122,3 @@ class _$RemoveCategoryRequestSerializer implements PrimitiveSerializer<RemoveCat
     return result.build();
   }
 }
-

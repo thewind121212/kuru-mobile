@@ -9,10 +9,7 @@ import 'package:supertokens_flutter/supertokens.dart';
 /// before the `/api/v1` mount). Header-mode token transfer is the SDK default
 /// for native clients (no cookies).
 void initSuperTokens() {
-  SuperTokens.init(
-    apiDomain: Env.apiBaseUrl,
-    apiBasePath: '/auth',
-  );
+  SuperTokens.init(apiDomain: Env.apiBaseUrl, apiBasePath: '/auth');
 }
 
 /// Attach SuperTokens' dio interceptor. Call this on the dio singleton AT

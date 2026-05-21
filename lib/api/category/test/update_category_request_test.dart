@@ -16,6 +16,5 @@ void main() {
     test('to test the property `categoryUpdate`', () async {
       // TODO
     });
-
   });
 }

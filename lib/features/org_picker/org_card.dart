@@ -94,8 +94,7 @@ class OrgCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (active)
-              Icon(Icons.check, size: 20, color: c.primary),
+            if (active) Icon(Icons.check, size: 20, color: c.primary),
           ],
         ),
       ),
@@ -121,11 +120,7 @@ class _RolePill extends StatelessWidget {
       ),
       child: Text(
         role,
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: fg,
-        ),
+        style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: fg),
       ),
     );
   }

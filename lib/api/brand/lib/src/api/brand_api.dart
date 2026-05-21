@@ -20,7 +20,6 @@ import 'package:kuru_brand_api/src/model/update_brand200_response.dart';
 import 'package:kuru_brand_api/src/model/update_brand_request.dart';
 
 class BrandApi {
-
   final Dio _dio;
 
   final Serializers _serializers;
@@ -28,10 +27,10 @@ class BrandApi {
   const BrandApi(this._dio, this._serializers);
 
   /// CreateBrand
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [createBrandRequest] 
+  /// * [createBrandRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -41,7 +40,7 @@ class BrandApi {
   ///
   /// Returns a [Future] containing a [Response] with a [CreateBrand200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<CreateBrand200Response>> createBrand({ 
+  Future<Response<CreateBrand200Response>> createBrand({
     required CreateBrandRequest createBrandRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -53,9 +52,7 @@ class BrandApi {
     final _path = r'/brand/CreateBrand';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -75,14 +72,13 @@ class BrandApi {
 
     try {
       const _type = FullType(CreateBrandRequest);
-      _bodyData = _serializers.serialize(createBrandRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        createBrandRequest,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -102,11 +98,13 @@ class BrandApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(CreateBrand200Response),
-      ) as CreateBrand200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(CreateBrand200Response),
+                )
+                as CreateBrand200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -130,10 +128,10 @@ class BrandApi {
   }
 
   /// DeleteBrand
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [deleteBrandRequest] 
+  /// * [deleteBrandRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -143,7 +141,7 @@ class BrandApi {
   ///
   /// Returns a [Future] containing a [Response] with a [DeleteBrand200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<DeleteBrand200Response>> deleteBrand({ 
+  Future<Response<DeleteBrand200Response>> deleteBrand({
     required DeleteBrandRequest deleteBrandRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -155,9 +153,7 @@ class BrandApi {
     final _path = r'/brand/DeleteBrand';
     final _options = Options(
       method: r'POST',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -177,14 +173,13 @@ class BrandApi {
 
     try {
       const _type = FullType(DeleteBrandRequest);
-      _bodyData = _serializers.serialize(deleteBrandRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        deleteBrandRequest,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -204,11 +199,13 @@ class BrandApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(DeleteBrand200Response),
-      ) as DeleteBrand200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(DeleteBrand200Response),
+                )
+                as DeleteBrand200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -232,10 +229,10 @@ class BrandApi {
   }
 
   /// GetBrandById
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [brandId] 
+  /// * [brandId]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -245,7 +242,7 @@ class BrandApi {
   ///
   /// Returns a [Future] containing a [Response] with a [GetBrandById200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetBrandById200Response>> getBrandById({ 
+  Future<Response<GetBrandById200Response>> getBrandById({
     required String brandId,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -257,9 +254,7 @@ class BrandApi {
     final _path = r'/brand/GetBrandById';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -275,7 +270,11 @@ class BrandApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      r'brandId': encodeQueryParameter(_serializers, brandId, const FullType(String)),
+      r'brandId': encodeQueryParameter(
+        _serializers,
+        brandId,
+        const FullType(String),
+      ),
     };
 
     final _response = await _dio.request<Object>(
@@ -291,11 +290,13 @@ class BrandApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(GetBrandById200Response),
-      ) as GetBrandById200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(GetBrandById200Response),
+                )
+                as GetBrandById200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -319,12 +320,12 @@ class BrandApi {
   }
 
   /// GetBrandOverview
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [searchString] 
-  /// * [page] 
-  /// * [limit] 
+  /// * [searchString]
+  /// * [page]
+  /// * [limit]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -334,7 +335,7 @@ class BrandApi {
   ///
   /// Returns a [Future] containing a [Response] with a [GetBrandOverview200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<GetBrandOverview200Response>> getBrandOverview({ 
+  Future<Response<GetBrandOverview200Response>> getBrandOverview({
     String? searchString,
     int? page,
     int? limit,
@@ -348,9 +349,7 @@ class BrandApi {
     final _path = r'/brand/GetBrandOverview';
     final _options = Options(
       method: r'GET',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -366,9 +365,20 @@ class BrandApi {
     );
 
     final _queryParameters = <String, dynamic>{
-      if (searchString != null) r'searchString': encodeQueryParameter(_serializers, searchString, const FullType(String)),
-      if (page != null) r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
-      if (limit != null) r'limit': encodeQueryParameter(_serializers, limit, const FullType(int)),
+      if (searchString != null)
+        r'searchString': encodeQueryParameter(
+          _serializers,
+          searchString,
+          const FullType(String),
+        ),
+      if (page != null)
+        r'page': encodeQueryParameter(_serializers, page, const FullType(int)),
+      if (limit != null)
+        r'limit': encodeQueryParameter(
+          _serializers,
+          limit,
+          const FullType(int),
+        ),
     };
 
     final _response = await _dio.request<Object>(
@@ -384,11 +394,13 @@ class BrandApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(GetBrandOverview200Response),
-      ) as GetBrandOverview200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(GetBrandOverview200Response),
+                )
+                as GetBrandOverview200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -412,10 +424,10 @@ class BrandApi {
   }
 
   /// UpdateBrand
-  /// 
+  ///
   ///
   /// Parameters:
-  /// * [updateBrandRequest] 
+  /// * [updateBrandRequest]
   /// * [cancelToken] - A [CancelToken] that can be used to cancel the operation
   /// * [headers] - Can be used to add additional headers to the request
   /// * [extras] - Can be used to add flags to the request
@@ -425,7 +437,7 @@ class BrandApi {
   ///
   /// Returns a [Future] containing a [Response] with a [UpdateBrand200Response] as data
   /// Throws [DioException] if API call or serialization fails
-  Future<Response<UpdateBrand200Response>> updateBrand({ 
+  Future<Response<UpdateBrand200Response>> updateBrand({
     required UpdateBrandRequest updateBrandRequest,
     CancelToken? cancelToken,
     Map<String, dynamic>? headers,
@@ -437,9 +449,7 @@ class BrandApi {
     final _path = r'/brand/UpdateBrand';
     final _options = Options(
       method: r'PATCH',
-      headers: <String, dynamic>{
-        ...?headers,
-      },
+      headers: <String, dynamic>{...?headers},
       extra: <String, dynamic>{
         'secure': <Map<String, String>>[
           {
@@ -459,14 +469,13 @@ class BrandApi {
 
     try {
       const _type = FullType(UpdateBrandRequest);
-      _bodyData = _serializers.serialize(updateBrandRequest, specifiedType: _type);
-
-    } catch(error, stackTrace) {
+      _bodyData = _serializers.serialize(
+        updateBrandRequest,
+        specifiedType: _type,
+      );
+    } catch (error, stackTrace) {
       throw DioException(
-         requestOptions: _options.compose(
-          _dio.options,
-          _path,
-        ),
+        requestOptions: _options.compose(_dio.options, _path),
         type: DioExceptionType.unknown,
         error: error,
         stackTrace: stackTrace,
@@ -486,11 +495,13 @@ class BrandApi {
 
     try {
       final rawResponse = _response.data;
-      _responseData = rawResponse == null ? null : _serializers.deserialize(
-        rawResponse,
-        specifiedType: const FullType(UpdateBrand200Response),
-      ) as UpdateBrand200Response;
-
+      _responseData = rawResponse == null
+          ? null
+          : _serializers.deserialize(
+                  rawResponse,
+                  specifiedType: const FullType(UpdateBrand200Response),
+                )
+                as UpdateBrand200Response;
     } catch (error, stackTrace) {
       throw DioException(
         requestOptions: _response.requestOptions,
@@ -512,5 +523,4 @@ class BrandApi {
       extra: _response.extra,
     );
   }
-
 }

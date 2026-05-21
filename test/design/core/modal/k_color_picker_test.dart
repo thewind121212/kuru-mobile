@@ -8,16 +8,22 @@ import 'package:kuru_mobile/design/core/modal/k_color_picker.dart';
 
 void main() {
   Widget wrap(Widget child) => MaterialApp(
-        theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
-        home: Scaffold(body: child),
-      );
+    theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+    home: Scaffold(body: child),
+  );
 
   testWidgets('showKColorPicker renders all 26 swatches', (tester) async {
     late BuildContext capturedCtx;
-    await tester.pumpWidget(wrap(Builder(builder: (ctx) {
-      capturedCtx = ctx;
-      return const SizedBox.shrink();
-    })));
+    await tester.pumpWidget(
+      wrap(
+        Builder(
+          builder: (ctx) {
+            capturedCtx = ctx;
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
     await tester.pump();
 
     unawaited(showKColorPicker(context: capturedCtx, selected: 'red-400'));
@@ -34,16 +40,19 @@ void main() {
 
   testWidgets('showKColorPicker returns tapped id', (tester) async {
     late BuildContext capturedCtx;
-    await tester.pumpWidget(wrap(Builder(builder: (ctx) {
-      capturedCtx = ctx;
-      return const SizedBox.shrink();
-    })));
+    await tester.pumpWidget(
+      wrap(
+        Builder(
+          builder: (ctx) {
+            capturedCtx = ctx;
+            return const SizedBox.shrink();
+          },
+        ),
+      ),
+    );
     await tester.pump();
 
-    final future = showKColorPicker(
-      context: capturedCtx,
-      selected: 'red-400',
-    );
+    final future = showKColorPicker(context: capturedCtx, selected: 'red-400');
     await tester.pumpAndSettle();
 
     await tester.tap(find.bySemanticsLabel('Blue'));
