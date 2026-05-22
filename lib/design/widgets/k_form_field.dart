@@ -52,12 +52,27 @@ class _KFormFieldState extends State<KFormField> {
     super.initState();
     _revealed = false;
     _focusNode = FocusNode();
+    widget.controller.addListener(_handleControllerChanged);
   }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_handleControllerChanged);
     _focusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant KFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller) return;
+    oldWidget.controller.removeListener(_handleControllerChanged);
+    widget.controller.addListener(_handleControllerChanged);
+  }
+
+  void _handleControllerChanged() {
+    if (!_revealed) return;
+    setState(() {});
   }
 
   @override
@@ -65,8 +80,13 @@ class _KFormFieldState extends State<KFormField> {
     final c = kuruColors(context);
     final hasError = widget.errorText != null;
     final showEye = widget.obscureText;
-    final effectivelyObscured = widget.obscureText && !_revealed;
+    final showVisualPassword = widget.obscureText && _revealed;
     final l = showEye ? AppLocalizations.of(context) : null;
+    final textStyle = TextStyle(
+      fontSize: 16,
+      color: showVisualPassword ? Colors.transparent : c.textPrimary,
+      fontWeight: FontWeight.w500,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,24 +131,49 @@ class _KFormFieldState extends State<KFormField> {
                           letterSpacing: 0.5,
                         ),
                       ),
-                      TextField(
-                        controller: widget.controller,
-                        focusNode: _focusNode,
-                        obscureText: effectivelyObscured,
-                        keyboardType: widget.keyboardType,
-                        autofillHints: widget.autofillHints,
-                        textInputAction: widget.textInputAction,
-                        onSubmitted: widget.onSubmitted,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: c.textPrimary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: const InputDecoration(
-                          isDense: true,
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          TextField(
+                            controller: widget.controller,
+                            focusNode: _focusNode,
+                            obscureText: widget.obscureText,
+                            keyboardType: widget.keyboardType,
+                            autofillHints: widget.autofillHints,
+                            textInputAction: widget.textInputAction,
+                            onSubmitted: widget.onSubmitted,
+                            autocorrect: !widget.obscureText,
+                            enableSuggestions: !widget.obscureText,
+                            cursorColor: c.textPrimary,
+                            style: textStyle,
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                          if (showVisualPassword)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: ClipRect(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: ExcludeSemantics(
+                                      child: Text(
+                                        widget.controller.text,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.clip,
+                                        softWrap: false,
+                                        style: textStyle.copyWith(
+                                          color: c.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ),

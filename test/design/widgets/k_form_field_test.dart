@@ -15,6 +15,12 @@ Widget wrap(Widget child, {Locale locale = const Locale('en')}) {
   );
 }
 
+Finder visibleText(String text) {
+  return find.byWidgetPredicate(
+    (widget) => widget is Text && widget.data == text,
+  );
+}
+
 void main() {
   group('KFormField eye toggle', () {
     testWidgets('does not render the toggle when obscureText is false', (
@@ -52,7 +58,7 @@ void main() {
     });
 
     testWidgets('tap reveals the password and flips the icon', (tester) async {
-      final controller = TextEditingController();
+      final controller = TextEditingController(text: 'secret');
       await tester.pumpWidget(
         wrap(
           KFormField(
@@ -69,13 +75,14 @@ void main() {
 
       expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
       expect(find.byIcon(Icons.visibility_outlined), findsNothing);
+      expect(visibleText('secret'), findsOneWidget);
 
       final textField = tester.widget<TextField>(find.byType(TextField));
-      expect(textField.obscureText, isFalse);
+      expect(textField.obscureText, isTrue);
     });
 
     testWidgets('second tap re-hides the password', (tester) async {
-      final controller = TextEditingController();
+      final controller = TextEditingController(text: 'secret');
       await tester.pumpWidget(
         wrap(
           KFormField(
@@ -93,12 +100,13 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+      expect(visibleText('secret'), findsNothing);
 
       final textField = tester.widget<TextField>(find.byType(TextField));
       expect(textField.obscureText, isTrue);
     });
 
-    testWidgets('tooltip is localized (en: Show / Hide password)', (
+    testWidgets('semantics label is localized (en: Show / Hide password)', (
       tester,
     ) async {
       final controller = TextEditingController();
@@ -113,15 +121,15 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Show password'), findsOneWidget);
+      expect(find.bySemanticsLabel('Show password'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.visibility_outlined));
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Hide password'), findsOneWidget);
+      expect(find.bySemanticsLabel('Hide password'), findsOneWidget);
     });
 
-    testWidgets('tooltip is localized in vi locale', (tester) async {
+    testWidgets('semantics label is localized in vi locale', (tester) async {
       final controller = TextEditingController();
       await tester.pumpWidget(
         wrap(
@@ -135,12 +143,12 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Hiện mật khẩu'), findsOneWidget);
+      expect(find.bySemanticsLabel('Hiện mật khẩu'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.visibility_outlined));
       await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Ẩn mật khẩu'), findsOneWidget);
+      expect(find.bySemanticsLabel('Ẩn mật khẩu'), findsOneWidget);
     });
   });
 }
