@@ -97,6 +97,6 @@
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Chọn ảnh đại diện</string>
 		<key>NSCameraUsageDescription</key>
-		<string>Chụp ảnh đại diện</string>
+		<string>Chụp ảnh sản phẩm và quét mã vạch để tìm hoặc thêm sản phẩm</string>
 	</dict>
 </plist>

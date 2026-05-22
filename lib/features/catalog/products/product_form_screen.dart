@@ -20,6 +20,7 @@ import 'package:kuru_mobile/design/core/input/k_currency_field.dart';
 import 'package:kuru_mobile/design/core/input/k_text_field.dart';
 import 'package:kuru_mobile/design/core/input/k_textarea.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
+import 'package:kuru_mobile/design/core/scanner/k_barcode_scan_button.dart';
 import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
@@ -1744,6 +1745,9 @@ class _UmoDraftCard extends StatelessWidget {
             controller: draft.barcodeCtrl,
             placeholder: 'Quét hoặc nhập mã vạch',
             leadingIcon: const Icon(TablerIcons.barcode),
+            trailingIcon: KBarcodeScanButton(
+              onScan: (value) => draft.barcodeCtrl.text = value,
+            ),
           ),
         ],
       ),
