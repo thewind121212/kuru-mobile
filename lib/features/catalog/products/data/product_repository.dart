@@ -156,6 +156,60 @@ class ProductRepository {
     }
   }
 
+  Future<ApiResult<void>> adjustStock({
+    required String productId,
+    required List<ProductStockAdjustment> adjustments,
+    String note = 'Mobile stock set',
+  }) async {
+    if (adjustments.isEmpty) return ApiResult.success(null);
+    try {
+      final res = await _dio.patch<dynamic>(
+        '/product/AdjustProductStock',
+        data: <String, dynamic>{
+          'productId': productId,
+          'reason': 'STOCK_TAKE',
+          'note': note,
+          'stocks': adjustments.map((a) => a.toJson()).toList(),
+        },
+      );
+      log.i(
+        'AdjustProductStock ← ${res.statusCode} id=$productId '
+        'count=${adjustments.length}',
+      );
+      return ApiResult.success(null);
+    } on DioException catch (e) {
+      log.w('AdjustProductStock($productId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  Future<ApiResult<void>> updateUmos({
+    required String productId,
+    List<ProductUmoUpsert> upserts = const [],
+    List<String> removeIds = const [],
+  }) async {
+    if (upserts.isEmpty && removeIds.isEmpty) return ApiResult.success(null);
+    try {
+      final res = await _dio.patch<dynamic>(
+        '/product/UpdateProductUmos',
+        data: <String, dynamic>{
+          'productId': productId,
+          if (upserts.isNotEmpty)
+            'upsertUmos': upserts.map((u) => u.toJson()).toList(),
+          if (removeIds.isNotEmpty) 'removeUmoIds': removeIds,
+        },
+      );
+      log.i(
+        'UpdateProductUmos ← ${res.statusCode} id=$productId '
+        'upsert=${upserts.length} remove=${removeIds.length}',
+      );
+      return ApiResult.success(null);
+    } on DioException catch (e) {
+      log.w('UpdateProductUmos($productId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
   /// Converts a [DioException] into a typed [ApiException].
   ///
   /// Prefers any [ApiException] already attached to `e.error` by the
@@ -166,4 +220,43 @@ class ProductRepository {
     if (attached is ApiException) return attached;
     return mapDioError(e);
   }
+}
+
+class ProductStockAdjustment {
+  const ProductStockAdjustment({
+    required this.warehouseId,
+    required this.quantity,
+  });
+
+  final String warehouseId;
+  final num quantity;
+
+  Map<String, dynamic> toJson() => {
+    'warehouseId': warehouseId,
+    'quantity': quantity,
+  };
+}
+
+class ProductUmoUpsert {
+  const ProductUmoUpsert({
+    required this.label,
+    required this.ratio,
+    this.id,
+    this.sellPrice,
+    this.barcode,
+  });
+
+  final String? id;
+  final String label;
+  final int ratio;
+  final num? sellPrice;
+  final String? barcode;
+
+  Map<String, dynamic> toJson() => {
+    if (id != null) 'id': id,
+    'label': label,
+    'ratio': ratio,
+    if (sellPrice != null) 'sellPrice': sellPrice,
+    if (barcode != null && barcode!.isNotEmpty) 'barcode': barcode,
+  };
 }

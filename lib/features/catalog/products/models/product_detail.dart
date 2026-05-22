@@ -1,5 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_stock_location.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_umo.dart';
 
 part 'product_detail.freezed.dart';
 
@@ -15,6 +17,8 @@ class ProductDetail with _$ProductDetail {
     required num avgCost,
     required num totalCostValue,
     required num totalQtyImported,
+    @Default(<ProductStockLocation>[]) List<ProductStockLocation> stocks,
+    @Default(<ProductUmo>[]) List<ProductUmo> umos,
     String? imageUrl,
     String? baseUnitLabel,
     num? exportPrice,
@@ -51,6 +55,14 @@ class ProductDetail with _$ProductDetail {
       avgCost: (json['avgCost'] as num?) ?? 0,
       totalCostValue: (json['totalCostValue'] as num?) ?? 0,
       totalQtyImported: (json['totalQtyImported'] as num?) ?? 0,
+      stocks: (json['stocks'] as List<dynamic>? ?? const [])
+          .map((e) => ProductStockLocation.fromJson(e as Map<String, dynamic>))
+          .where((stock) => stock.warehouseId.isNotEmpty)
+          .toList(),
+      umos: (json['umos'] as List<dynamic>? ?? const [])
+          .map((e) => ProductUmo.fromJson(e as Map<String, dynamic>))
+          .where((umo) => umo.label.isNotEmpty)
+          .toList(),
     );
   }
 }

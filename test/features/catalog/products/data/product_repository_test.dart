@@ -219,6 +219,75 @@ void main() {
     });
   });
 
+  group('adjustStock', () {
+    test('PATCH sends stock take payload', () async {
+      when(
+        () => dio.patch<dynamic>(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => ok({'success': true}));
+      final res = await repo.adjustStock(
+        productId: 'p-1',
+        adjustments: const [
+          ProductStockAdjustment(warehouseId: 'w-1', quantity: 5),
+        ],
+      );
+      expect(res, isA<ApiSuccess<void>>());
+      final captured =
+          verify(
+                () => dio.patch<dynamic>(
+                  '/product/AdjustProductStock',
+                  data: captureAny(named: 'data'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured['productId'], 'p-1');
+      expect(captured['reason'], 'STOCK_TAKE');
+      expect(captured['stocks'], [
+        {'warehouseId': 'w-1', 'quantity': 5},
+      ]);
+    });
+  });
+
+  group('updateUmos', () {
+    test('PATCH sends upserts and removals', () async {
+      when(
+        () => dio.patch<dynamic>(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => ok({'success': true}));
+      final res = await repo.updateUmos(
+        productId: 'p-1',
+        upserts: const [
+          ProductUmoUpsert(
+            id: 'u-1',
+            label: 'Thùng',
+            ratio: 24,
+            sellPrice: 240000,
+            barcode: 'box-1',
+          ),
+        ],
+        removeIds: const ['u-2'],
+      );
+      expect(res, isA<ApiSuccess<void>>());
+      final captured =
+          verify(
+                () => dio.patch<dynamic>(
+                  '/product/UpdateProductUmos',
+                  data: captureAny(named: 'data'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured['productId'], 'p-1');
+      expect(captured['upsertUmos'], [
+        {
+          'id': 'u-1',
+          'label': 'Thùng',
+          'ratio': 24,
+          'sellPrice': 240000,
+          'barcode': 'box-1',
+        },
+      ]);
+      expect(captured['removeUmoIds'], ['u-2']);
+    });
+  });
+
   group('updateInfo', () {
     test('PATCH only sends dirty fields', () async {
       when(

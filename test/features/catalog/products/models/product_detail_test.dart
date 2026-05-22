@@ -23,6 +23,20 @@ void main() {
       'avgCost': 17000,
       'totalCostValue': 204000,
       'totalQtyImported': 24,
+      'stocks': [
+        {'warehouseId': 'w-1', 'qty': 12},
+      ],
+      'umos': [
+        {
+          'id': 'u-1',
+          'name': 'Thùng',
+          'ratio': 24,
+          'sellPrice': 240000,
+          'barcodes': [
+            {'value': 'box-1'},
+          ],
+        },
+      ],
     };
     final p = ProductDetail.fromJson(json);
     expect(p.id, 'p-1');
@@ -43,6 +57,13 @@ void main() {
     expect(p.avgCost, 17000);
     expect(p.totalCostValue, 204000);
     expect(p.totalQtyImported, 24);
+    expect(p.stocks.single.warehouseId, 'w-1');
+    expect(p.stocks.single.qty, 12);
+    expect(p.umos.single.id, 'u-1');
+    expect(p.umos.single.label, 'Thùng');
+    expect(p.umos.single.ratio, 24);
+    expect(p.umos.single.sellPrice, 240000);
+    expect(p.umos.single.barcode, 'box-1');
   });
 
   test('ProductDetail.fromJson normalizes empty imageUrl to null', () {
