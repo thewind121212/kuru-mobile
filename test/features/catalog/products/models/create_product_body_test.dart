@@ -54,6 +54,7 @@ void main() {
           sellPrice: 30000,
           importPrice: 19000,
           exportPrice: 32000,
+          imageUrl: 'variant.jpg',
           attributeValueIds: ['av-1'],
         ),
       ],
@@ -64,6 +65,7 @@ void main() {
         'sellPrice': 30000,
         'importPrice': 19000,
         'exportPrice': 32000,
+        'imageUrl': 'variant.jpg',
         'attributeValueIds': ['av-1'],
       },
     ]);

@@ -65,6 +65,7 @@ class CreateProductVariantBody {
     this.sellPrice,
     this.importPrice,
     this.exportPrice,
+    this.imageUrl,
     this.attributeValueIds = const [],
   });
 
@@ -72,6 +73,7 @@ class CreateProductVariantBody {
   final num? sellPrice;
   final num? importPrice;
   final num? exportPrice;
+  final String? imageUrl;
   final List<String> attributeValueIds;
 
   Map<String, dynamic> toJson() => {
@@ -79,6 +81,7 @@ class CreateProductVariantBody {
     if (sellPrice != null) 'sellPrice': sellPrice,
     if (importPrice != null) 'importPrice': importPrice,
     if (exportPrice != null) 'exportPrice': exportPrice,
+    if (imageUrl != null) 'imageUrl': imageUrl,
     if (attributeValueIds.isNotEmpty) 'attributeValueIds': attributeValueIds,
   };
 }

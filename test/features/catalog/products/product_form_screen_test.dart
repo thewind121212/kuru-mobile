@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
@@ -22,6 +23,7 @@ class _MockRepo extends Mock implements ProductRepository {}
 
 List<Override> _overrides(_MockRepo repo) => [
   productRepositoryProvider.overrideWithValue(repo),
+  currentOrgIdProvider.overrideWithValue('org-test'),
   productWarehouseOptionsProvider.overrideWith(
     (ref) async => const [
       ProductWarehouseOption(warehouseId: 'w-1', name: 'Kho chính'),
@@ -377,5 +379,35 @@ void main() {
     ]);
     expect(deleteIds, isEmpty);
     await t.pump(const Duration(seconds: 5));
+  });
+
+  testWidgets('edit shows current variant image', (t) async {
+    final repo = _MockRepo();
+    final initial = _detail().copyWith(
+      variants: const [
+        ProductVariant(
+          id: 'v-1',
+          productId: 'p-1',
+          name: 'Size M',
+          isDefault: false,
+          sellPrice: 17000,
+          imageUrl: 'variant-current.jpg',
+          avgCost: 0,
+          totalCostValue: 0,
+          totalQtyImported: 0,
+        ),
+      ],
+    );
+    await t.pumpWidget(
+      _editApp(repo: repo, key: GlobalKey(), initial: initial),
+    );
+    await t.pumpAndSettle();
+
+    await t.scrollUntilVisible(
+      find.byKey(const ValueKey('variant-image-v-1')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.byKey(const ValueKey('variant-image-v-1')), findsOneWidget);
   });
 }

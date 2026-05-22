@@ -57,6 +57,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   late final List<_VariantSnapshot> _baselineVariants;
 
   File? _imageFile;
+  bool _productImageRemoved = false;
   String? _categoryId;
   String? _categoryName;
   String? _brandId;
@@ -237,6 +238,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   bool get _isDirty {
     if (widget.initial == null) return true; // Always dirty in create mode
     if (_imageFile != null) return true;
+    if (_productImageRemoved) return true;
     if (_hasProductInfoChanges) return true;
     if (_isStockDirty) return true;
     if (_isUmoDirty) return true;
@@ -320,14 +322,34 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     String sellPrice = '',
     String importPrice = '',
     String exportPrice = '',
+    String imagePath = '',
   }) {
     final draft = _VariantDraft()
       ..nameCtrl.text = name
       ..sellPriceNotifier.value = int.tryParse(sellPrice)
       ..importPriceNotifier.value = int.tryParse(importPrice)
       ..exportPriceNotifier.value = int.tryParse(exportPrice);
+    if (imagePath.isNotEmpty) {
+      draft
+        ..imageFile = File(imagePath)
+        ..imageRemoved = false;
+    }
     _attachVariantDraft(draft);
     setState(() => _variantDrafts.add(draft));
+  }
+
+  @visibleForTesting
+  void debugSetVariantImagePath(String variantId, String imagePath) {
+    for (final draft in _variantDrafts) {
+      if (draft.id == variantId) {
+        setState(() {
+          draft
+            ..imageFile = File(imagePath)
+            ..imageRemoved = false;
+        });
+        return;
+      }
+    }
   }
 
   Future<void> _pickImage() async {
@@ -337,7 +359,24 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       maxWidth: 1800,
     );
     if (!mounted || picked == null) return;
-    setState(() => _imageFile = File(picked.path));
+    setState(() {
+      _imageFile = File(picked.path);
+      _productImageRemoved = false;
+    });
+  }
+
+  Future<void> _pickVariantImage(_VariantDraft draft) async {
+    final picked = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 88,
+      maxWidth: 1800,
+    );
+    if (!mounted || picked == null) return;
+    setState(() {
+      draft
+        ..imageFile = File(picked.path)
+        ..imageRemoved = false;
+    });
   }
 
   Future<void> _pickCategory() async {
@@ -454,8 +493,13 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     }
     final umoChanges = _collectUmoChanges();
     if (!umoChanges.isValid) return;
-    final variantChanges = _collectVariantChanges();
+    var variantChanges = _collectVariantChanges();
     if (!variantChanges.isValid) return;
+    final hasVariantImageUploads = _variantDrafts.any(
+      (draft) => draft.imageFile != null,
+    );
+    final createVariantsInline =
+        widget.initial == null && !hasVariantImageUploads;
 
     setState(() {
       _submitting = true;
@@ -490,16 +534,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   qty: entry.value,
                 ),
           ],
-          variants: [
-            for (final variant in variantChanges.upserts)
-              CreateProductVariantBody(
-                name: variant.name,
-                sellPrice: variant.sellPrice,
-                importPrice: variant.importPrice,
-                exportPrice: variant.exportPrice,
-                attributeValueIds: variant.attributeValueIds,
-              ),
-          ],
+          variants: createVariantsInline
+              ? [
+                  for (final variant in variantChanges.upserts)
+                    CreateProductVariantBody(
+                      name: variant.name,
+                      sellPrice: variant.sellPrice,
+                      importPrice: variant.importPrice,
+                      exportPrice: variant.exportPrice,
+                      imageUrl: variant.imageUrl?.value,
+                      attributeValueIds: variant.attributeValueIds,
+                    ),
+                ]
+              : const [],
         ),
       );
       if (!mounted) return;
@@ -507,6 +554,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       switch (createResult) {
         case ApiSuccess<String>(:final data):
           final newProductId = data;
+          final orgId = ref.read(currentOrgIdProvider);
           if (umoChanges.upserts.isNotEmpty) {
             final umoResult = await repo.updateUmos(
               productId: newProductId,
@@ -518,8 +566,6 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
               return;
             }
           }
-          ref.invalidate(productListProvider);
-          final orgId = ref.read(currentOrgIdProvider);
           if (_imageFile != null && orgId != null) {
             final uploadResult = await repo.uploadAvatar(
               file: _imageFile!,
@@ -534,6 +580,27 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 KNotify.warning(context, err.message);
             }
           }
+          if (!createVariantsInline && variantChanges.upserts.isNotEmpty) {
+            final uploaded = await _uploadPendingVariantImages(
+              repo,
+              productId: newProductId,
+              orgId: orgId,
+            );
+            if (!mounted) return;
+            if (uploaded) {
+              variantChanges = _collectVariantChanges(validate: false);
+            }
+            final variantResult = await repo.saveVariants(
+              productId: newProductId,
+              variants: variantChanges.upserts,
+            );
+            if (!mounted) return;
+            if (variantResult is ApiFailure<List<ProductVariant>>) {
+              _handleError(variantResult.err);
+              return;
+            }
+          }
+          ref.invalidate(productListProvider);
           if (!mounted) return;
           KNotify.success(context, 'Đã tạo sản phẩm');
           context.replace('/catalog/products/$newProductId');
@@ -577,6 +644,18 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         }
       }
 
+      if (hasVariantImageUploads) {
+        final uploaded = await _uploadPendingVariantImages(
+          repo,
+          productId: p.id,
+          orgId: ref.read(currentOrgIdProvider),
+        );
+        if (!mounted) return;
+        if (uploaded) {
+          variantChanges = _collectVariantChanges(validate: false);
+        }
+      }
+
       if (variantChanges.hasChanges) {
         final variantResult = await repo.saveVariants(
           productId: p.id,
@@ -609,6 +688,49 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         ..invalidate(productListProvider);
       context.pop();
     }
+  }
+
+  Future<bool> _uploadPendingVariantImages(
+    ProductRepository repo, {
+    required String productId,
+    required String? orgId,
+  }) async {
+    final drafts = _variantDrafts
+        .where((draft) => draft.imageFile != null)
+        .toList(growable: false);
+    if (drafts.isEmpty) return true;
+    if (orgId == null) {
+      if (mounted) {
+        KNotify.warning(
+          context,
+          'Không tải được ảnh biến thể: thiếu chi nhánh',
+        );
+      }
+      return false;
+    }
+
+    var allUploaded = true;
+    for (final draft in drafts) {
+      final file = draft.imageFile;
+      if (file == null) continue;
+      final result = await repo.uploadAvatar(
+        file: file,
+        productId: productId,
+        orgId: orgId,
+      );
+      if (!mounted) return false;
+      switch (result) {
+        case ApiSuccess<String>(:final data):
+          draft
+            ..imageUrl = data
+            ..imageFile = null
+            ..imageRemoved = false;
+        case ApiFailure<String>(:final err):
+          allUploaded = false;
+          KNotify.warning(context, err.message);
+      }
+    }
+    return allUploaded;
   }
 
   num? _parseQty(String text) {
@@ -649,6 +771,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   }
 
   bool get _isVariantDirty {
+    if (_variantDrafts.any((draft) => draft.imageFile != null)) return true;
     final changes = _collectVariantChanges(validate: false);
     return changes.upserts.isNotEmpty || changes.deleteIds.isNotEmpty;
   }
@@ -798,7 +921,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           snapshot.name.isEmpty &&
           snapshot.sellPrice == null &&
           snapshot.importPrice == null &&
-          snapshot.exportPrice == null;
+          snapshot.exportPrice == null &&
+          draft.imageFile == null &&
+          snapshot.imageUrl == null;
       if (isEmpty) continue;
 
       if (snapshot.name.isEmpty) {
@@ -832,6 +957,16 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       if (id != null) activeExistingIds.add(id);
       final baseline = id == null ? null : baselineById[id];
       if (baseline == null || snapshot.isDifferentFrom(baseline)) {
+        JsonOptional<String>? imageOpt;
+        if (baseline == null) {
+          if (snapshot.imageUrl != null) {
+            imageOpt = JsonOptional.set(snapshot.imageUrl!);
+          }
+        } else if (snapshot.imageUrl != baseline.imageUrl) {
+          imageOpt = snapshot.imageUrl == null
+              ? const JsonOptional.clear()
+              : JsonOptional.set(snapshot.imageUrl!);
+        }
         upserts.add(
           ProductVariantUpsert(
             id: id,
@@ -839,6 +974,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
             sellPrice: snapshot.sellPrice,
             importPrice: snapshot.importPrice,
             exportPrice: snapshot.exportPrice,
+            imageUrl: imageOpt,
             attributeValueIds: snapshot.attributeValueIds,
           ),
         );
@@ -926,6 +1062,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     final statusOut = _isActive != _baselineIsActive
         ? (_isActive ? 'ACTIVE' : 'INACTIVE')
         : null;
+    final imageOpt = _productImageRemoved
+        ? const JsonOptional<String>.clear()
+        : null;
 
     return UpdateProductInfoBody(
       productId: p.id,
@@ -941,6 +1080,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       importPrice: importOpt,
       exportPrice: exportOpt,
       demandStock: demandOpt,
+      imageUrl: imageOpt,
     );
   }
 
@@ -997,7 +1137,9 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                 children: [
                   _ImageIdentityPanel(
                     imageFile: _imageFile,
-                    networkImageUrl: widget.initial?.hasImage ?? false
+                    networkImageUrl:
+                        !_productImageRemoved &&
+                            (widget.initial?.hasImage ?? false)
                         ? widget.initial!.imageUrl
                         : null,
                     name: _nameCtrl.text,
@@ -1005,14 +1147,14 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     onPickImage: _pickImage,
                     onClearImage:
                         _imageFile == null &&
-                            !(widget.initial?.hasImage ?? false)
+                            (_productImageRemoved ||
+                                !(widget.initial?.hasImage ?? false))
                         ? null
                         : () {
-                            setState(() => _imageFile = null);
-                            // To actually clear the image on backend,
-                            // it might require a separate API call,
-                            // but for now, we just clear the local
-                            // selection if any.
+                            setState(() {
+                              _imageFile = null;
+                              _productImageRemoved = true;
+                            });
                           },
                   ),
                   const SizedBox(height: 18),
@@ -1166,6 +1308,15 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         errorText: _variantError,
                         onAdd: _addVariantDraft,
                         onRemove: _removeVariantDraft,
+                        onPickImage: _pickVariantImage,
+                        onClearImage: (draft) {
+                          setState(() {
+                            draft
+                              ..imageFile = null
+                              ..imageUrl = null
+                              ..imageRemoved = true;
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -1311,7 +1462,9 @@ class _ImageIdentityPanel extends StatelessWidget {
                         Icon(TablerIcons.photo, size: 16, color: c.accent600),
                         const SizedBox(width: 6),
                         Text(
-                          imageFile == null ? 'Thêm ảnh' : 'Đổi ảnh',
+                          imageFile == null && networkImageUrl == null
+                              ? 'Thêm ảnh'
+                              : 'Đổi ảnh',
                           style: TextStyle(
                             color: c.accent600,
                             fontSize: 13,
@@ -1320,14 +1473,7 @@ class _ImageIdentityPanel extends StatelessWidget {
                         ),
                         if (onClearImage != null) ...[
                           const SizedBox(width: 10),
-                          GestureDetector(
-                            onTap: onClearImage,
-                            child: Icon(
-                              TablerIcons.x,
-                              size: 18,
-                              color: c.textMuted,
-                            ),
-                          ),
+                          _RemoveImageAction(onTap: onClearImage!),
                         ],
                       ],
                     ),
@@ -1337,6 +1483,36 @@ class _ImageIdentityPanel extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _RemoveImageAction extends StatelessWidget {
+  const _RemoveImageAction({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(TablerIcons.trash, size: 15, color: c.danger),
+          const SizedBox(width: 5),
+          Text(
+            'Xóa ảnh',
+            style: TextStyle(
+              color: c.danger,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1937,6 +2113,7 @@ class _VariantSnapshot {
     this.sellPrice,
     this.importPrice,
     this.exportPrice,
+    this.imageUrl,
     this.attributeValueIds = const [],
   });
 
@@ -1947,6 +2124,7 @@ class _VariantSnapshot {
       sellPrice: variant.sellPrice,
       importPrice: variant.importPrice,
       exportPrice: variant.exportPrice,
+      imageUrl: variant.imageUrl,
       attributeValueIds: variant.attributeValueIds,
     );
   }
@@ -1956,6 +2134,7 @@ class _VariantSnapshot {
   final num? sellPrice;
   final num? importPrice;
   final num? exportPrice;
+  final String? imageUrl;
   final List<String> attributeValueIds;
 
   bool isDifferentFrom(_VariantSnapshot other) {
@@ -1963,6 +2142,7 @@ class _VariantSnapshot {
         sellPrice != other.sellPrice ||
         importPrice != other.importPrice ||
         exportPrice != other.exportPrice ||
+        imageUrl != other.imageUrl ||
         !listEquals(attributeValueIds, other.attributeValueIds);
   }
 }
@@ -1984,11 +2164,12 @@ class _VariantChanges {
 }
 
 class _VariantDraft {
-  _VariantDraft({this.id, this.attributeValueIds = const []});
+  _VariantDraft({this.id, this.imageUrl, this.attributeValueIds = const []});
 
   factory _VariantDraft.fromSnapshot(_VariantSnapshot snapshot) {
     final draft = _VariantDraft(
       id: snapshot.id,
+      imageUrl: snapshot.imageUrl,
       attributeValueIds: snapshot.attributeValueIds,
     )..nameCtrl.text = snapshot.name;
     draft.sellPriceNotifier.value = snapshot.sellPrice?.toInt();
@@ -1998,6 +2179,9 @@ class _VariantDraft {
   }
 
   final String? id;
+  String? imageUrl;
+  File? imageFile;
+  bool imageRemoved = false;
   final List<String> attributeValueIds;
   final nameCtrl = TextEditingController();
   final sellPriceNotifier = ValueNotifier<int?>(null);
@@ -2010,6 +2194,7 @@ class _VariantDraft {
     sellPrice: sellPriceNotifier.value,
     importPrice: importPriceNotifier.value,
     exportPrice: exportPriceNotifier.value,
+    imageUrl: imageUrl,
     attributeValueIds: attributeValueIds,
   );
 
@@ -2040,12 +2225,16 @@ class _VariantEditor extends StatelessWidget {
     required this.drafts,
     required this.onAdd,
     required this.onRemove,
+    required this.onPickImage,
+    required this.onClearImage,
     this.errorText,
   });
 
   final List<_VariantDraft> drafts;
   final VoidCallback onAdd;
   final ValueChanged<_VariantDraft> onRemove;
+  final ValueChanged<_VariantDraft> onPickImage;
+  final ValueChanged<_VariantDraft> onClearImage;
   final String? errorText;
 
   @override
@@ -2079,6 +2268,8 @@ class _VariantEditor extends StatelessWidget {
                 index: drafts.indexOf(draft),
                 draft: draft,
                 onRemove: () => onRemove(draft),
+                onPickImage: () => onPickImage(draft),
+                onClearImage: () => onClearImage(draft),
               ),
             ),
           ),
@@ -2148,16 +2339,161 @@ class _AddVariantButton extends StatelessWidget {
   }
 }
 
+class _VariantImageField extends StatelessWidget {
+  const _VariantImageField({
+    required this.draft,
+    required this.onPickImage,
+    required this.onClearImage,
+  });
+
+  final _VariantDraft draft;
+  final VoidCallback onPickImage;
+  final VoidCallback onClearImage;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final networkImageUrl = draft.imageUrl;
+    final hasImage = draft.imageFile != null || networkImageUrl != null;
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onPickImage,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.borderSoft),
+          ),
+          child: Row(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: SizedBox(
+                  width: 72,
+                  height: 72,
+                  child: draft.imageFile != null
+                      ? Image.file(
+                          draft.imageFile!,
+                          key: ValueKey(
+                            'variant-image-file-${draft.id ?? 'new'}',
+                          ),
+                          fit: BoxFit.cover,
+                        )
+                      : networkImageUrl != null
+                      ? Image.network(
+                          '${Env.imageBaseUrl}/product-avatar/$networkImageUrl',
+                          key: ValueKey('variant-image-${draft.id ?? 'new'}'),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) =>
+                              const _VariantImageIcon(),
+                        )
+                      : const _VariantImageIcon(),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: draft.nameCtrl,
+                  builder: (context, _) {
+                    final name = draft.nameCtrl.text.trim();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name.isEmpty ? 'Ảnh biến thể' : name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          hasImage
+                              ? 'Ảnh hiển thị khi xem biến thể'
+                              : 'Chưa có ảnh',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 11,
+                            height: 1.3,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              TablerIcons.photo,
+                              size: 15,
+                              color: c.accent600,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              hasImage ? 'Đổi ảnh' : 'Thêm ảnh',
+                              style: TextStyle(
+                                color: c.accent600,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (hasImage) ...[
+                          const SizedBox(height: 8),
+                          _RemoveImageAction(onTap: onClearImage),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VariantImageIcon extends StatelessWidget {
+  const _VariantImageIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFF1ECFB),
+      alignment: Alignment.center,
+      child: const Icon(
+        TablerIcons.versions,
+        color: Color(0xFF8B5CF6),
+        size: 26,
+      ),
+    );
+  }
+}
+
 class _VariantDraftCard extends StatelessWidget {
   const _VariantDraftCard({
     required this.index,
     required this.draft,
     required this.onRemove,
+    required this.onPickImage,
+    required this.onClearImage,
   });
 
   final int index;
   final _VariantDraft draft;
   final VoidCallback onRemove;
+  final VoidCallback onPickImage;
+  final VoidCallback onClearImage;
 
   @override
   Widget build(BuildContext context) {
@@ -2219,6 +2555,12 @@ class _VariantDraftCard extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          _VariantImageField(
+            draft: draft,
+            onPickImage: onPickImage,
+            onClearImage: onClearImage,
           ),
           const SizedBox(height: 12),
           KTextField(

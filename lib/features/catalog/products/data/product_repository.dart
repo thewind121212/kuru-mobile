@@ -6,6 +6,7 @@ import 'package:kuru_mobile/core/logging/log.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart' show mapDioError;
+import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
@@ -264,6 +265,7 @@ class ProductVariantUpsert {
     this.sellPrice,
     this.importPrice,
     this.exportPrice,
+    this.imageUrl,
     this.attributeValueIds = const [],
   });
 
@@ -272,6 +274,7 @@ class ProductVariantUpsert {
   final num? sellPrice;
   final num? importPrice;
   final num? exportPrice;
+  final JsonOptional<String>? imageUrl;
   final List<String> attributeValueIds;
 
   Map<String, dynamic> toJson() => {
@@ -280,6 +283,7 @@ class ProductVariantUpsert {
     if (sellPrice != null) 'sellPrice': sellPrice,
     if (importPrice != null) 'importPrice': importPrice,
     if (exportPrice != null) 'exportPrice': exportPrice,
+    if (imageUrl?.isSet ?? false) 'imageUrl': imageUrl!.value,
     if (attributeValueIds.isNotEmpty) 'attributeValueIds': attributeValueIds,
   };
 }

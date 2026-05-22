@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
@@ -319,6 +320,7 @@ void main() {
             sellPrice: 30000,
             importPrice: 19000,
             exportPrice: 32000,
+            imageUrl: JsonOptional.set('variant.jpg'),
           ),
         ],
         deleteVariantIds: const ['v-2'],
@@ -341,6 +343,7 @@ void main() {
             'sellPrice': 30000,
             'importPrice': 19000,
             'exportPrice': 32000,
+            'imageUrl': 'variant.jpg',
           },
         ],
         'deleteVariantIds': ['v-2'],
