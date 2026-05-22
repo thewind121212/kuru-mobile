@@ -14,6 +14,9 @@ import 'package:kuru_mobile/features/catalog/categories/providers/category_provi
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_stock_location.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_archive_dialog.dart';
@@ -164,16 +167,43 @@ class _Body extends ConsumerWidget {
     }
 
     String fmtPrice(num? v) => v == null ? '—' : _vnd.format(v);
-    String fmtQty(num v) => '${v.toInt()} $unitLabel';
-    final warehouseLabels = <String, String>{};
-    if (detail.stocks.isNotEmpty) {
-      final warehouses =
-          ref.watch(productWarehouseOptionsProvider).valueOrNull ?? const [];
-      for (final warehouse in warehouses) {
-        warehouseLabels[warehouse.warehouseId] = warehouse.name;
+    String fmtQty(num v) => _formatQty(v, unitLabel);
+    final customVariants = detail.variants
+        .where((variant) => !variant.isDefault)
+        .toList(growable: false);
+    final variantsById = {
+      for (final variant in detail.variants) variant.id: variant,
+    };
+    num baseStockTotal = 0;
+    final rowsByVariantId = <String, List<ProductStockLocation>>{};
+    for (final stock in detail.stocks) {
+      final variantId = stock.variantId;
+      final variant = variantId == null ? null : variantsById[variantId];
+      if (variant == null || variant.isDefault) {
+        baseStockTotal += stock.qty;
+      } else {
+        rowsByVariantId.putIfAbsent(variant.id, () => []).add(stock);
       }
     }
-
+    final variantStockGroups = [
+      for (final variant in customVariants)
+        _VariantStockGroup(
+          variant: variant,
+          rows: rowsByVariantId[variant.id] ?? const <ProductStockLocation>[],
+        ),
+    ];
+    final variantStockTotal = variantStockGroups.fold<num>(
+      0,
+      (sum, group) => sum + group.totalQty,
+    );
+    final warehouseLabels = customVariants.isEmpty
+        ? const <String, String>{}
+        : {
+            for (final warehouse
+                in ref.watch(productWarehouseOptionsProvider).valueOrNull ??
+                    const <ProductWarehouseOption>[])
+              warehouse.warehouseId: warehouse.name,
+          };
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 12, bottom: 96),
       child: Column(
@@ -233,6 +263,26 @@ class _Body extends ConsumerWidget {
               ],
             ),
           ],
+          if (customVariants.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            KSettingsSection(
+              header: 'Biến thể bán hàng',
+              children: [
+                const _VariantSectionNote(),
+                for (final variant in customVariants)
+                  _VariantSummaryTile(
+                    variant: variant,
+                    priceText: fmtPrice(variant.sellPrice ?? detail.sellPrice),
+                    importPriceText: fmtPrice(variant.importPrice),
+                    exportPriceText: fmtPrice(variant.exportPrice),
+                    onTap: () => context.push(
+                      '/catalog/products/${detail.id}/variants/${variant.id}',
+                      extra: detail,
+                    ),
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: 20),
           KSettingsSection(
             header: 'Giá',
@@ -267,41 +317,35 @@ class _Body extends ConsumerWidget {
           KSettingsSection(
             header: 'Tồn kho',
             children: [
-              KSettingsRow(
+              _StockSummaryRow(
+                key: const ValueKey('stock-summary-base'),
                 leadingIcon: TablerIcons.package,
                 iconBackground: const Color(0xFFE7F1FB),
                 iconColor: const Color(0xFF3B82F6),
-                label: 'Hiện có',
-                trailingText: detail.stocks.isEmpty
-                    ? '—'
-                    : fmtQty(
-                        detail.stocks.fold<num>(
-                          0,
-                          (sum, stock) => sum + stock.qty,
-                        ),
+                title: 'Tồn kho đơn vị gốc',
+                value: fmtQty(baseStockTotal),
+                subtitle: 'Tổng tồn của đơn vị gốc',
+              ),
+              _StockSummaryRow(
+                key: const ValueKey('stock-summary-variants'),
+                leadingIcon: TablerIcons.versions,
+                iconBackground: const Color(0xFFF1ECFB),
+                iconColor: const Color(0xFF8B5CF6),
+                title: 'Tồn kho biến thể',
+                value: fmtQty(variantStockTotal),
+                subtitle: customVariants.isEmpty
+                    ? 'Chưa có biến thể'
+                    : 'Chạm để xem theo chi nhánh',
+                onTap: customVariants.isEmpty
+                    ? null
+                    : () => _openVariantStockSheet(
+                        context,
+                        detail: detail,
+                        groups: variantStockGroups,
+                        unitLabel: unitLabel,
+                        warehouseLabels: warehouseLabels,
                       ),
-                showChevron: false,
               ),
-              KSettingsRow(
-                leadingIcon: TablerIcons.alert_triangle,
-                iconBackground: const Color(0xFFFEF6E5),
-                iconColor: const Color(0xFFD97706),
-                label: 'Tồn tối thiểu',
-                trailingText: detail.demandStock > 0
-                    ? fmtQty(detail.demandStock)
-                    : '—',
-                showChevron: false,
-              ),
-              for (final stock in detail.stocks)
-                KSettingsRow(
-                  leadingIcon: TablerIcons.building_warehouse,
-                  iconBackground: const Color(0xFFEFF1F4),
-                  iconColor: const Color(0xFF64748B),
-                  label:
-                      warehouseLabels[stock.warehouseId] ?? stock.warehouseId,
-                  trailingText: fmtQty(stock.qty),
-                  showChevron: false,
-                ),
             ],
           ),
           const SizedBox(height: 20),
@@ -350,6 +394,564 @@ class _Body extends ConsumerWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _VariantStockGroup {
+  const _VariantStockGroup({required this.variant, required this.rows});
+
+  final ProductVariant variant;
+  final List<ProductStockLocation> rows;
+
+  num get totalQty => rows.fold<num>(0, (sum, stock) => sum + stock.qty);
+}
+
+class _StockSummaryRow extends StatelessWidget {
+  const _StockSummaryRow({
+    required this.leadingIcon,
+    required this.iconBackground,
+    required this.iconColor,
+    required this.title,
+    required this.value,
+    required this.subtitle,
+    super.key,
+    this.onTap,
+  });
+
+  final IconData leadingIcon;
+  final Color iconBackground;
+  final Color iconColor;
+  final String title;
+  final String value;
+  final String subtitle;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final isClickable = onTap != null;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: iconBackground,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(leadingIcon, color: iconColor, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                value,
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              if (isClickable) ...[
+                const SizedBox(width: 4),
+                Icon(Icons.chevron_right, size: 20, color: c.textMuted),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _openVariantStockSheet(
+  BuildContext context, {
+  required ProductDetail detail,
+  required List<_VariantStockGroup> groups,
+  required String unitLabel,
+  required Map<String, String> warehouseLabels,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => _VariantStockSheet(
+      detail: detail,
+      groups: groups,
+      unitLabel: unitLabel,
+      warehouseLabels: warehouseLabels,
+      onVariantTap: (variant) {
+        Navigator.of(sheetContext).pop();
+        context.push(
+          '/catalog/products/${detail.id}/variants/${variant.id}',
+          extra: detail,
+        );
+      },
+    ),
+  );
+}
+
+class _VariantStockSheet extends StatelessWidget {
+  const _VariantStockSheet({
+    required this.detail,
+    required this.groups,
+    required this.unitLabel,
+    required this.warehouseLabels,
+    required this.onVariantTap,
+  });
+
+  final ProductDetail detail;
+  final List<_VariantStockGroup> groups;
+  final String unitLabel;
+  final Map<String, String> warehouseLabels;
+  final ValueChanged<ProductVariant> onVariantTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final total = groups.fold<num>(0, (sum, group) => sum + group.totalQty);
+    return DraggableScrollableSheet(
+      initialChildSize: 0.68,
+      minChildSize: 0.38,
+      maxChildSize: 0.92,
+      builder: (context, controller) => Container(
+        decoration: BoxDecoration(
+          color: c.surfaceElev,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: c.border,
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 10, 10),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Tồn kho biến thể',
+                          style: TextStyle(
+                            color: c.textPrimary,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '${detail.name} · ${_formatQty(total, unitLabel)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Đóng',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(TablerIcons.x),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: groups.isEmpty
+                  ? const Center(child: Text('Chưa có biến thể'))
+                  : ListView.separated(
+                      controller: controller,
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      itemCount: groups.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 10),
+                      itemBuilder: (context, index) => _VariantStockSheetRow(
+                        group: groups[index],
+                        unitLabel: unitLabel,
+                        warehouseLabels: warehouseLabels,
+                        onTap: () => onVariantTap(groups[index].variant),
+                      ),
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VariantStockSheetRow extends StatelessWidget {
+  const _VariantStockSheetRow({
+    required this.group,
+    required this.unitLabel,
+    required this.warehouseLabels,
+    required this.onTap,
+  });
+
+  final _VariantStockGroup group;
+  final String unitLabel;
+  final Map<String, String> warehouseLabels;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: c.surface,
+      borderRadius: BorderRadius.circular(14),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        key: ValueKey('variant-stock-${group.variant.id}'),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 12, 10, 12),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  _VariantThumb(imageUrl: group.variant.imageUrl),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      group.variant.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    _formatQty(group.totalQty, unitLabel),
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Icon(Icons.chevron_right, size: 20, color: c.textMuted),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (group.rows.isEmpty)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Chưa có tồn kho cho biến thể này',
+                    style: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                )
+              else
+                for (final stock in group.rows)
+                  _StockBranchLine(
+                    name:
+                        warehouseLabels[stock.warehouseId] ?? stock.warehouseId,
+                    qtyText: _formatQty(stock.qty, unitLabel),
+                  ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StockBranchLine extends StatelessWidget {
+  const _StockBranchLine({required this.name, required this.qtyText});
+
+  final String name;
+  final String qtyText;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Padding(
+      padding: const EdgeInsets.only(top: 6),
+      child: Row(
+        children: [
+          Icon(TablerIcons.building_store, size: 16, color: c.textMuted),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          Text(
+            qtyText,
+            style: TextStyle(
+              color: c.textPrimary,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VariantThumb extends StatelessWidget {
+  const _VariantThumb({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
+    final resolvedUrl = hasImage
+        ? '${Env.imageBaseUrl}/product-avatar/$imageUrl'
+        : null;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(11),
+      child: SizedBox(
+        width: 40,
+        height: 40,
+        child: hasImage
+            ? Image.network(
+                resolvedUrl!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const _VariantThumbIcon(),
+              )
+            : const _VariantThumbIcon(),
+      ),
+    );
+  }
+}
+
+class _VariantThumbIcon extends StatelessWidget {
+  const _VariantThumbIcon();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFFF1ECFB),
+      alignment: Alignment.center,
+      child: const Icon(
+        TablerIcons.versions,
+        color: Color(0xFF8B5CF6),
+        size: 20,
+      ),
+    );
+  }
+}
+
+String _formatQty(num value, String unitLabel) {
+  final qty = value == value.truncateToDouble()
+      ? value.toInt().toString()
+      : value.toString();
+  return '$qty $unitLabel';
+}
+
+class _VariantSectionNote extends StatelessWidget {
+  const _VariantSectionNote();
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(TablerIcons.info_circle, size: 18, color: c.textMuted),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Biến thể dưới đây chỉ hiển thị giá bán, giá nhập và giá xuất. '
+              'Tồn kho biến thể nằm ở mục Tồn kho.',
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 12,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VariantSummaryTile extends StatelessWidget {
+  const _VariantSummaryTile({
+    required this.variant,
+    required this.priceText,
+    required this.importPriceText,
+    required this.exportPriceText,
+    required this.onTap,
+  });
+
+  final ProductVariant variant;
+  final String priceText;
+  final String importPriceText;
+  final String exportPriceText;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        key: ValueKey('variant-price-${variant.id}'),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+          child: Row(
+            children: [
+              _VariantThumb(imageUrl: variant.imageUrl),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      variant.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _VariantChip(
+                          icon: TablerIcons.coin,
+                          label: priceText,
+                          foreground: c.success,
+                          background: const Color(0xFFE6F7F0),
+                        ),
+                        _VariantChip(
+                          icon: TablerIcons.arrow_down_circle,
+                          label: importPriceText,
+                          foreground: const Color(0xFF3B82F6),
+                          background: const Color(0xFFE7F1FB),
+                        ),
+                        _VariantChip(
+                          icon: TablerIcons.arrow_up_circle,
+                          label: exportPriceText,
+                          foreground: const Color(0xFFD97706),
+                          background: const Color(0xFFFEF6E5),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right, size: 20, color: c.textMuted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VariantChip extends StatelessWidget {
+  const _VariantChip({
+    required this.icon,
+    required this.label,
+    required this.foreground,
+    required this.background,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color foreground;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 13, color: foreground),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: foreground,
+                fontSize: 11,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

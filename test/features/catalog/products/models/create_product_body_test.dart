@@ -42,4 +42,30 @@ void main() {
       {'warehouseId': 'w-1', 'qty': 12},
     ]);
   });
+
+  test('toJson includes variants', () {
+    const b = CreateProductBody(
+      name: 'X',
+      baseUnitCode: 'each',
+      sellPrice: 1000,
+      variants: [
+        CreateProductVariantBody(
+          name: 'Size L',
+          sellPrice: 30000,
+          importPrice: 19000,
+          exportPrice: 32000,
+          attributeValueIds: ['av-1'],
+        ),
+      ],
+    );
+    expect(b.toJson()['variants'], [
+      {
+        'name': 'Size L',
+        'sellPrice': 30000,
+        'importPrice': 19000,
+        'exportPrice': 32000,
+        'attributeValueIds': ['av-1'],
+      },
+    ]);
+  });
 }

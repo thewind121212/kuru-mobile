@@ -11,6 +11,7 @@ import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 
 /// Hand-built request maps (per spec §3 — DTO wins over generated client).
@@ -210,6 +211,40 @@ class ProductRepository {
     }
   }
 
+  Future<ApiResult<List<ProductVariant>>> saveVariants({
+    required String productId,
+    List<ProductVariantUpsert> variants = const [],
+    List<String> deleteVariantIds = const [],
+  }) async {
+    if (variants.isEmpty && deleteVariantIds.isEmpty) {
+      return ApiResult.success(const <ProductVariant>[]);
+    }
+    try {
+      final res = await _dio.patch<dynamic>(
+        '/product/SaveProductVariants',
+        data: <String, dynamic>{
+          'productId': productId,
+          'variants': variants.map((v) => v.toJson()).toList(),
+          'deleteVariantIds': deleteVariantIds,
+        },
+      );
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final parsed = (data['variants'] as List<dynamic>? ?? const [])
+          .map((e) => ProductVariant.fromJson(e as Map<String, dynamic>))
+          .where((variant) => variant.id.isNotEmpty)
+          .toList();
+      log.i(
+        'SaveProductVariants ← ${res.statusCode} id=$productId '
+        'upsert=${variants.length} delete=${deleteVariantIds.length}',
+      );
+      return ApiResult.success(parsed);
+    } on DioException catch (e) {
+      log.w('SaveProductVariants($productId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
   /// Converts a [DioException] into a typed [ApiException].
   ///
   /// Prefers any [ApiException] already attached to `e.error` by the
@@ -220,6 +255,33 @@ class ProductRepository {
     if (attached is ApiException) return attached;
     return mapDioError(e);
   }
+}
+
+class ProductVariantUpsert {
+  const ProductVariantUpsert({
+    required this.name,
+    this.id,
+    this.sellPrice,
+    this.importPrice,
+    this.exportPrice,
+    this.attributeValueIds = const [],
+  });
+
+  final String? id;
+  final String name;
+  final num? sellPrice;
+  final num? importPrice;
+  final num? exportPrice;
+  final List<String> attributeValueIds;
+
+  Map<String, dynamic> toJson() => {
+    if (id != null) 'id': id,
+    'name': name,
+    if (sellPrice != null) 'sellPrice': sellPrice,
+    if (importPrice != null) 'importPrice': importPrice,
+    if (exportPrice != null) 'exportPrice': exportPrice,
+    if (attributeValueIds.isNotEmpty) 'attributeValueIds': attributeValueIds,
+  };
 }
 
 class ProductStockAdjustment {

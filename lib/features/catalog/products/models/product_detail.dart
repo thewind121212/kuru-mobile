@@ -1,7 +1,9 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_barcode.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_stock_location.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_umo.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 
 part 'product_detail.freezed.dart';
 
@@ -19,6 +21,8 @@ class ProductDetail with _$ProductDetail {
     required num totalQtyImported,
     @Default(<ProductStockLocation>[]) List<ProductStockLocation> stocks,
     @Default(<ProductUmo>[]) List<ProductUmo> umos,
+    @Default(<ProductVariant>[]) List<ProductVariant> variants,
+    @Default(<ProductBarcode>[]) List<ProductBarcode> barcodes,
     String? imageUrl,
     String? baseUnitLabel,
     num? exportPrice,
@@ -62,6 +66,14 @@ class ProductDetail with _$ProductDetail {
       umos: (json['umos'] as List<dynamic>? ?? const [])
           .map((e) => ProductUmo.fromJson(e as Map<String, dynamic>))
           .where((umo) => umo.label.isNotEmpty)
+          .toList(),
+      variants: (json['variants'] as List<dynamic>? ?? const [])
+          .map((e) => ProductVariant.fromJson(e as Map<String, dynamic>))
+          .where((variant) => variant.id.isNotEmpty && variant.name.isNotEmpty)
+          .toList(),
+      barcodes: (json['barcodes'] as List<dynamic>? ?? const [])
+          .map((e) => ProductBarcode.fromJson(e as Map<String, dynamic>))
+          .where((barcode) => barcode.id.isNotEmpty && barcode.value.isNotEmpty)
           .toList(),
     );
   }

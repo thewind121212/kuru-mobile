@@ -7,6 +7,7 @@ import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_stock_location.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_umo.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/product_detail_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
@@ -17,6 +18,7 @@ ProductDetail _detail({
   String? imageUrl,
   List<ProductStockLocation> stocks = const [],
   List<ProductUmo> umos = const [],
+  List<ProductVariant> variants = const [],
 }) => ProductDetail(
   id: 'p-1',
   name: 'Cà phê',
@@ -35,6 +37,7 @@ ProductDetail _detail({
   imageUrl: imageUrl,
   stocks: stocks,
   umos: umos,
+  variants: variants,
 );
 
 Widget _app(List<Override> overrides) => ProviderScope(
@@ -52,7 +55,14 @@ void main() {
         productByIdProvider('p-1').overrideWith(
           (_) => _detail(
             brand: 'TN',
-            stocks: const [ProductStockLocation(warehouseId: 'w-1', qty: 24)],
+            stocks: const [
+              ProductStockLocation(warehouseId: 'w-1', qty: 19),
+              ProductStockLocation(
+                warehouseId: 'w-1',
+                qty: 5,
+                variantId: 'v-1',
+              ),
+            ],
             umos: const [
               ProductUmo(
                 id: 'u-1',
@@ -61,11 +71,24 @@ void main() {
                 sellPrice: 500000,
               ),
             ],
+            variants: const [
+              ProductVariant(
+                id: 'v-1',
+                productId: 'p-1',
+                name: 'Size L',
+                isDefault: false,
+                sellPrice: 30000,
+                barcode: 'VAR-1',
+                avgCost: 0,
+                totalCostValue: 0,
+                totalQtyImported: 0,
+              ),
+            ],
           ),
         ),
         canWriteProductsProvider.overrideWithValue(true),
         productWarehouseOptionsProvider.overrideWith(
-          (ref) async => const [
+          (_) async => const [
             ProductWarehouseOption(warehouseId: 'w-1', name: 'Kho 1'),
           ],
         ),
@@ -77,8 +100,28 @@ void main() {
     expect(find.text('Giá'), findsOneWidget);
     expect(find.text('Đơn vị quy đổi'), findsOneWidget);
     expect(find.text('Thùng'), findsOneWidget);
-    expect(find.text('Tồn kho'), findsOneWidget);
+    expect(find.text('Biến thể bán hàng'), findsOneWidget);
+    expect(find.text('Size L'), findsWidgets);
+    expect(find.text('Có mã vạch'), findsNothing);
+    expect(find.text('VAR-1'), findsNothing);
+    await t.scrollUntilVisible(
+      find.byKey(const ValueKey('stock-summary-variants')),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Tồn kho đơn vị gốc'), findsOneWidget);
+    expect(find.text('19 Cái'), findsWidgets);
+    expect(find.text('Tồn kho biến thể'), findsOneWidget);
+    expect(find.text('Chạm để xem theo chi nhánh'), findsOneWidget);
+    expect(find.text('5 Cái'), findsWidgets);
+    expect(find.byKey(const ValueKey('variant-stock-v-1')), findsNothing);
+    expect(find.text('Kho 1'), findsNothing);
+    await t.tap(find.byKey(const ValueKey('stock-summary-variants')));
+    await t.pumpAndSettle();
+    expect(find.text('Tồn kho biến thể'), findsWidgets);
+    expect(find.byKey(const ValueKey('variant-stock-v-1')), findsOneWidget);
     expect(find.text('Kho 1'), findsOneWidget);
+    expect(find.text('Tồn kho'), findsWidgets);
     expect(find.text('Thống kê'), findsOneWidget);
     expect(find.text('Mô tả'), findsOneWidget);
     expect(find.text('TN'), findsOneWidget); // brand name rendered

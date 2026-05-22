@@ -2,6 +2,7 @@
 // ignore_for_file: non_constant_identifier_names
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
@@ -29,6 +30,7 @@ import 'package:kuru_mobile/features/catalog/products/models/create_product_body
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_umo.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
@@ -51,6 +53,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   late final Map<String, String> _baselineStockTextByWarehouse;
   final List<_UmoDraft> _umoDrafts = [];
   late final List<_UmoSnapshot> _baselineUmos;
+  final List<_VariantDraft> _variantDrafts = [];
+  late final List<_VariantSnapshot> _baselineVariants;
 
   File? _imageFile;
   String? _categoryId;
@@ -67,6 +71,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   String? _priceError;
   String? _stockError;
   String? _umoError;
+  String? _variantError;
   bool _submitting = false;
   bool _syncingUmoAutoPrices = false;
 
@@ -107,6 +112,15 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     ];
     for (final umo in _baselineUmos) {
       _umoDrafts.add(_attachUmoDraft(_UmoDraft.fromSnapshot(umo)));
+    }
+    _baselineVariants = [
+      for (final variant in p?.variants ?? const <ProductVariant>[])
+        if (!variant.isDefault) _VariantSnapshot.fromModel(variant),
+    ];
+    for (final variant in _baselineVariants) {
+      _variantDrafts.add(
+        _attachVariantDraft(_VariantDraft.fromSnapshot(variant)),
+      );
     }
     _baseUnitCode = p?.baseUnitCode ?? 'each';
     _sellPrice = p?.sellPrice.toInt();
@@ -153,6 +167,11 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         ..removeListener(_onUmoChanged)
         ..dispose();
     }
+    for (final draft in _variantDrafts) {
+      draft
+        ..removeListener(_onVariantChanged)
+        ..dispose();
+    }
     _descCtrl
       ..removeListener(_onDescChanged)
       ..dispose();
@@ -186,6 +205,12 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     });
   }
 
+  void _onVariantChanged() {
+    setState(() {
+      if (_variantError != null) _variantError = null;
+    });
+  }
+
   Map<String, String> _stockSeedByWarehouse(ProductDetail? p) {
     if (p == null || p.stocks.isEmpty) return const {};
     final totals = <String, num>{};
@@ -215,6 +240,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     if (_hasProductInfoChanges) return true;
     if (_isStockDirty) return true;
     if (_isUmoDirty) return true;
+    if (_isVariantDirty) return true;
     return false;
   }
 
@@ -286,6 +312,22 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     }
     _attachUmoDraft(draft);
     setState(() => _umoDrafts.add(draft));
+  }
+
+  @visibleForTesting
+  void debugAddVariant({
+    String name = 'Size L',
+    String sellPrice = '',
+    String importPrice = '',
+    String exportPrice = '',
+  }) {
+    final draft = _VariantDraft()
+      ..nameCtrl.text = name
+      ..sellPriceNotifier.value = int.tryParse(sellPrice)
+      ..importPriceNotifier.value = int.tryParse(importPrice)
+      ..exportPriceNotifier.value = int.tryParse(exportPrice);
+    _attachVariantDraft(draft);
+    setState(() => _variantDrafts.add(draft));
   }
 
   Future<void> _pickImage() async {
@@ -412,6 +454,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     }
     final umoChanges = _collectUmoChanges();
     if (!umoChanges.isValid) return;
+    final variantChanges = _collectVariantChanges();
+    if (!variantChanges.isValid) return;
 
     setState(() {
       _submitting = true;
@@ -419,6 +463,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       _priceError = null;
       _stockError = null;
       _umoError = null;
+      _variantError = null;
     });
 
     final desc = _descCtrl.text.trim();
@@ -444,6 +489,16 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   warehouseId: entry.key,
                   qty: entry.value,
                 ),
+          ],
+          variants: [
+            for (final variant in variantChanges.upserts)
+              CreateProductVariantBody(
+                name: variant.name,
+                sellPrice: variant.sellPrice,
+                importPrice: variant.importPrice,
+                exportPrice: variant.exportPrice,
+                attributeValueIds: variant.attributeValueIds,
+              ),
           ],
         ),
       );
@@ -522,6 +577,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         }
       }
 
+      if (variantChanges.hasChanges) {
+        final variantResult = await repo.saveVariants(
+          productId: p.id,
+          variants: variantChanges.upserts,
+          deleteVariantIds: variantChanges.deleteIds,
+        );
+        if (!mounted) return;
+        if (variantResult is ApiFailure<List<ProductVariant>>) {
+          _handleError(variantResult.err);
+          return;
+        }
+      }
+
       final orgId = ref.read(currentOrgIdProvider);
       if (_imageFile != null && orgId != null) {
         final uploadResult = await repo.uploadAvatar(
@@ -580,6 +648,11 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     return changes.upserts.isNotEmpty || changes.removeIds.isNotEmpty;
   }
 
+  bool get _isVariantDirty {
+    final changes = _collectVariantChanges(validate: false);
+    return changes.upserts.isNotEmpty || changes.deleteIds.isNotEmpty;
+  }
+
   void _addUmoDraft() {
     final draft = _attachUmoDraft(_UmoDraft());
     setState(() => _umoDrafts.add(draft));
@@ -594,10 +667,29 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     });
   }
 
+  void _addVariantDraft() {
+    final draft = _attachVariantDraft(_VariantDraft());
+    setState(() => _variantDrafts.add(draft));
+  }
+
+  void _removeVariantDraft(_VariantDraft draft) {
+    setState(() {
+      draft.removeListener(_onVariantChanged);
+      _variantDrafts.remove(draft);
+      draft.dispose();
+      _variantError = null;
+    });
+  }
+
   _UmoDraft _attachUmoDraft(_UmoDraft draft) {
     draft
       ..addListener(_onUmoChanged)
       ..syncAutoPrice(_sellPrice);
+    return draft;
+  }
+
+  _VariantDraft _attachVariantDraft(_VariantDraft draft) {
+    draft.addListener(_onVariantChanged);
     return draft;
   }
 
@@ -689,6 +781,76 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         if (umo.id != null && !activeExistingIds.contains(umo.id)) umo.id!,
     ];
     return _UmoChanges(upserts: upserts, removeIds: removeIds);
+  }
+
+  _VariantChanges _collectVariantChanges({bool validate = true}) {
+    final upserts = <ProductVariantUpsert>[];
+    final activeExistingIds = <String>{};
+    final baselineById = {
+      for (final variant in _baselineVariants)
+        if (variant.id != null) variant.id!: variant,
+    };
+    final seenNames = <String>{};
+
+    for (final draft in _variantDrafts) {
+      final snapshot = draft.snapshot;
+      final isEmpty =
+          snapshot.name.isEmpty &&
+          snapshot.sellPrice == null &&
+          snapshot.importPrice == null &&
+          snapshot.exportPrice == null;
+      if (isEmpty) continue;
+
+      if (snapshot.name.isEmpty) {
+        if (validate) setState(() => _variantError = 'Nhập tên biến thể');
+        return const _VariantChanges.invalid();
+      }
+      if (snapshot.name.length > 255) {
+        if (validate) {
+          setState(() => _variantError = 'Tên biến thể tối đa 255 ký tự');
+        }
+        return const _VariantChanges.invalid();
+      }
+      final nameKey = snapshot.name.trim().toLowerCase();
+      if (seenNames.contains(nameKey)) {
+        if (validate) {
+          setState(() => _variantError = 'Tên biến thể không được trùng nhau');
+        }
+        return const _VariantChanges.invalid();
+      }
+      seenNames.add(nameKey);
+      if ((snapshot.sellPrice != null && snapshot.sellPrice! < 0) ||
+          (snapshot.importPrice != null && snapshot.importPrice! < 0) ||
+          (snapshot.exportPrice != null && snapshot.exportPrice! < 0)) {
+        if (validate) {
+          setState(() => _variantError = 'Giá biến thể không được âm');
+        }
+        return const _VariantChanges.invalid();
+      }
+
+      final id = snapshot.id;
+      if (id != null) activeExistingIds.add(id);
+      final baseline = id == null ? null : baselineById[id];
+      if (baseline == null || snapshot.isDifferentFrom(baseline)) {
+        upserts.add(
+          ProductVariantUpsert(
+            id: id,
+            name: snapshot.name,
+            sellPrice: snapshot.sellPrice,
+            importPrice: snapshot.importPrice,
+            exportPrice: snapshot.exportPrice,
+            attributeValueIds: snapshot.attributeValueIds,
+          ),
+        );
+      }
+    }
+
+    final deleteIds = [
+      for (final variant in _baselineVariants)
+        if (variant.id != null && !activeExistingIds.contains(variant.id))
+          variant.id!,
+    ];
+    return _VariantChanges(upserts: upserts, deleteIds: deleteIds);
   }
 
   List<ProductStockAdjustment> _buildStockAdjustments(
@@ -991,6 +1153,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         errorText: _umoError,
                         onAdd: _addUmoDraft,
                         onRemove: _removeUmoDraft,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  _CreateSection(
+                    title: 'Biến thể',
+                    icon: TablerIcons.versions,
+                    children: [
+                      _VariantEditor(
+                        drafts: _variantDrafts,
+                        errorText: _variantError,
+                        onAdd: _addVariantDraft,
+                        onRemove: _removeVariantDraft,
                       ),
                     ],
                   ),
@@ -1748,6 +1923,346 @@ class _UmoDraftCard extends StatelessWidget {
             trailingIcon: KBarcodeScanButton(
               onScan: (value) => draft.barcodeCtrl.text = value,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VariantSnapshot {
+  const _VariantSnapshot({
+    required this.name,
+    this.id,
+    this.sellPrice,
+    this.importPrice,
+    this.exportPrice,
+    this.attributeValueIds = const [],
+  });
+
+  factory _VariantSnapshot.fromModel(ProductVariant variant) {
+    return _VariantSnapshot(
+      id: variant.id,
+      name: variant.name,
+      sellPrice: variant.sellPrice,
+      importPrice: variant.importPrice,
+      exportPrice: variant.exportPrice,
+      attributeValueIds: variant.attributeValueIds,
+    );
+  }
+
+  final String? id;
+  final String name;
+  final num? sellPrice;
+  final num? importPrice;
+  final num? exportPrice;
+  final List<String> attributeValueIds;
+
+  bool isDifferentFrom(_VariantSnapshot other) {
+    return name != other.name ||
+        sellPrice != other.sellPrice ||
+        importPrice != other.importPrice ||
+        exportPrice != other.exportPrice ||
+        !listEquals(attributeValueIds, other.attributeValueIds);
+  }
+}
+
+class _VariantChanges {
+  const _VariantChanges({required this.upserts, required this.deleteIds})
+    : isValid = true;
+
+  const _VariantChanges.invalid()
+    : upserts = const [],
+      deleteIds = const [],
+      isValid = false;
+
+  final List<ProductVariantUpsert> upserts;
+  final List<String> deleteIds;
+  final bool isValid;
+
+  bool get hasChanges => upserts.isNotEmpty || deleteIds.isNotEmpty;
+}
+
+class _VariantDraft {
+  _VariantDraft({this.id, this.attributeValueIds = const []});
+
+  factory _VariantDraft.fromSnapshot(_VariantSnapshot snapshot) {
+    final draft = _VariantDraft(
+      id: snapshot.id,
+      attributeValueIds: snapshot.attributeValueIds,
+    )..nameCtrl.text = snapshot.name;
+    draft.sellPriceNotifier.value = snapshot.sellPrice?.toInt();
+    draft.importPriceNotifier.value = snapshot.importPrice?.toInt();
+    draft.exportPriceNotifier.value = snapshot.exportPrice?.toInt();
+    return draft;
+  }
+
+  final String? id;
+  final List<String> attributeValueIds;
+  final nameCtrl = TextEditingController();
+  final sellPriceNotifier = ValueNotifier<int?>(null);
+  final importPriceNotifier = ValueNotifier<int?>(null);
+  final exportPriceNotifier = ValueNotifier<int?>(null);
+
+  _VariantSnapshot get snapshot => _VariantSnapshot(
+    id: id,
+    name: nameCtrl.text.trim(),
+    sellPrice: sellPriceNotifier.value,
+    importPrice: importPriceNotifier.value,
+    exportPrice: exportPriceNotifier.value,
+    attributeValueIds: attributeValueIds,
+  );
+
+  void addListener(VoidCallback listener) {
+    nameCtrl.addListener(listener);
+    sellPriceNotifier.addListener(listener);
+    importPriceNotifier.addListener(listener);
+    exportPriceNotifier.addListener(listener);
+  }
+
+  void removeListener(VoidCallback listener) {
+    nameCtrl.removeListener(listener);
+    sellPriceNotifier.removeListener(listener);
+    importPriceNotifier.removeListener(listener);
+    exportPriceNotifier.removeListener(listener);
+  }
+
+  void dispose() {
+    nameCtrl.dispose();
+    sellPriceNotifier.dispose();
+    importPriceNotifier.dispose();
+    exportPriceNotifier.dispose();
+  }
+}
+
+class _VariantEditor extends StatelessWidget {
+  const _VariantEditor({
+    required this.drafts,
+    required this.onAdd,
+    required this.onRemove,
+    this.errorText,
+  });
+
+  final List<_VariantDraft> drafts;
+  final VoidCallback onAdd;
+  final ValueChanged<_VariantDraft> onRemove;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (drafts.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: c.surfaceHover,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Sản phẩm chưa có biến thể. Thêm biến thể khi cùng một sản phẩm '
+              'có size, màu, hoặc quy cách bán khác nhau.',
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          )
+        else
+          ...drafts.map(
+            (draft) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _VariantDraftCard(
+                index: drafts.indexOf(draft),
+                draft: draft,
+                onRemove: () => onRemove(draft),
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        _AddVariantButton(onTap: onAdd),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: errorText == null
+              ? const SizedBox(key: ValueKey('variant-ok'), height: 0)
+              : Padding(
+                  key: const ValueKey('variant-error'),
+                  padding: const EdgeInsets.only(top: 8, left: 4),
+                  child: Text(
+                    errorText!,
+                    style: TextStyle(
+                      color: c.danger,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AddVariantButton extends StatelessWidget {
+  const _AddVariantButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.accent500, width: 1.2),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(TablerIcons.plus, size: 18, color: c.accent600),
+              const SizedBox(width: 8),
+              Text(
+                'Thêm biến thể',
+                style: TextStyle(
+                  color: c.accent600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VariantDraftCard extends StatelessWidget {
+  const _VariantDraftCard({
+    required this.index,
+    required this.draft,
+    required this.onRemove,
+  });
+
+  final int index;
+  final _VariantDraft draft;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: c.surfaceHover,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.borderSoft),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: c.accent500.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '${index + 1}',
+                  style: TextStyle(
+                    color: c.accent600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: draft.nameCtrl,
+                  builder: (context, _) {
+                    final name = draft.nameCtrl.text.trim();
+                    return Text(
+                      name.isEmpty ? 'Biến thể' : name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: name.isEmpty ? c.textMuted : c.accent600,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              InkWell(
+                onTap: onRemove,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(TablerIcons.trash, size: 20, color: c.danger),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          KTextField(
+            label: 'Tên biến thể',
+            controller: draft.nameCtrl,
+            placeholder: 'VD: Size L, Màu đỏ',
+            leadingIcon: const Icon(TablerIcons.versions),
+          ),
+          const SizedBox(height: 10),
+          ValueListenableBuilder<int?>(
+            valueListenable: draft.sellPriceNotifier,
+            builder: (context, price, _) => KCurrencyField(
+              label: 'Giá bán biến thể',
+              value: price,
+              onChanged: (value) => draft.sellPriceNotifier.value = value,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: draft.importPriceNotifier,
+                  builder: (context, price, _) => KCurrencyField(
+                    label: 'Giá nhập',
+                    value: price,
+                    onChanged: (value) =>
+                        draft.importPriceNotifier.value = value,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ValueListenableBuilder<int?>(
+                  valueListenable: draft.exportPriceNotifier,
+                  builder: (context, price, _) => KCurrencyField(
+                    label: 'Giá xuất',
+                    value: price,
+                    onChanged: (value) =>
+                        draft.exportPriceNotifier.value = value,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

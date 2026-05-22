@@ -37,6 +37,31 @@ void main() {
           ],
         },
       ],
+      'variants': [
+        {
+          'id': 'v-1',
+          'productId': 'p-1',
+          'name': 'Size L',
+          'isDefault': false,
+          'sellPrice': 30000,
+          'barcode': 'VAR-1',
+          'attributeValueIds': ['av-1'],
+          'avgCost': 19000,
+          'totalCostValue': 38000,
+          'totalQtyImported': 2,
+        },
+      ],
+      'barcodes': [
+        {
+          'id': 'bc-1',
+          'orgId': 'o-1',
+          'value': 'ALIAS-1',
+          'productId': 'p-1',
+          'variantId': 'v-1',
+          'kind': 'ALIAS',
+          'isActive': true,
+        },
+      ],
     };
     final p = ProductDetail.fromJson(json);
     expect(p.id, 'p-1');
@@ -64,6 +89,16 @@ void main() {
     expect(p.umos.single.ratio, 24);
     expect(p.umos.single.sellPrice, 240000);
     expect(p.umos.single.barcode, 'box-1');
+    expect(p.variants.single.id, 'v-1');
+    expect(p.variants.single.name, 'Size L');
+    expect(p.variants.single.isDefault, false);
+    expect(p.variants.single.sellPrice, 30000);
+    expect(p.variants.single.barcode, 'VAR-1');
+    expect(p.variants.single.attributeValueIds, ['av-1']);
+    expect(p.barcodes.single.id, 'bc-1');
+    expect(p.barcodes.single.value, 'ALIAS-1');
+    expect(p.barcodes.single.variantId, 'v-1');
+    expect(p.barcodes.single.isAlias, true);
   });
 
   test('ProductDetail.fromJson normalizes empty imageUrl to null', () {

@@ -9,6 +9,7 @@ import 'package:kuru_mobile/features/catalog/products/models/create_product_body
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -285,6 +286,66 @@ void main() {
         },
       ]);
       expect(captured['removeUmoIds'], ['u-2']);
+    });
+  });
+
+  group('saveVariants', () {
+    test('PATCH sends upserts and deletions', () async {
+      when(
+        () => dio.patch<dynamic>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => ok({
+          'success': true,
+          'variants': [
+            {
+              'id': 'v-1',
+              'productId': 'p-1',
+              'name': 'Size L',
+              'isDefault': false,
+              'sellPrice': 30000,
+              'avgCost': 0,
+              'totalCostValue': 0,
+              'totalQtyImported': 0,
+            },
+          ],
+        }),
+      );
+      final res = await repo.saveVariants(
+        productId: 'p-1',
+        variants: const [
+          ProductVariantUpsert(
+            id: 'v-1',
+            name: 'Size L',
+            sellPrice: 30000,
+            importPrice: 19000,
+            exportPrice: 32000,
+          ),
+        ],
+        deleteVariantIds: const ['v-2'],
+      );
+      expect(res, isA<ApiSuccess<List<ProductVariant>>>());
+      final captured =
+          verify(
+                () => dio.patch<dynamic>(
+                  '/product/SaveProductVariants',
+                  data: captureAny(named: 'data'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured, {
+        'productId': 'p-1',
+        'variants': [
+          {
+            'id': 'v-1',
+            'name': 'Size L',
+            'sellPrice': 30000,
+            'importPrice': 19000,
+            'exportPrice': 32000,
+          },
+        ],
+        'deleteVariantIds': ['v-2'],
+      });
+      expect((res as ApiSuccess<List<ProductVariant>>).data, hasLength(1));
     });
   });
 
