@@ -10,6 +10,7 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/design/auth/auth_backdrop.dart';
+import 'package:kuru_mobile/design/auth/sign_out_pill.dart';
 import 'package:kuru_mobile/design/widgets/k_glass.dart';
 import 'package:kuru_mobile/design/widgets/k_primary_btn.dart';
 
@@ -76,6 +77,28 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen> {
     ref.invalidate(appBootstrapProvider);
   }
 
+  Future<void> _confirmSignOut() async {
+    final l = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.totpSignOut),
+        content: Text(l.totpSignOutConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l.commonCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l.totpSignOut),
+          ),
+        ],
+      ),
+    );
+    if (confirmed ?? false) await _signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
@@ -91,7 +114,14 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 24),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: SignOutPill(
+                      label: l.commonSignOut,
+                      onTap: _confirmSignOut,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   Container(
                     width: 56,
                     height: 56,
@@ -202,19 +232,6 @@ class _RecoveryCodeScreenState extends ConsumerState<RecoveryCodeScreen> {
                       l.totpBackToAuthenticator,
                       style: TextStyle(
                         color: c.textSecondary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                  const Spacer(),
-                  TextButton.icon(
-                    onPressed: _signOut,
-                    icon: Icon(Icons.logout, color: c.textMuted, size: 16),
-                    label: Text(
-                      l.totpSignOut,
-                      style: TextStyle(
-                        color: c.textMuted,
                         fontWeight: FontWeight.w600,
                         fontSize: 13,
                       ),
