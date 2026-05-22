@@ -4,7 +4,8 @@ import 'package:kuru_mobile/core/auth/user_info.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:supertokens_flutter/supertokens.dart';
 
-/// Currently-selected org id. Null until bootstrap completes successfully.
+/// Explicit override for the current org id — set by OrgPicker or
+/// CreateStore. Null means "fall back to bootstrap-derived org".
 class CurrentOrgIdController extends Notifier<String?> {
   @override
   String? build() => null;
@@ -14,49 +15,52 @@ class CurrentOrgIdController extends Notifier<String?> {
   void clear() => state = null;
 }
 
-final currentOrgIdProvider = NotifierProvider<CurrentOrgIdController, String?>(
+final orgIdOverrideProvider = NotifierProvider<CurrentOrgIdController, String?>(
   CurrentOrgIdController.new,
 );
 
-/// Bridge to the dio client: every interceptor read reads the *current*
-/// value (Riverpod handles this automatically because the dio provider
-/// has access to `ref`).
-final _orgIdBridgeProvider = Provider<String?>((ref) {
-  return ref.watch(currentOrgIdProvider);
+/// Derived single source of truth for the current org id.
+/// Resolution order:
+///   1. Explicit override (`orgIdOverrideProvider`) — used by OrgPicker /
+///      CreateStore flows that need to switch orgs intentionally.
+///   2. Bootstrap result — auto-picks the first org of an authed user.
+/// Returns null when no session, no orgs, or sign-out has cleared both.
+///
+/// This is consumed by the dio interceptor and any feature that needs the
+/// active org. Because it is *derived*, there is no microtask race between
+/// bootstrap completion and the first authenticated request firing.
+final Provider<String?> currentOrgIdProvider = Provider<String?>((ref) {
+  final override = ref.watch(orgIdOverrideProvider);
+  if (override != null) return override;
+  final boot = ref.watch(appBootstrapProvider).valueOrNull;
+  if (boot is BootstrapAuthed) {
+    return boot.user.orgInfos.isEmpty ? null : boot.user.orgInfos.first.id;
+  }
+  return null;
 });
 
 /// One-shot bootstrap: does the user have a valid session? If so, fetch
-/// their orgs and pick the first one.
-final appBootstrapProvider = FutureProvider<BootstrapResult>((ref) async {
-  // wire the bridge first so the dio interceptor reads live state
-  ref.read(_orgIdBridgeProvider);
+/// their orgs. The active org id is then derived by
+/// [currentOrgIdProvider] — bootstrap itself never mutates org state, so
+/// there is no microtask race with the first authenticated request.
+final FutureProvider<BootstrapResult> appBootstrapProvider =
+    FutureProvider<BootstrapResult>((ref) async {
+      final hasSession = await SuperTokens.doesSessionExist();
+      if (!hasSession) return const BootstrapUnauthed();
 
-  final hasSession = await SuperTokens.doesSessionExist();
-  if (!hasSession) return const BootstrapUnauthed();
-
-  final repo = ref.read(authRepositoryProvider);
-  final result = await repo.getUserInfo();
-  return switch (result) {
-    ApiSuccess<UserInfo>(:final data) => () {
-      // BE returns totpEnabled=true ONLY while the session's mfaCompleted
-      // flag is still false. Once VerifyTotpCode (or UseRecoveryCode)
-      // succeeds, the next getUserInfo call returns totpEnabled=false and
-      // we transition into BootstrapAuthed on the next invalidate.
-      if (data.totpEnabled) {
-        return BootstrapMfaPending(data);
-      }
-      // Auto-pick first org for MVP; OrgPicker handles 2+ orgs.
-      if (data.orgInfos.isNotEmpty) {
-        Future.microtask(() {
-          ref.read(currentOrgIdProvider.notifier).orgId =
-              data.orgInfos.first.id;
-        });
-      }
-      return BootstrapAuthed(data);
-    }(),
-    ApiFailure<UserInfo>() => const BootstrapUnauthed(),
-  };
-});
+      final repo = ref.read(authRepositoryProvider);
+      final result = await repo.getUserInfo();
+      return switch (result) {
+        ApiSuccess<UserInfo>(:final data) =>
+          // BE returns totpEnabled=true ONLY while the session's
+          // mfaCompleted flag is still false. Once VerifyTotpCode (or
+          // UseRecoveryCode) succeeds, the next getUserInfo call returns
+          // totpEnabled=false and we transition into BootstrapAuthed on the
+          // next invalidate.
+          data.totpEnabled ? BootstrapMfaPending(data) : BootstrapAuthed(data),
+        ApiFailure<UserInfo>() => const BootstrapUnauthed(),
+      };
+    });
 
 sealed class BootstrapResult {
   const BootstrapResult();

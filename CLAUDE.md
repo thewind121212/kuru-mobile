@@ -195,6 +195,26 @@ To replay onboarding mid-session: long-press the kuru logo on the Login screen (
 
 To force a fresh start (wipes onboarding-seen flag + session): `xcrun simctl uninstall booted com.kuru.kuruMobile`.
 
+### Installing builds — always use `xcrun`, never `flutter install`
+
+`flutter install` runs `idevicestaller -U <bundleId>` (uninstall) before the install, which wipes the app sandbox — including `flutter_secure_storage` tokens — so the user has to sign in again on every iteration. `xcrun` installs in place and preserves session state.
+
+**Physical iPhone (wireless or USB):**
+```bash
+flutter build ios --release --dart-define=API_BASE_URL=http://<lan-ip>:9190
+xcrun devicectl device install app --device <device-id> build/ios/iphoneos/Runner.app
+# device-id from: flutter devices  (the long UDID, e.g. 00008130-000C51693E0A001C)
+```
+
+**Simulator:**
+```bash
+flutter build ios --simulator --debug --dart-define=API_BASE_URL=http://localhost:9190
+xcrun simctl install booted build/ios/iphonesimulator/Runner.app
+xcrun simctl launch booted com.kuru.kuruMobile
+```
+
+Use `flutter run -d <id>` (it attaches, no uninstall step) when you want hot-reload / logs during dev. Reserve `flutter build + xcrun … install` for the "give-me-the-app-on-device" workflow where state must persist between rebuilds.
+
 ## Tests
 
 ```bash

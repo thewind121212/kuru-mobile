@@ -117,12 +117,12 @@ void main() {
       addTearDown(container.dispose);
 
       // First read with org A.
-      container.read(currentOrgIdProvider.notifier).orgId = 'org-a';
+      container.read(orgIdOverrideProvider.notifier).orgId = 'org-a';
       await container.read(categoryOverviewProvider.future);
       expect(callCount, 1);
 
       // Switch to org B — provider should refire on next read.
-      container.read(currentOrgIdProvider.notifier).orgId = 'org-b';
+      container.read(orgIdOverrideProvider.notifier).orgId = 'org-b';
       container.invalidate(categoryOverviewProvider);
       await container.read(categoryOverviewProvider.future);
       expect(callCount, 2);
@@ -141,12 +141,12 @@ void main() {
       addTearDown(container.dispose);
 
       // First read with org A.
-      container.read(currentOrgIdProvider.notifier).orgId = 'org-a';
+      container.read(orgIdOverrideProvider.notifier).orgId = 'org-a';
       await container.read(categoryByIdProvider('cat-1').future);
       expect(callCount, 1);
 
       // Switch to org B — provider should refire on next read.
-      container.read(currentOrgIdProvider.notifier).orgId = 'org-b';
+      container.read(orgIdOverrideProvider.notifier).orgId = 'org-b';
       container.invalidate(categoryByIdProvider('cat-1'));
       await container.read(categoryByIdProvider('cat-1').future);
       expect(callCount, 2);
@@ -163,7 +163,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    container.read(currentOrgIdProvider.notifier).orgId = 'org-a';
+    container.read(orgIdOverrideProvider.notifier).orgId = 'org-a';
     await container.read(categoryByIdProvider('cat-1').future);
     expect(callCountsByid['cat-1'], 1);
 

@@ -45,9 +45,7 @@ void main() {
           ),
           biometricEnabledProvider.overrideWith((ref) async => false),
           biometricAvailableProvider.overrideWith((ref) async => true),
-          currentOrgIdProvider.overrideWith(
-            () => CurrentOrgIdController()..orgId = 'o1',
-          ),
+          currentOrgIdProvider.overrideWithValue('o1'),
         ],
       ),
     );
@@ -68,9 +66,7 @@ void main() {
           ),
           biometricEnabledProvider.overrideWith((ref) async => false),
           biometricAvailableProvider.overrideWith((ref) async => true),
-          currentOrgIdProvider.overrideWith(
-            () => CurrentOrgIdController()..orgId = 'o1',
-          ),
+          currentOrgIdProvider.overrideWithValue('o1'),
         ],
       ),
     );

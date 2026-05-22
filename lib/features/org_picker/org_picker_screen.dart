@@ -59,7 +59,7 @@ class OrgPickerScreen extends ConsumerWidget {
                     org: org,
                     active: org.id == currentOrgId,
                     onTap: () {
-                      ref.read(currentOrgIdProvider.notifier).orgId = org.id;
+                      ref.read(orgIdOverrideProvider.notifier).orgId = org.id;
                       context.go('/home');
                     },
                   ),

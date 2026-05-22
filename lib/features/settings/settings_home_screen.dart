@@ -141,7 +141,7 @@ class SettingsHomeScreen extends ConsumerWidget {
                   onTap: () async {
                     final repo = ref.read(authRepositoryProvider);
                     await repo.signOut();
-                    ref.read(currentOrgIdProvider.notifier).clear();
+                    ref.read(orgIdOverrideProvider.notifier).clear();
                     ref.invalidate(appBootstrapProvider);
                   },
                 ),
