@@ -12,6 +12,7 @@ class KTextField extends StatelessWidget {
     super.key,
     this.errorText,
     this.leadingIcon,
+    this.trailingIcon,
     this.placeholder,
     this.keyboardType,
     this.textInputAction,
@@ -26,6 +27,7 @@ class KTextField extends StatelessWidget {
   final TextEditingController controller;
   final String? errorText;
   final Widget? leadingIcon;
+  final Widget? trailingIcon;
   final String? placeholder;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
@@ -84,6 +86,7 @@ class KTextField extends StatelessWidget {
                     ),
                     child: leadingIcon!,
                   ),
+            suffixIcon: trailingIcon,
             filled: true,
             fillColor: c.surfaceElev,
             counterText: '',

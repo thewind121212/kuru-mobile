@@ -74,6 +74,7 @@ dependencies:
     path: lib/api/brand
   kuru_product_api:
     path: lib/api/product
+  mobile_scanner: ^7.2.0
 
 dev_dependencies:
   flutter_test:
