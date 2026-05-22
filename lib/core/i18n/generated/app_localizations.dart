@@ -254,6 +254,24 @@ abstract class AppLocalizations {
   /// **'Đăng xuất & đổi tài khoản'**
   String get totpSignOut;
 
+  /// No description provided for @totpSignOutConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng xuất khỏi phiên xác thực này? Bạn sẽ cần đăng nhập lại từ đầu.'**
+  String get totpSignOutConfirm;
+
+  /// No description provided for @commonCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy'**
+  String get commonCancel;
+
+  /// No description provided for @commonSignOut.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đăng xuất'**
+  String get commonSignOut;
+
   /// No description provided for @totpWrongCode.
   ///
   /// In vi, this message translates to:

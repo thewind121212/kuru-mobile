@@ -91,6 +91,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get totpSignOut => 'Sign out & switch account';
 
   @override
+  String get totpSignOutConfirm =>
+      'Sign out of this verification session? You\'ll need to log in again from the start.';
+
+  @override
+  String get commonCancel => 'Cancel';
+
+  @override
+  String get commonSignOut => 'Sign out';
+
+  @override
   String get totpWrongCode => 'Wrong code, please try again.';
 
   @override

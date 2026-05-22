@@ -30,4 +30,16 @@ void main() {
     expect(json['brandId'], 'b-1');
     expect(json['description'], 'd');
   });
+
+  test('toJson includes initial branch stock', () {
+    const b = CreateProductBody(
+      name: 'X',
+      baseUnitCode: 'each',
+      sellPrice: 1000,
+      initialStocks: [CreateProductStockBody(warehouseId: 'w-1', qty: 12)],
+    );
+    expect(b.toJson()['initialStocks'], [
+      {'warehouseId': 'w-1', 'qty': 12},
+    ]);
+  });
 }

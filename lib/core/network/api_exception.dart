@@ -36,3 +36,13 @@ class ServerException extends ApiException {
 class UnknownException extends ApiException {
   const UnknownException(super.message);
 }
+
+/// Raised by the dio org-id interceptor when an authenticated request fires
+/// before `currentOrgIdProvider` resolves a value. Surfaces as a fast
+/// rejection instead of letting the request hit BE without `x-org-id` (which
+/// returns a 401 that supertokens then chases through a stalled refresh
+/// chain, surfacing in the UI as an opaque `TimeoutException`).
+class OrgNotReadyException extends ApiException {
+  const OrgNotReadyException()
+    : super('Org context not ready — try again in a moment');
+}

@@ -52,12 +52,27 @@ class _KFormFieldState extends State<KFormField> {
     super.initState();
     _revealed = false;
     _focusNode = FocusNode();
+    widget.controller.addListener(_handleControllerChanged);
   }
 
   @override
   void dispose() {
+    widget.controller.removeListener(_handleControllerChanged);
     _focusNode.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant KFormField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == widget.controller) return;
+    oldWidget.controller.removeListener(_handleControllerChanged);
+    widget.controller.addListener(_handleControllerChanged);
+  }
+
+  void _handleControllerChanged() {
+    if (!_revealed) return;
+    setState(() {});
   }
 
   @override
@@ -65,101 +80,141 @@ class _KFormFieldState extends State<KFormField> {
     final c = kuruColors(context);
     final hasError = widget.errorText != null;
     final showEye = widget.obscureText;
-    final effectivelyObscured = widget.obscureText && !_revealed;
+    final showVisualPassword = widget.obscureText && _revealed;
     final l = showEye ? AppLocalizations.of(context) : null;
+    final textStyle = TextStyle(
+      fontSize: 16,
+      color: showVisualPassword ? Colors.transparent : c.textPrimary,
+      fontWeight: FontWeight.w500,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        KGlass(
-          borderRadius: BorderRadius.circular(14),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          borderColor: hasError ? c.danger : null,
-          borderWidth: hasError ? 1.5 : null,
-          child: Row(
-            children: [
-              // Leading icon + label are wrapped in their own focus-on-tap
-              // areas so a tap there focuses the TextField. The eye
-              // IconButton stays outside this wrapper to avoid a gesture
-              // arena fight that caused the keyboard to flicker.
-              if (widget.icon != null) ...[
-                GestureDetector(
-                  onTap: _focusNode.requestFocus,
-                  behavior: HitTestBehavior.opaque,
-                  child: IconTheme(
+        // Outer GestureDetector — translucent so TextField still gets its
+        // own tap (caret + IME), but a tap on the icon, label, or any
+        // whitespace inside the glass still focuses the field. Replaces
+        // the previous per-child GestureDetectors whose 18px hit boxes
+        // missed users tapping just outside the icon.
+        GestureDetector(
+          onTap: _focusNode.requestFocus,
+          behavior: HitTestBehavior.translucent,
+          child: KGlass(
+            borderRadius: BorderRadius.circular(14),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            borderColor: hasError ? c.danger : null,
+            borderWidth: hasError ? 1.5 : null,
+            child: Row(
+              children: [
+                if (widget.icon != null) ...[
+                  IconTheme(
                     data: IconThemeData(
                       color: hasError ? c.danger : c.textMuted,
-                      size: 18,
+                      size: 20,
                     ),
                     child: widget.icon!,
                   ),
-                ),
-                const SizedBox(width: 10),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    GestureDetector(
-                      onTap: _focusNode.requestFocus,
-                      behavior: HitTestBehavior.opaque,
-                      child: Text(
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
                         widget.label,
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: hasError ? c.danger : c.textMuted,
                           letterSpacing: 0.5,
                         ),
                       ),
-                    ),
-                    TextField(
-                      controller: widget.controller,
-                      focusNode: _focusNode,
-                      obscureText: effectivelyObscured,
-                      keyboardType: widget.keyboardType,
-                      autofillHints: widget.autofillHints,
-                      textInputAction: widget.textInputAction,
-                      onSubmitted: widget.onSubmitted,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: c.textPrimary,
-                        fontWeight: FontWeight.w500,
+                      Stack(
+                        alignment: Alignment.centerLeft,
+                        children: [
+                          TextField(
+                            controller: widget.controller,
+                            focusNode: _focusNode,
+                            obscureText: widget.obscureText,
+                            keyboardType: widget.keyboardType,
+                            autofillHints: widget.autofillHints,
+                            textInputAction: widget.textInputAction,
+                            onSubmitted: widget.onSubmitted,
+                            autocorrect: !widget.obscureText,
+                            enableSuggestions: !widget.obscureText,
+                            cursorColor: c.textPrimary,
+                            style: textStyle,
+                            decoration: const InputDecoration(
+                              isDense: true,
+                              border: InputBorder.none,
+                              contentPadding: EdgeInsets.zero,
+                            ),
+                          ),
+                          if (showVisualPassword)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: ClipRect(
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: ExcludeSemantics(
+                                      child: Text(
+                                        widget.controller.text,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.clip,
+                                        softWrap: false,
+                                        style: textStyle.copyWith(
+                                          color: c.textPrimary,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
+                    ],
+                  ),
+                ),
+                if (showEye) ...[
+                  const SizedBox(width: 6),
+                  // Plain GestureDetector instead of IconButton: IconButton's
+                  // InkResponse loses the gesture arena to the screen-level
+                  // "tap-outside-to-unfocus" GestureDetector in Login /
+                  // Register, which then unfocuses the TextField → keyboard
+                  // hides → setState rebuild reveals the password → layout
+                  // jumps. A bare GestureDetector with opaque behavior
+                  // claims the tap cleanly, and `ExcludeFocus` keeps the
+                  // TextField's focus intact across the toggle so the IME
+                  // stays open and the screen does not re-flow.
+                  ExcludeFocus(
+                    child: Semantics(
+                      label: _revealed
+                          ? l!.fieldPasswordHide
+                          : l!.fieldPasswordShow,
+                      button: true,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _revealed = !_revealed),
+                        child: SizedBox(
+                          width: 36,
+                          height: 36,
+                          child: Icon(
+                            _revealed
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
+                            size: 20,
+                            color: c.textMuted,
+                          ),
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ),
-              if (showEye) ...[
-                const SizedBox(width: 6),
-                IconButton(
-                  tooltip: _revealed
-                      ? l!.fieldPasswordHide
-                      : l!.fieldPasswordShow,
-                  onPressed: () => setState(() => _revealed = !_revealed),
-                  icon: Icon(
-                    _revealed
-                        ? Icons.visibility_off_outlined
-                        : Icons.visibility_outlined,
-                    size: 18,
-                    color: c.textMuted,
                   ),
-                  padding: EdgeInsets.zero,
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints.tightFor(
-                    width: 32,
-                    height: 32,
-                  ),
-                ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
         // Helper slot — animates between 0 and ~20px so the layout doesn't

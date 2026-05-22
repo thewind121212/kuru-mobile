@@ -54,12 +54,11 @@ class _CreateOrgScreenState extends ConsumerState<CreateOrgScreen> {
     if (!mounted) return;
     switch (storeResult) {
       case ApiSuccess<String>(:final data):
-        // Set the org id synchronously BEFORE invalidating bootstrap, so the
-        // upcoming getUserInfo (and any feature call after it) carries
-        // `x-org-id` — the dio interceptor reads this provider on each
-        // request. Without the eager set, there's a race where bootstrap's
-        // microtask hasn't fired yet when the next request goes out.
-        ref.read(currentOrgIdProvider.notifier).orgId = data;
+        // Set the override BEFORE invalidating bootstrap so the upcoming
+        // getUserInfo (and any feature call after it) carries `x-org-id`.
+        // currentOrgIdProvider reads override first, then falls back to the
+        // bootstrap-derived value once the refreshed user info lands.
+        ref.read(orgIdOverrideProvider.notifier).orgId = data;
         ref.invalidate(appBootstrapProvider);
       case ApiFailure<String>(:final err):
         setState(() {
@@ -77,7 +76,7 @@ class _CreateOrgScreenState extends ConsumerState<CreateOrgScreen> {
   Future<void> _logout() async {
     final repo = ref.read(authRepositoryProvider);
     await repo.signOut();
-    ref.read(currentOrgIdProvider.notifier).clear();
+    ref.read(orgIdOverrideProvider.notifier).clear();
     ref.invalidate(appBootstrapProvider);
   }
 

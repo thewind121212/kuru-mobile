@@ -193,6 +193,7 @@ class _CreateEditBodyState extends ConsumerState<_CreateEditBody> {
         break;
       case NetworkException():
       case TimeoutException():
+      case OrgNotReadyException():
         KNotify.warning(context, l.categoryNotifyNetwork);
       case ServerException():
       case UnknownException():

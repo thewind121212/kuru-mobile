@@ -22,10 +22,13 @@ import 'package:kuru_mobile/design/core/input/k_textarea.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 import 'package:kuru_mobile/features/catalog/brands/providers/brand_providers.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_umo.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/category_brand_picker_sheet.dart';
@@ -43,6 +46,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   late final TextEditingController _nameCtrl;
   late final TextEditingController _demandStockCtrl;
   late final TextEditingController _descCtrl;
+  final Map<String, TextEditingController> _stockCtrls = {};
+  late final Map<String, String> _baselineStockTextByWarehouse;
+  final List<_UmoDraft> _umoDrafts = [];
+  late final List<_UmoSnapshot> _baselineUmos;
 
   File? _imageFile;
   String? _categoryId;
@@ -57,7 +64,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
 
   String? _nameError;
   String? _priceError;
+  String? _stockError;
+  String? _umoError;
   bool _submitting = false;
+  bool _syncingUmoAutoPrices = false;
 
   late String _baselineName;
   late String? _baselineCategoryId;
@@ -79,6 +89,24 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     _categoryId = p?.categoryId;
     _brandId = p?.brandId;
     _brandName = p?.brandName;
+    _baselineStockTextByWarehouse = _stockSeedByWarehouse(p);
+    for (final entry in _baselineStockTextByWarehouse.entries) {
+      _stockCtrls[entry.key] = TextEditingController(text: entry.value)
+        ..addListener(_onStockQtyChanged);
+    }
+    _baselineUmos = [
+      for (final umo in p?.umos ?? const <ProductUmo>[])
+        _UmoSnapshot(
+          id: umo.id,
+          label: umo.label,
+          ratio: umo.ratio,
+          sellPrice: umo.sellPrice,
+          barcode: umo.barcode,
+        ),
+    ];
+    for (final umo in _baselineUmos) {
+      _umoDrafts.add(_attachUmoDraft(_UmoDraft.fromSnapshot(umo)));
+    }
     _baseUnitCode = p?.baseUnitCode ?? 'each';
     _sellPrice = p?.sellPrice.toInt();
     _importPrice = p?.importPrice?.toInt();
@@ -114,6 +142,16 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     _demandStockCtrl
       ..removeListener(_onDemandStockChanged)
       ..dispose();
+    for (final ctrl in _stockCtrls.values) {
+      ctrl
+        ..removeListener(_onStockQtyChanged)
+        ..dispose();
+    }
+    for (final draft in _umoDrafts) {
+      draft
+        ..removeListener(_onUmoChanged)
+        ..dispose();
+    }
     _descCtrl
       ..removeListener(_onDescChanged)
       ..dispose();
@@ -134,9 +172,53 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     setState(() {});
   }
 
+  void _onStockQtyChanged() {
+    setState(() {
+      if (_stockError != null) _stockError = null;
+    });
+  }
+
+  void _onUmoChanged() {
+    if (!_syncingUmoAutoPrices) _syncUmoAutoPrices();
+    setState(() {
+      if (_umoError != null) _umoError = null;
+    });
+  }
+
+  Map<String, String> _stockSeedByWarehouse(ProductDetail? p) {
+    if (p == null || p.stocks.isEmpty) return const {};
+    final totals = <String, num>{};
+    for (final stock in p.stocks) {
+      totals.update(
+        stock.warehouseId,
+        (current) => current + stock.qty,
+        ifAbsent: () => stock.qty,
+      );
+    }
+    return {
+      for (final entry in totals.entries)
+        entry.key: entry.value == 0 ? '' : _formatQtyInput(entry.value),
+    };
+  }
+
+  String _formatQtyInput(num value) {
+    if (value is int || value == value.truncateToDouble()) {
+      return value.toInt().toString();
+    }
+    return value.toString();
+  }
+
   bool get _isDirty {
     if (widget.initial == null) return true; // Always dirty in create mode
     if (_imageFile != null) return true;
+    if (_hasProductInfoChanges) return true;
+    if (_isStockDirty) return true;
+    if (_isUmoDirty) return true;
+    return false;
+  }
+
+  bool get _hasProductInfoChanges {
+    if (widget.initial == null) return true;
     if (_nameCtrl.text.trim() != _baselineName.trim()) return true;
     if (_categoryId != _baselineCategoryId) return true;
     if (_brandId != _baselineBrandId) return true;
@@ -158,7 +240,10 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       _sellPrice! > 0;
 
   @visibleForTesting
-  void debugSetSellPrice(int? value) => setState(() => _sellPrice = value);
+  void debugSetSellPrice(int? value) {
+    setState(() => _sellPrice = value);
+    _syncUmoAutoPrices();
+  }
 
   @visibleForTesting
   void debugSetImportPrice(int? value) => setState(() => _importPrice = value);
@@ -173,6 +258,34 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   // Test hook mirrors user text entry without driving a far-off TextField.
   // ignore: use_setters_to_change_properties
   void debugSetDemandStock(String value) => _demandStockCtrl.text = value;
+
+  @visibleForTesting
+  // Test hook mirrors user text entry without driving a far-off TextField.
+  // ignore: use_setters_to_change_properties
+  void debugSetStockQty(String value, [String warehouseId = 'w-1']) =>
+      _ensureStockController(warehouseId).text = value;
+
+  @visibleForTesting
+  void debugSetBranchStock(String warehouseId, String value) =>
+      _ensureStockController(warehouseId).text = value;
+
+  @visibleForTesting
+  void debugAddUmo({
+    String label = 'Thùng',
+    String ratio = '24',
+    String sellPrice = '',
+    String barcode = '',
+  }) {
+    final draft = _UmoDraft()
+      ..labelCtrl.text = label
+      ..ratioCtrl.text = ratio
+      ..barcodeCtrl.text = barcode;
+    if (sellPrice.isNotEmpty) {
+      draft.priceNotifier.value = int.tryParse(sellPrice);
+    }
+    _attachUmoDraft(draft);
+    setState(() => _umoDrafts.add(draft));
+  }
 
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(
@@ -292,11 +405,19 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       setState(() => _priceError = 'Giá bán phải lớn hơn 0');
       return;
     }
+    final stockByWarehouse = _collectStockByWarehouse();
+    if (stockByWarehouse == null) {
+      return;
+    }
+    final umoChanges = _collectUmoChanges();
+    if (!umoChanges.isValid) return;
 
     setState(() {
       _submitting = true;
       _nameError = null;
       _priceError = null;
+      _stockError = null;
+      _umoError = null;
     });
 
     final desc = _descCtrl.text.trim();
@@ -315,6 +436,14 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           importPrice: _importPrice,
           exportPrice: _exportPrice,
           demandStock: demandText.isEmpty ? null : int.tryParse(demandText),
+          initialStocks: [
+            for (final entry in stockByWarehouse.entries)
+              if (entry.value > 0)
+                CreateProductStockBody(
+                  warehouseId: entry.key,
+                  qty: entry.value,
+                ),
+          ],
         ),
       );
       if (!mounted) return;
@@ -322,6 +451,17 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       switch (createResult) {
         case ApiSuccess<String>(:final data):
           final newProductId = data;
+          if (umoChanges.upserts.isNotEmpty) {
+            final umoResult = await repo.updateUmos(
+              productId: newProductId,
+              upserts: umoChanges.upserts,
+            );
+            if (!mounted) return;
+            if (umoResult is ApiFailure<void>) {
+              _handleError(umoResult.err);
+              return;
+            }
+          }
           ref.invalidate(productListProvider);
           final orgId = ref.read(currentOrgIdProvider);
           if (_imageFile != null && orgId != null) {
@@ -346,32 +486,233 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       }
     } else {
       final p = widget.initial!;
-      final body = _buildUpdateBody(p);
-      final result = await repo.updateInfo(body);
+      if (_hasProductInfoChanges) {
+        final result = await repo.updateInfo(_buildUpdateBody(p));
+        if (!mounted) return;
+        if (result is ApiFailure<void>) {
+          _handleError(result.err);
+          return;
+        }
+      }
+
+      final stockAdjustments = _buildStockAdjustments(stockByWarehouse);
+      if (stockAdjustments.isNotEmpty) {
+        final stockResult = await repo.adjustStock(
+          productId: p.id,
+          adjustments: stockAdjustments,
+        );
+        if (!mounted) return;
+        if (stockResult is ApiFailure<void>) {
+          _handleError(stockResult.err);
+          return;
+        }
+      }
+
+      if (umoChanges.hasChanges) {
+        final umoResult = await repo.updateUmos(
+          productId: p.id,
+          upserts: umoChanges.upserts,
+          removeIds: umoChanges.removeIds,
+        );
+        if (!mounted) return;
+        if (umoResult is ApiFailure<void>) {
+          _handleError(umoResult.err);
+          return;
+        }
+      }
+
+      final orgId = ref.read(currentOrgIdProvider);
+      if (_imageFile != null && orgId != null) {
+        final uploadResult = await repo.uploadAvatar(
+          file: _imageFile!,
+          productId: p.id,
+          orgId: orgId,
+        );
+        if (!mounted) return;
+        if (uploadResult is ApiFailure<String>) {
+          KNotify.warning(context, uploadResult.err.message);
+        }
+      }
       if (!mounted) return;
-      switch (result) {
-        case ApiSuccess<void>():
-          final orgId = ref.read(currentOrgIdProvider);
-          if (_imageFile != null && orgId != null) {
-            final uploadResult = await repo.uploadAvatar(
-              file: _imageFile!,
-              productId: p.id,
-              orgId: orgId,
-            );
-            if (!mounted) return;
-            if (uploadResult is ApiFailure<String>) {
-              KNotify.warning(context, uploadResult.err.message);
-            }
-          }
-          if (!mounted) return;
-          KNotify.success(context, 'Đã cập nhật');
-          ref.invalidate(productByIdProvider(p.id));
-          ref.invalidate(productListProvider);
-          context.pop();
-        case ApiFailure<void>(:final err):
-          _handleError(err);
+      KNotify.success(context, 'Đã cập nhật');
+      ref
+        ..invalidate(productByIdProvider(p.id))
+        ..invalidate(productListProvider);
+      context.pop();
+    }
+  }
+
+  num? _parseQty(String text) {
+    if (text.isEmpty) return null;
+    final normalized = text.replaceAll(',', '.');
+    final parsed = num.tryParse(normalized);
+    if (parsed == null) return null;
+    if (parsed == parsed.truncateToDouble()) return parsed.toInt();
+    return parsed;
+  }
+
+  TextEditingController _ensureStockController(String warehouseId) {
+    final existing = _stockCtrls[warehouseId];
+    if (existing != null) return existing;
+    final ctrl = TextEditingController(
+      text: _baselineStockTextByWarehouse[warehouseId] ?? '',
+    )..addListener(_onStockQtyChanged);
+    _stockCtrls[warehouseId] = ctrl;
+    return ctrl;
+  }
+
+  bool get _isStockDirty {
+    final ids = <String>{
+      ..._baselineStockTextByWarehouse.keys,
+      ..._stockCtrls.keys,
+    };
+    for (final id in ids) {
+      final current = _stockCtrls[id]?.text.trim() ?? '';
+      final baseline = _baselineStockTextByWarehouse[id] ?? '';
+      if (current != baseline) return true;
+    }
+    return false;
+  }
+
+  bool get _isUmoDirty {
+    final changes = _collectUmoChanges(validate: false);
+    return changes.upserts.isNotEmpty || changes.removeIds.isNotEmpty;
+  }
+
+  void _addUmoDraft() {
+    final draft = _attachUmoDraft(_UmoDraft());
+    setState(() => _umoDrafts.add(draft));
+  }
+
+  void _removeUmoDraft(_UmoDraft draft) {
+    setState(() {
+      draft.removeListener(_onUmoChanged);
+      _umoDrafts.remove(draft);
+      draft.dispose();
+      _umoError = null;
+    });
+  }
+
+  _UmoDraft _attachUmoDraft(_UmoDraft draft) {
+    draft
+      ..addListener(_onUmoChanged)
+      ..syncAutoPrice(_sellPrice);
+    return draft;
+  }
+
+  void _syncUmoAutoPrices() {
+    _syncingUmoAutoPrices = true;
+    try {
+      for (final draft in _umoDrafts) {
+        draft.syncAutoPrice(_sellPrice);
+      }
+    } finally {
+      _syncingUmoAutoPrices = false;
+    }
+  }
+
+  Map<String, num>? _collectStockByWarehouse() {
+    final out = <String, num>{};
+    for (final entry in _stockCtrls.entries) {
+      final text = entry.value.text.trim();
+      if (text.isEmpty) {
+        out[entry.key] = 0;
+        continue;
+      }
+      final qty = _parseQty(text);
+      if (qty == null) {
+        setState(() => _stockError = 'Số lượng tồn kho không hợp lệ');
+        return null;
+      }
+      if (qty < 0) {
+        setState(() => _stockError = 'Số lượng tồn kho không được âm');
+        return null;
+      }
+      out[entry.key] = qty;
+    }
+    return out;
+  }
+
+  _UmoChanges _collectUmoChanges({bool validate = true}) {
+    final upserts = <ProductUmoUpsert>[];
+    final activeExistingIds = <String>{};
+    final baselineById = {
+      for (final umo in _baselineUmos)
+        if (umo.id != null) umo.id!: umo,
+    };
+
+    for (final draft in _umoDrafts) {
+      final snapshot = draft.snapshot;
+      final isEmpty =
+          snapshot.label.isEmpty &&
+          snapshot.ratio == null &&
+          snapshot.sellPrice == null &&
+          snapshot.barcode == null;
+      if (isEmpty) continue;
+
+      if (snapshot.label.isEmpty) {
+        if (validate) setState(() => _umoError = 'Nhập tên đơn vị quy đổi');
+        return const _UmoChanges.invalid();
+      }
+      if (snapshot.ratio == null || snapshot.ratio! <= 1) {
+        if (validate) {
+          setState(() => _umoError = 'Tỷ lệ quy đổi phải lớn hơn 1');
+        }
+        return const _UmoChanges.invalid();
+      }
+      if (snapshot.sellPrice != null && snapshot.sellPrice! < 0) {
+        if (validate) {
+          setState(() => _umoError = 'Giá bán đơn vị quy đổi không được âm');
+        }
+        return const _UmoChanges.invalid();
+      }
+
+      final id = snapshot.id;
+      if (id != null) activeExistingIds.add(id);
+      final baseline = id == null ? null : baselineById[id];
+      if (baseline == null || snapshot.isDifferentFrom(baseline)) {
+        upserts.add(
+          ProductUmoUpsert(
+            id: id,
+            label: snapshot.label,
+            ratio: snapshot.ratio!,
+            sellPrice: snapshot.sellPrice,
+            barcode: snapshot.barcode,
+          ),
+        );
       }
     }
+
+    final removeIds = [
+      for (final umo in _baselineUmos)
+        if (umo.id != null && !activeExistingIds.contains(umo.id)) umo.id!,
+    ];
+    return _UmoChanges(upserts: upserts, removeIds: removeIds);
+  }
+
+  List<ProductStockAdjustment> _buildStockAdjustments(
+    Map<String, num> stockByWarehouse,
+  ) {
+    final initial = widget.initial;
+    if (initial == null) return const [];
+    final adjustments = <ProductStockAdjustment>[];
+    final ids = <String>{
+      ..._baselineStockTextByWarehouse.keys,
+      ...stockByWarehouse.keys,
+    };
+    for (final id in ids) {
+      final baselineQty =
+          _parseQty(_baselineStockTextByWarehouse[id] ?? '') ?? 0;
+      final nextQty = stockByWarehouse[id] ?? 0;
+      final delta = nextQty - baselineQty;
+      if (delta != 0) {
+        adjustments.add(
+          ProductStockAdjustment(warehouseId: id, quantity: delta),
+        );
+      }
+    }
+
+    return adjustments;
   }
 
   UpdateProductInfoBody _buildUpdateBody(ProductDetail p) {
@@ -464,6 +805,8 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     final c = kuruColors(context);
     final unitLabel = resolveUomLabel(_baseUnitCode);
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final warehouses = ref.watch(productWarehouseOptionsProvider).valueOrNull;
+    final stockRows = _stockRows(warehouses);
 
     return Scaffold(
       backgroundColor: c.pageBg,
@@ -540,6 +883,20 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   ),
                   const SizedBox(height: 18),
                   _CreateSection(
+                    title: 'Mô tả',
+                    icon: TablerIcons.notes,
+                    children: [
+                      KTextarea(
+                        label: 'Mô tả',
+                        controller: _descCtrl,
+                        placeholder: 'Mô tả ngắn về sản phẩm',
+                        maxLines: 4,
+                        maxLength: 1000,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  _CreateSection(
                     title: 'Giá bán',
                     icon: TablerIcons.coin,
                     required: true,
@@ -548,10 +905,13 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         label: 'Giá bán',
                         value: _sellPrice,
                         errorText: _priceError,
-                        onChanged: (v) => setState(() {
-                          _sellPrice = v;
-                          _priceError = null;
-                        }),
+                        onChanged: (v) {
+                          setState(() {
+                            _sellPrice = v;
+                            _priceError = null;
+                          });
+                          _syncUmoAutoPrices();
+                        },
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -584,7 +944,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   ),
                   const SizedBox(height: 18),
                   _CreateSection(
-                    title: 'Đơn vị & tồn kho',
+                    title: 'Đơn vị cơ sở',
                     icon: TablerIcons.scale,
                     children: [
                       _PickerTriggerRow(
@@ -593,12 +953,24 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                         icon: TablerIcons.scale,
                         onTap: _pickUnit,
                       ),
-                      const SizedBox(height: 12),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  _CreateSection(
+                    title: 'Tồn kho',
+                    icon: TablerIcons.building_warehouse,
+                    children: [
                       KTextField(
                         label: 'Tồn tối thiểu',
                         controller: _demandStockCtrl,
                         keyboardType: TextInputType.number,
                         placeholder: 'VD: 10',
+                      ),
+                      const SizedBox(height: 12),
+                      _BranchStockEditor(
+                        rows: stockRows,
+                        unitLabel: unitLabel,
+                        errorText: _stockError,
                       ),
                       const SizedBox(height: 12),
                       _StockGoalPreview(
@@ -609,15 +981,15 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                   ),
                   const SizedBox(height: 18),
                   _CreateSection(
-                    title: 'Mô tả',
-                    icon: TablerIcons.notes,
+                    title: 'Đơn vị tính',
+                    icon: TablerIcons.package_export,
                     children: [
-                      KTextarea(
-                        label: 'Mô tả',
-                        controller: _descCtrl,
-                        placeholder: 'Mô tả ngắn về sản phẩm',
-                        maxLines: 4,
-                        maxLength: 1000,
+                      _UmoEditor(
+                        drafts: _umoDrafts,
+                        baseUnitLabel: unitLabel,
+                        errorText: _umoError,
+                        onAdd: _addUmoDraft,
+                        onRemove: _removeUmoDraft,
                       ),
                     ],
                   ),
@@ -641,6 +1013,35 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
         ),
       ),
     );
+  }
+
+  List<_BranchStockRowData> _stockRows(
+    List<ProductWarehouseOption>? warehouses,
+  ) {
+    final rows = <_BranchStockRowData>[];
+    final seen = <String>{};
+    for (final warehouse in warehouses ?? const <ProductWarehouseOption>[]) {
+      seen.add(warehouse.warehouseId);
+      rows.add(
+        _BranchStockRowData(
+          warehouseId: warehouse.warehouseId,
+          name: warehouse.name,
+          address: warehouse.address,
+          controller: _ensureStockController(warehouse.warehouseId),
+        ),
+      );
+    }
+    for (final warehouseId in _baselineStockTextByWarehouse.keys) {
+      if (seen.contains(warehouseId)) continue;
+      rows.add(
+        _BranchStockRowData(
+          warehouseId: warehouseId,
+          name: warehouseId,
+          controller: _ensureStockController(warehouseId),
+        ),
+      );
+    }
+    return rows;
   }
 }
 
@@ -999,6 +1400,636 @@ class _StockGoalPreview extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _UmoSnapshot {
+  const _UmoSnapshot({
+    required this.label,
+    required this.ratio,
+    this.id,
+    this.sellPrice,
+    this.barcode,
+  });
+
+  final String? id;
+  final String label;
+  final int? ratio;
+  final num? sellPrice;
+  final String? barcode;
+
+  bool isDifferentFrom(_UmoSnapshot other) {
+    return label != other.label ||
+        ratio != other.ratio ||
+        sellPrice != other.sellPrice ||
+        (barcode ?? '') != (other.barcode ?? '');
+  }
+}
+
+class _UmoChanges {
+  const _UmoChanges({required this.upserts, required this.removeIds})
+    : isValid = true;
+
+  const _UmoChanges.invalid()
+    : upserts = const [],
+      removeIds = const [],
+      isValid = false;
+
+  final List<ProductUmoUpsert> upserts;
+  final List<String> removeIds;
+  final bool isValid;
+
+  bool get hasChanges => upserts.isNotEmpty || removeIds.isNotEmpty;
+}
+
+class _UmoDraft {
+  _UmoDraft({this.id});
+
+  factory _UmoDraft.fromSnapshot(_UmoSnapshot snapshot) {
+    final draft = _UmoDraft(id: snapshot.id)
+      ..labelCtrl.text = snapshot.label
+      ..ratioCtrl.text = snapshot.ratio?.toString() ?? ''
+      ..barcodeCtrl.text = snapshot.barcode ?? '';
+    draft.priceNotifier.value = snapshot.sellPrice?.toInt();
+    return draft;
+  }
+
+  final String? id;
+  final labelCtrl = TextEditingController();
+  final ratioCtrl = TextEditingController();
+  final barcodeCtrl = TextEditingController();
+  final priceNotifier = ValueNotifier<int?>(null);
+  bool _priceClearedByUser = false;
+  int? _lastAutoPrice;
+
+  _UmoSnapshot get snapshot => _UmoSnapshot(
+    id: id,
+    label: labelCtrl.text.trim(),
+    ratio: int.tryParse(ratioCtrl.text.trim()),
+    sellPrice: priceNotifier.value,
+    barcode: barcodeCtrl.text.trim().isEmpty ? null : barcodeCtrl.text.trim(),
+  );
+
+  void addListener(VoidCallback listener) {
+    labelCtrl.addListener(listener);
+    ratioCtrl.addListener(listener);
+    priceNotifier.addListener(listener);
+    barcodeCtrl.addListener(listener);
+  }
+
+  void removeListener(VoidCallback listener) {
+    labelCtrl.removeListener(listener);
+    ratioCtrl.removeListener(listener);
+    priceNotifier.removeListener(listener);
+    barcodeCtrl.removeListener(listener);
+  }
+
+  void dispose() {
+    labelCtrl.dispose();
+    ratioCtrl.dispose();
+    barcodeCtrl.dispose();
+    priceNotifier.dispose();
+  }
+
+  void setPriceFromUser(int? value) {
+    _priceClearedByUser = value == null || value == 0;
+    priceNotifier.value = value;
+  }
+
+  void syncAutoPrice(int? baseSellPrice) {
+    if (_priceClearedByUser || baseSellPrice == null || baseSellPrice <= 0) {
+      return;
+    }
+    final ratio = int.tryParse(ratioCtrl.text.trim());
+    if (ratio == null || ratio <= 0) return;
+
+    final computed = baseSellPrice * ratio;
+    final current = priceNotifier.value;
+    final shouldAutoFill = current == null || current == _lastAutoPrice;
+    if (!shouldAutoFill || current == computed) {
+      _lastAutoPrice = computed;
+      return;
+    }
+
+    priceNotifier.value = computed;
+    _lastAutoPrice = computed;
+  }
+}
+
+class _UmoEditor extends StatelessWidget {
+  const _UmoEditor({
+    required this.drafts,
+    required this.baseUnitLabel,
+    required this.onAdd,
+    required this.onRemove,
+    this.errorText,
+  });
+
+  final List<_UmoDraft> drafts;
+  final String baseUnitLabel;
+  final VoidCallback onAdd;
+  final ValueChanged<_UmoDraft> onRemove;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (drafts.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            decoration: BoxDecoration(
+              color: c.surfaceHover,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Chỉ bán theo đơn vị cơ bản. Thêm Hộp, Lố, hoặc Thùng '
+              'nếu cần bán theo quy cách khác.',
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          )
+        else
+          ...drafts.map(
+            (draft) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _UmoDraftCard(
+                index: drafts.indexOf(draft),
+                draft: draft,
+                baseUnitLabel: baseUnitLabel,
+                onRemove: () => onRemove(draft),
+              ),
+            ),
+          ),
+        const SizedBox(height: 8),
+        _AddUmoButton(onTap: onAdd),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: errorText == null
+              ? const SizedBox(key: ValueKey('umo-ok'), height: 0)
+              : Padding(
+                  key: const ValueKey('umo-error'),
+                  padding: const EdgeInsets.only(top: 8, left: 4),
+                  child: Text(
+                    errorText!,
+                    style: TextStyle(
+                      color: c.danger,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AddUmoButton extends StatelessWidget {
+  const _AddUmoButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: c.accent500, width: 1.2),
+          ),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(TablerIcons.plus, size: 18, color: c.accent600),
+              const SizedBox(width: 8),
+              Text(
+                'Thêm đơn vị quy đổi',
+                style: TextStyle(
+                  color: c.accent600,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _UmoDraftCard extends StatelessWidget {
+  const _UmoDraftCard({
+    required this.index,
+    required this.draft,
+    required this.baseUnitLabel,
+    required this.onRemove,
+  });
+
+  final int index;
+  final _UmoDraft draft;
+  final String baseUnitLabel;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
+      decoration: BoxDecoration(
+        color: c.surfaceHover,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.borderSoft),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 26,
+                height: 26,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: c.accent500.withValues(alpha: 0.12),
+                  shape: BoxShape.circle,
+                ),
+                child: Text(
+                  '${index + 1}',
+                  style: TextStyle(
+                    color: c.accent600,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([
+                    draft.labelCtrl,
+                    draft.ratioCtrl,
+                  ]),
+                  builder: (context, _) {
+                    final ratio = int.tryParse(draft.ratioCtrl.text.trim());
+                    final label = draft.labelCtrl.text.trim();
+                    final hasPreview =
+                        label.isNotEmpty && ratio != null && ratio > 1;
+                    return Text(
+                      hasPreview
+                          ? '1 $label = $ratio $baseUnitLabel'
+                          : 'Đơn vị quy đổi',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: hasPreview ? c.accent600 : c.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    );
+                  },
+                ),
+              ),
+              InkWell(
+                onTap: onRemove,
+                borderRadius: BorderRadius.circular(8),
+                child: Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Icon(TablerIcons.trash, size: 20, color: c.danger),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          KTextField(
+            label: 'Tên đơn vị',
+            controller: draft.labelCtrl,
+            placeholder: 'VD: Thùng, Lốc, Hộp',
+            leadingIcon: const Icon(TablerIcons.package),
+          ),
+          const SizedBox(height: 10),
+          KTextField(
+            label: 'Số lượng quy đổi ($baseUnitLabel/đơn vị)',
+            controller: draft.ratioCtrl,
+            placeholder: 'VD: 24',
+            keyboardType: TextInputType.number,
+            leadingIcon: const Icon(TablerIcons.arrows_exchange),
+          ),
+          const SizedBox(height: 10),
+          ValueListenableBuilder<int?>(
+            valueListenable: draft.priceNotifier,
+            builder: (context, price, _) => KCurrencyField(
+              label: 'Giá bán đơn vị này',
+              value: price,
+              onChanged: draft.setPriceFromUser,
+            ),
+          ),
+          const SizedBox(height: 10),
+          KTextField(
+            label: 'Mã vạch (tuỳ chọn)',
+            controller: draft.barcodeCtrl,
+            placeholder: 'Quét hoặc nhập mã vạch',
+            leadingIcon: const Icon(TablerIcons.barcode),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BranchStockRowData {
+  const _BranchStockRowData({
+    required this.warehouseId,
+    required this.name,
+    required this.controller,
+    this.address,
+  });
+
+  final String warehouseId;
+  final String name;
+  final String? address;
+  final TextEditingController controller;
+}
+
+class _BranchStockEditor extends StatelessWidget {
+  const _BranchStockEditor({
+    required this.rows,
+    required this.unitLabel,
+    this.errorText,
+  });
+
+  final List<_BranchStockRowData> rows;
+  final String unitLabel;
+  final String? errorText;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final hasError = errorText != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            Icon(TablerIcons.building_store, size: 18, color: c.textMuted),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Tồn kho theo chi nhánh',
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+            Text(
+              'Nhập 0 để trống',
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        if (rows.isEmpty)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            decoration: BoxDecoration(
+              color: c.surfaceHover,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              'Chưa tải được danh sách chi nhánh',
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          )
+        else
+          ...rows.map(
+            (row) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: _BranchStockRow(row: row, unitLabel: unitLabel),
+            ),
+          ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: hasError
+              ? Padding(
+                  key: const ValueKey('branch-stock-error'),
+                  padding: const EdgeInsets.only(left: 4),
+                  child: Text(
+                    errorText!,
+                    style: TextStyle(
+                      color: c.danger,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                )
+              : const SizedBox(key: ValueKey('branch-stock-ok'), height: 0),
+        ),
+      ],
+    );
+  }
+}
+
+class _BranchStockRow extends StatelessWidget {
+  const _BranchStockRow({required this.row, required this.unitLabel});
+
+  final _BranchStockRowData row;
+  final String unitLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.surfaceHover,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.borderSoft),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 34,
+                height: 34,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE7F1FB),
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: const Icon(
+                  TablerIcons.building_warehouse,
+                  size: 18,
+                  color: Color(0xFF3B82F6),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      row.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (row.address != null && row.address!.isNotEmpty) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        row.address!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: c.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: row.controller,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w800,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: 'Số lượng hiện có',
+                    hintText: '0',
+                    hintStyle: TextStyle(color: c.textMuted, fontSize: 14),
+                    labelStyle: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    floatingLabelStyle: TextStyle(
+                      color: c.accent500,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    filled: true,
+                    fillColor: c.surfaceElev,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 13,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: c.border),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: c.border),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: c.accent500, width: 1.4),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Container(
+                constraints: const BoxConstraints(minWidth: 54),
+                height: 48,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: c.surfaceElev,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: c.border),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  unitLabel,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          ValueListenableBuilder<TextEditingValue>(
+            valueListenable: row.controller,
+            builder: (context, value, _) {
+              final qty = num.tryParse(value.text.trim().replaceAll(',', '.'));
+              if (qty == null || qty <= 0) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  children: [
+                    Icon(TablerIcons.check, size: 14, color: c.success),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Sẽ đặt ${_formatQty(qty)} $unitLabel tại ${row.name}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: c.success,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatQty(num value) {
+    if (value == value.truncateToDouble()) return value.toInt().toString();
+    return value.toString();
   }
 }
 

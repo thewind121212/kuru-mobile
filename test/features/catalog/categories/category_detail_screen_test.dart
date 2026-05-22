@@ -38,17 +38,6 @@ class _SeenNotifier extends OnboardingSeenController {
   bool build() => true;
 }
 
-/// Returns a fixed org-id from build() without mutating state, preventing the
-/// LateInitializationError that occurs when the setter fires notifyListeners()
-/// before the GoRouter element is fully mounted.
-class _FixedOrgController extends CurrentOrgIdController {
-  _FixedOrgController(this._orgId);
-  final String _orgId;
-
-  @override
-  String? build() => _orgId;
-}
-
 void main() {
   testWidgets('renders header (name) + child rows when overview has them', (
     tester,
@@ -94,10 +83,7 @@ void main() {
           splashGateProvider.overrideWith(
             (ref) async => const BootstrapAuthed(fakeUser),
           ),
-          // Uses a subclass that returns the value from build() to avoid a
-          // LateInitializationError when the setter fires notifyListeners()
-          // before the GoRouter element is fully mounted.
-          currentOrgIdProvider.overrideWith(() => _FixedOrgController('org-x')),
+          currentOrgIdProvider.overrideWithValue('org-x'),
           onboardingSeenProvider.overrideWith(_SeenNotifier.new),
           categoryByIdProvider(
             'root',

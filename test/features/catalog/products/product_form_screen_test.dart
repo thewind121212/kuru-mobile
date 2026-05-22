@@ -7,11 +7,27 @@ import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_stock_location.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_umo.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
+import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:kuru_mobile/features/catalog/products/product_form_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:mocktail/mocktail.dart';
 
 class _MockRepo extends Mock implements ProductRepository {}
+
+List<Override> _overrides(_MockRepo repo) => [
+  productRepositoryProvider.overrideWithValue(repo),
+  productWarehouseOptionsProvider.overrideWith(
+    (ref) async => const [
+      ProductWarehouseOption(warehouseId: 'w-1', name: 'Kho chính'),
+      ProductWarehouseOption(warehouseId: 'w-2', name: 'Chi nhánh 2'),
+    ],
+  ),
+];
 
 Widget _app({required _MockRepo repo, required GlobalKey key}) {
   final router = GoRouter(
@@ -30,7 +46,7 @@ Widget _app({required _MockRepo repo, required GlobalKey key}) {
   );
 
   return ProviderScope(
-    overrides: [productRepositoryProvider.overrideWithValue(repo)],
+    overrides: _overrides(repo),
     child: MaterialApp.router(
       theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
       routerConfig: router,
@@ -38,11 +54,61 @@ Widget _app({required _MockRepo repo, required GlobalKey key}) {
   );
 }
 
+Widget _editApp({
+  required _MockRepo repo,
+  required GlobalKey key,
+  required ProductDetail initial,
+}) {
+  final router = GoRouter(
+    initialLocation: '/host/edit',
+    routes: [
+      GoRoute(
+        path: '/host',
+        builder: (_, __) => const Scaffold(body: SizedBox()),
+        routes: [
+          GoRoute(
+            path: 'edit',
+            builder: (_, __) => ProductFormScreen(key: key, initial: initial),
+          ),
+        ],
+      ),
+    ],
+  );
+
+  return ProviderScope(
+    overrides: _overrides(repo),
+    child: MaterialApp.router(
+      theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+      routerConfig: router,
+    ),
+  );
+}
+
+ProductDetail _detail() => const ProductDetail(
+  id: 'p-1',
+  name: 'Trà sữa',
+  status: ProductStatus.active,
+  baseUnitCode: 'each',
+  sellPrice: 15000,
+  demandStock: 10,
+  avgCost: 0,
+  totalCostValue: 0,
+  totalQtyImported: 10,
+  stocks: [
+    ProductStockLocation(warehouseId: 'w-1', qty: 7),
+    ProductStockLocation(warehouseId: 'w-2', qty: 3),
+  ],
+  umos: [ProductUmo(id: 'u-1', label: 'Thùng', ratio: 24, sellPrice: 240000)],
+);
+
 void main() {
   setUpAll(() {
     registerFallbackValue(
       const CreateProductBody(name: '_', baseUnitCode: '_', sellPrice: 1),
     );
+    registerFallbackValue(const UpdateProductInfoBody(productId: '_'));
+    registerFallbackValue(const <ProductStockAdjustment>[]);
+    registerFallbackValue(const <ProductUmoUpsert>[]);
   });
 
   testWidgets('renders phase-one enterprise sections', (t) async {
@@ -52,11 +118,35 @@ void main() {
 
     expect(find.text('Tạo sản phẩm'), findsWidgets);
     expect(find.text('Thông tin chính'), findsOneWidget);
-    expect(find.text('Giá bán'), findsWidgets);
-    expect(find.text('Đơn vị & tồn kho', skipOffstage: false), findsOneWidget);
-    await t.drag(find.byType(ListView), const Offset(0, -700));
-    await t.pumpAndSettle();
     expect(find.text('Mô tả'), findsWidgets);
+    final scrollable = find.byType(Scrollable).first;
+    await t.scrollUntilVisible(
+      find.text('Giá nhập'),
+      200,
+      scrollable: scrollable,
+    );
+    expect(find.text('Giá bán'), findsWidgets);
+    await t.scrollUntilVisible(
+      find.text('Tồn kho'),
+      200,
+      scrollable: scrollable,
+    );
+    expect(find.text('Đơn vị cơ sở'), findsWidgets);
+    expect(find.text('Tồn kho'), findsOneWidget);
+    await t.scrollUntilVisible(
+      find.text('Kho chính'),
+      200,
+      scrollable: scrollable,
+    );
+    expect(find.text('Kho chính', skipOffstage: false), findsOneWidget);
+    expect(find.text('Chi nhánh 2', skipOffstage: false), findsOneWidget);
+    await t.scrollUntilVisible(
+      find.text('Đơn vị tính'),
+      200,
+      scrollable: scrollable,
+    );
+    expect(find.text('Đơn vị tính'), findsOneWidget);
+    expect(find.text('Thêm đơn vị quy đổi'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Tạo sản phẩm'), findsOneWidget);
   });
 
@@ -67,6 +157,12 @@ void main() {
     when(
       () => repo.create(any()),
     ).thenAnswer((_) async => ApiResult.success('new-id'));
+    when(
+      () => repo.updateUmos(
+        productId: any(named: 'productId'),
+        upserts: any(named: 'upserts'),
+      ),
+    ).thenAnswer((_) async => ApiResult.success(null));
     final key = GlobalKey();
     await t.pumpWidget(_app(repo: repo, key: key));
     await t.pumpAndSettle();
@@ -76,6 +172,14 @@ void main() {
     (key.currentState! as dynamic).debugSetImportPrice(8000);
     (key.currentState! as dynamic).debugSetExportPrice(12000);
     (key.currentState! as dynamic).debugSetDemandStock('10');
+    (key.currentState! as dynamic).debugSetBranchStock('w-1', '7');
+    (key.currentState! as dynamic).debugSetBranchStock('w-2', '3');
+    (key.currentState! as dynamic).debugAddUmo(
+      label: 'Thùng',
+      ratio: '24',
+      sellPrice: '240000',
+      barcode: 'box-1',
+    );
     await t.pump();
 
     await t.tap(find.widgetWithText(FilledButton, 'Tạo sản phẩm'));
@@ -90,8 +194,104 @@ void main() {
     expect(captured.importPrice, 8000);
     expect(captured.exportPrice, 12000);
     expect(captured.demandStock, 10);
+    expect(captured.initialStocks.map((stock) => stock.toJson()).toList(), [
+      {'warehouseId': 'w-1', 'qty': 7},
+      {'warehouseId': 'w-2', 'qty': 3},
+    ]);
     expect(captured.baseUnitCode, 'each');
+    final umoUpserts =
+        verify(
+              () => repo.updateUmos(
+                productId: 'new-id',
+                upserts: captureAny(named: 'upserts'),
+              ),
+            ).captured.single
+            as List<ProductUmoUpsert>;
+    expect(umoUpserts.single.toJson(), {
+      'label': 'Thùng',
+      'ratio': 24,
+      'sellPrice': 240000,
+      'barcode': 'box-1',
+    });
     expect(find.text('detail:new-id'), findsOneWidget);
+    await t.pump(const Duration(seconds: 5));
+  });
+
+  testWidgets('create auto-fills UMO price from base price and ratio', (
+    t,
+  ) async {
+    final repo = _MockRepo();
+    when(
+      () => repo.create(any()),
+    ).thenAnswer((_) async => ApiResult.success('new-id'));
+    when(
+      () => repo.updateUmos(
+        productId: any(named: 'productId'),
+        upserts: any(named: 'upserts'),
+      ),
+    ).thenAnswer((_) async => ApiResult.success(null));
+    final key = GlobalKey();
+    await t.pumpWidget(_app(repo: repo, key: key));
+    await t.pumpAndSettle();
+
+    await t.enterText(find.byType(TextField).first, 'Trà sữa');
+    (key.currentState! as dynamic).debugSetSellPrice(15000);
+    (key.currentState! as dynamic).debugAddUmo(label: 'Thùng', ratio: '24');
+    await t.pump();
+
+    await t.tap(find.widgetWithText(FilledButton, 'Tạo sản phẩm'));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 50));
+
+    final umoUpserts =
+        verify(
+              () => repo.updateUmos(
+                productId: 'new-id',
+                upserts: captureAny(named: 'upserts'),
+              ),
+            ).captured.single
+            as List<ProductUmoUpsert>;
+    expect(umoUpserts.single.toJson(), {
+      'label': 'Thùng',
+      'ratio': 24,
+      'sellPrice': 360000,
+    });
+    await t.pump(const Duration(seconds: 5));
+  });
+
+  testWidgets('edit stock-only sends per-branch deltas', (t) async {
+    final repo = _MockRepo();
+    when(
+      () => repo.adjustStock(
+        productId: any(named: 'productId'),
+        adjustments: any(named: 'adjustments'),
+      ),
+    ).thenAnswer((_) async => ApiResult.success(null));
+    final key = GlobalKey();
+    await t.pumpWidget(_editApp(repo: repo, key: key, initial: _detail()));
+    await t.pumpAndSettle();
+
+    (key.currentState! as dynamic).debugSetBranchStock('w-1', '9');
+    (key.currentState! as dynamic).debugSetBranchStock('w-2', '1');
+    await t.pump();
+
+    await t.tap(find.widgetWithText(FilledButton, 'Lưu'));
+    await t.pump();
+    await t.pump(const Duration(milliseconds: 50));
+
+    verifyNever(() => repo.updateInfo(any()));
+    final captured =
+        verify(
+              () => repo.adjustStock(
+                productId: 'p-1',
+                adjustments: captureAny(named: 'adjustments'),
+              ),
+            ).captured.single
+            as List<ProductStockAdjustment>;
+    expect(captured.map((stock) => stock.toJson()).toList(), [
+      {'warehouseId': 'w-1', 'quantity': 2},
+      {'warehouseId': 'w-2', 'quantity': -2},
+    ]);
     await t.pump(const Duration(seconds: 5));
   });
 }

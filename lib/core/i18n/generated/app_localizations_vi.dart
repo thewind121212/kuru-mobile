@@ -89,6 +89,16 @@ class AppLocalizationsVi extends AppLocalizations {
   String get totpSignOut => 'Đăng xuất & đổi tài khoản';
 
   @override
+  String get totpSignOutConfirm =>
+      'Đăng xuất khỏi phiên xác thực này? Bạn sẽ cần đăng nhập lại từ đầu.';
+
+  @override
+  String get commonCancel => 'Hủy';
+
+  @override
+  String get commonSignOut => 'Đăng xuất';
+
+  @override
   String get totpWrongCode => 'Sai mã xác thực, vui lòng thử lại.';
 
   @override

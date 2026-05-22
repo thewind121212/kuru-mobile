@@ -165,6 +165,14 @@ class _Body extends ConsumerWidget {
 
     String fmtPrice(num? v) => v == null ? '—' : _vnd.format(v);
     String fmtQty(num v) => '${v.toInt()} $unitLabel';
+    final warehouseLabels = <String, String>{};
+    if (detail.stocks.isNotEmpty) {
+      final warehouses =
+          ref.watch(productWarehouseOptionsProvider).valueOrNull ?? const [];
+      for (final warehouse in warehouses) {
+        warehouseLabels[warehouse.warehouseId] = warehouse.name;
+      }
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 12, bottom: 96),
@@ -205,6 +213,26 @@ class _Body extends ConsumerWidget {
               ),
             ],
           ),
+          if (detail.umos.isNotEmpty) ...[
+            const SizedBox(height: 20),
+            KSettingsSection(
+              header: 'Đơn vị quy đổi',
+              children: [
+                for (final umo in detail.umos)
+                  KSettingsRow(
+                    leadingIcon: TablerIcons.package_export,
+                    iconBackground: const Color(0xFFE6F7F0),
+                    iconColor: const Color(0xFF10B981),
+                    label: umo.label,
+                    trailingText: [
+                      '${umo.ratio} $unitLabel',
+                      if (umo.sellPrice != null) _vnd.format(umo.sellPrice),
+                    ].join(' · '),
+                    showChevron: false,
+                  ),
+              ],
+            ),
+          ],
           const SizedBox(height: 20),
           KSettingsSection(
             header: 'Giá',
@@ -240,6 +268,21 @@ class _Body extends ConsumerWidget {
             header: 'Tồn kho',
             children: [
               KSettingsRow(
+                leadingIcon: TablerIcons.package,
+                iconBackground: const Color(0xFFE7F1FB),
+                iconColor: const Color(0xFF3B82F6),
+                label: 'Hiện có',
+                trailingText: detail.stocks.isEmpty
+                    ? '—'
+                    : fmtQty(
+                        detail.stocks.fold<num>(
+                          0,
+                          (sum, stock) => sum + stock.qty,
+                        ),
+                      ),
+                showChevron: false,
+              ),
+              KSettingsRow(
                 leadingIcon: TablerIcons.alert_triangle,
                 iconBackground: const Color(0xFFFEF6E5),
                 iconColor: const Color(0xFFD97706),
@@ -249,6 +292,16 @@ class _Body extends ConsumerWidget {
                     : '—',
                 showChevron: false,
               ),
+              for (final stock in detail.stocks)
+                KSettingsRow(
+                  leadingIcon: TablerIcons.building_warehouse,
+                  iconBackground: const Color(0xFFEFF1F4),
+                  iconColor: const Color(0xFF64748B),
+                  label:
+                      warehouseLabels[stock.warehouseId] ?? stock.warehouseId,
+                  trailingText: fmtQty(stock.qty),
+                  showChevron: false,
+                ),
             ],
           ),
           const SizedBox(height: 20),
@@ -338,7 +391,8 @@ class _Hero extends StatelessWidget {
                       Image.network(
                         imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder(),
+                        errorBuilder: (_, error, __) =>
+                            _ImageErrorOverlay(url: imageUrl, error: error),
                       ),
                     if (imageUrl != null)
                       Positioned(
@@ -446,6 +500,65 @@ class _Hero extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ImageErrorOverlay extends StatelessWidget {
+  const _ImageErrorOverlay({required this.url, required this.error});
+
+  final String url;
+  final Object error;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: const Color(0xFF1F2937),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Icon(TablerIcons.photo_off, color: Colors.redAccent, size: 28),
+                SizedBox(width: 8),
+                Text(
+                  'Image load failed',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              url,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                height: 1.3,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              error.toString(),
+              maxLines: 6,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.amberAccent,
+                fontSize: 11,
+                height: 1.3,
+              ),
+            ),
+          ],
         ),
       ),
     );

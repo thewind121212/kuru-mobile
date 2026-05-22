@@ -36,11 +36,41 @@ class _OrgIdInterceptor extends Interceptor {
   _OrgIdInterceptor(this._ref);
   final Ref _ref;
 
+  /// Routes that hit `/api/v1/*` but legitimately fire BEFORE the user has a
+  /// resolvable orgId. These get the request through without `x-org-id` so
+  /// the fail-fast guard doesn't break sign-in / MFA / first-store flows.
+  /// BE accepts these without the header (auth still required).
+  static const _orgExemptPaths = <String>{
+    '/api/v1/profile/GetUserInfo', // bootstrap — establishes which orgs exist
+    '/api/v1/profile/VerifyTotpCode', // MFA — runs pre-org
+    '/api/v1/profile/UseRecoveryCode', // MFA — runs pre-org
+    '/api/v1/store/CreateStore', // user has 0 orgs at this point
+  };
+
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    // Read the live current-org value. The provider is defined in
-    // auth_providers.dart; we import it lazily via the ref.
     final orgId = _ref.read(currentOrgIdProvider);
+    final isV1 = options.path.startsWith('/api/v1/');
+    final exempt = _orgExemptPaths.contains(options.path);
+    if (isV1 && !exempt && orgId == null) {
+      // Fail fast — without x-org-id the BE returns 401 and the supertokens
+      // refresh chain stalls on the retry path, which the UI surfaces as a
+      // TimeoutException. Reject here with a typed error so callers can
+      // distinguish a missing-org race from genuine network failure.
+      log.w(
+        '× ${options.method} ${options.uri}: x-org-id missing — '
+        'rejecting before BE',
+      );
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          error: const OrgNotReadyException(),
+          type: DioExceptionType.cancel,
+        ),
+        true,
+      );
+      return;
+    }
     if (orgId != null) options.headers['x-org-id'] = orgId;
     handler.next(options);
   }
@@ -86,6 +116,12 @@ class _ErrorMappingInterceptor extends Interceptor {
 
 /// Converts a DioException into our typed ApiException. Exposed for unit tests.
 ApiException mapDioError(DioException e) {
+  // Interceptors (e.g. _OrgIdInterceptor) may pre-attach a typed
+  // ApiException to e.error. Pass it through so callers keep the precise
+  // failure type instead of degrading to UnknownException via the cancel
+  // branch.
+  final preset = e.error;
+  if (preset is ApiException) return preset;
   switch (e.type) {
     case DioExceptionType.connectionTimeout:
     case DioExceptionType.sendTimeout:

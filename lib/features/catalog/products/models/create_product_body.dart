@@ -9,6 +9,7 @@ class CreateProductBody {
     this.importPrice,
     this.exportPrice,
     this.demandStock,
+    this.initialStocks = const [],
     this.status = 'ACTIVE',
   });
 
@@ -21,6 +22,7 @@ class CreateProductBody {
   final num? importPrice;
   final num? exportPrice;
   final num? demandStock;
+  final List<CreateProductStockBody> initialStocks;
   final String status;
 
   Map<String, dynamic> toJson() {
@@ -36,6 +38,18 @@ class CreateProductBody {
     if (importPrice != null) m['importPrice'] = importPrice;
     if (exportPrice != null) m['exportPrice'] = exportPrice;
     if (demandStock != null) m['demandStock'] = demandStock;
+    if (initialStocks.isNotEmpty) {
+      m['initialStocks'] = initialStocks.map((s) => s.toJson()).toList();
+    }
     return m;
   }
+}
+
+class CreateProductStockBody {
+  const CreateProductStockBody({required this.warehouseId, required this.qty});
+
+  final String warehouseId;
+  final num qty;
+
+  Map<String, dynamic> toJson() => {'warehouseId': warehouseId, 'qty': qty};
 }
