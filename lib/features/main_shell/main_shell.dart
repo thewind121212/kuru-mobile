@@ -50,6 +50,7 @@ class MainShell extends StatelessWidget {
         tabs: [
           KuruBottomNavItem(icon: TablerIcons.home, label: l.navHome),
           KuruBottomNavItem(icon: TablerIcons.layout_grid, label: l.navCatalog),
+          KuruBottomNavItem(icon: TablerIcons.receipt, label: l.navOrders),
           KuruBottomNavItem(icon: TablerIcons.settings, label: l.navSettings),
         ],
         actionIcon: TablerIcons.plus,
