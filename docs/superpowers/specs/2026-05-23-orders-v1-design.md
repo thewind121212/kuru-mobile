@@ -154,7 +154,7 @@ OrderOverviewResponse {
 |----|--------------------------------------------------------------------------|-----------|
 | 1  | Top-level module location: `lib/features/orders/`                        | Orders are a separate domain — not under Catalog. Sibling to settings/etc. |
 | 2  | Bottom-nav tab order: Home / Catalog / Orders / Settings (4 tabs)       | Orders is core workflow, needs first-class entry. "+" FAB stays as POS placeholder (untouched). |
-| 3  | Codegen `lib/api/order/` from `order.openapi.json`; hand-build bodies   | Same pattern as Brand/Category/Product. Wire transport, Zod = contract. |
+| 3  | Pure dio + hand-built bodies; no codegen for `lib/api/order/`          | Matches the newest pattern in `ProductRepository`. Cleaner than the Brand/Category codegen-then-hand-build approach: ~30 lines less per endpoint, no `kuru_order_api` sub-package to maintain. Spec amendment 2026-05-23. |
 | 4  | Create flow approach: cart-as-screen + add-product `KModalSheet`        | Approach C. Uses already-shipped flat-design idioms. Scales to long carts on phone. |
 | 5  | Customer attach via text inputs only (no picker)                         | Customer module doesn't exist on mobile yet. BE accepts `customerName` + `customerPhone` as free text. Upgrade to picker when Customer module ships. |
 | 6  | Tax via manual % input (no `taxRateId`)                                  | Tax module doesn't exist on mobile. Compute tax client-side from `manualTaxPercent`. Send no `taxRateId` to BE. Upgrade when Tax module ships. |
@@ -205,8 +205,6 @@ orderDetailTitle       "Chi tiết đơn" / "Order details"
 ## 5. Module structure
 
 ```
-lib/api/order/                            ─ generated dart-dio (kuru_order_api sub-pkg)
-
 lib/features/orders/
 ├── data/
 │   └── order_repository.dart
@@ -478,33 +476,33 @@ Compute rules:
 
 ## 7. Repository
 
-`lib/features/orders/data/order_repository.dart`. Constructor takes generated `OrdersApi`, `Dio`, `Logger`, and an injectable `String Function() uuidFactory` (for test determinism, default `() => Uuid().v4()`).
+`lib/features/orders/data/order_repository.dart`. Constructor takes `Dio` (the one from `dioProvider` w/ `/api/v1` baseUrl + x-org-id + logging + error-mapping interceptors) and an injectable `String Function() uuidFactory` (for test determinism, default `() => const Uuid().v4()`).
 
-Methods (all `async`, throw typed `ApiException` on failure):
+Methods (all `async`, return `Future<ApiResult<T>>`):
 
 ```dart
-Future<OrderOverviewPage> getOrderOverview({
+Future<ApiResult<OrderOverviewPage>> getOrderOverview({
   required String orgId,
   required OrderListFilters filters,
 });
 
-Future<OrderDetail> getOrderById(String orderId);
+Future<ApiResult<OrderDetail>> getOrderById(String orderId);
 
-Future<String> createOrder({
+Future<ApiResult<String>> createOrder({
   required String orgId,
   required String idempotencyKey,
   required OrderCartDraft draft,
   OrderPaymentInput? payment,
 });  // returns new orderId
 
-Future<void> updateOrderStatus({
+Future<ApiResult<void>> updateOrderStatus({
   required String orderId,
   required OrderStatus status,
   String? cancelledReason,    // required by service if status == cancelled
   String? note,
 });
 
-Future<String> addOrderPayment({
+Future<ApiResult<String>> addOrderPayment({
   required String orderId,
   required String idempotencyKey,
   required OrderPaymentMethod method,
@@ -513,7 +511,7 @@ Future<String> addOrderPayment({
   String? note,
 });  // returns paymentId
 
-Future<void> voidOrder({required String orderId});
+Future<ApiResult<void>> voidOrder({required String orderId});
 ```
 
 ### 7.1 Body construction rules
@@ -527,8 +525,8 @@ Future<void> voidOrder({required String orderId});
 ### 7.2 Response parsing
 
 - 200 OR 201 both treated as success (mirrors CLAUDE.md CreateStore note).
-- Envelope: `{ success: true, data: ..., timestamp: ... }` → return `.data`.
-- Envelope error: `{ success: false, error: { message, code }, ... }` → translated by dio interceptor to `ApiException` already.
+- Envelope: `{ success: true, data: ..., timestamp: ... }` → unwrap `.data` from `res.data as Map<String, dynamic>`.
+- Envelope error: `{ success: false, error: { message, code }, ... }` → dio interceptor (`mapDioError`) maps to `DioException`. Repo catches and returns `ApiResult.failure(ApiException)` (using existing `_extract` helper pattern from `ProductRepository`).
 
 ### 7.3 Logging
 
@@ -543,14 +541,12 @@ All `riverpod_annotation`-generated. Files mirror the module structure (one prov
 
 ### 8.1 Singletons + derived
 
+Following the brand/product pattern (plain `Provider`, no `@riverpod` annotation):
+
 ```dart
-@riverpod
-OrderRepository orderRepository(OrderRepositoryRef ref) =>
-  OrderRepository(
-    api: ref.watch(ordersApiProvider),
-    dio: ref.watch(dioProvider),
-    log: log,
-  );
+final orderRepositoryProvider = Provider<OrderRepository>((ref) {
+  return OrderRepository(ref.watch(dioProvider));
+});
 ```
 
 ### 8.2 List filters + paginated fetch
@@ -824,22 +820,15 @@ Add-payment sheet on Detail screen owns its own key (sheet-scoped):
 
 ## 14. Codegen
 
-Add to `tool/codegen.sh`:
+**None for v1.** Per Decision #3, Order uses pure dio + hand-built bodies. No `tool/codegen.sh` entry, no `lib/api/order/` sub-package, no path-dep in `pubspec.yaml`.
 
-```bash
-order)    echo "../gen-barcode/openapi/order.openapi.json" ;;
-```
+The shared `Dio` from `dioProvider` already has:
+- `baseUrl` set to `${apiBaseUrl}/api/v1`
+- x-org-id header attached via interceptor
+- Logging interceptor
+- Error-mapping interceptor (`mapDioError` translating 4xx/5xx + envelope into `DioException` w/ readable cause)
 
-Plus add `order` to the `MODULES` default list.
-
-Generated output lands in `lib/api/order/`. Apply the dart-dio library-version override fix from the `openapi-codegen` skill (this is done by codegen.sh already — verify on first run).
-
-Add path-dep to root `pubspec.yaml`:
-
-```yaml
-  kuru_order_api:
-    path: lib/api/order
-```
+Repository imports `Dio` directly + `mapDioError` from `lib/core/network/dio_client.dart` (matching `ProductRepository`).
 
 ## 15. Testing
 
