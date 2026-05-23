@@ -61,19 +61,15 @@ class OrderListRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          '#${summary.orderNumber}',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w800,
-                            color: c.textPrimary,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _StatusDot(status: summary.status),
-                      ],
+                    Text(
+                      '#${summary.orderNumber}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: c.textPrimary,
+                      ),
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -89,6 +85,8 @@ class OrderListRow extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       '${l.orderItemsCount(summary.itemCount)} · $dt',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -141,47 +139,6 @@ class OrderListRow extends StatelessWidget {
       const Color(0xFFDC2626),
     ), // red
   };
-}
-
-class _StatusDot extends StatelessWidget {
-  const _StatusDot({required this.status});
-  final OrderStatus status;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    final color = switch (status) {
-      OrderStatus.draft => const Color(0xFF64748B),
-      OrderStatus.pending => const Color(0xFFD97706),
-      OrderStatus.completed => const Color(0xFF10B981),
-      OrderStatus.cancelled => const Color(0xFFDC2626),
-    };
-    final label = switch (status) {
-      OrderStatus.draft => l.orderStatusDraft,
-      OrderStatus.pending => l.orderStatusPending,
-      OrderStatus.completed => l.orderStatusCompleted,
-      OrderStatus.cancelled => l.orderStatusCancelled,
-    };
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 6,
-          height: 6,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 5),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            color: color,
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class _PaymentChip extends StatelessWidget {
