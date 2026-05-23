@@ -203,24 +203,51 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
                       ),
                     );
                   }
-                  return SliverMainAxisGroup(
-                    slivers: [
-                      SliverList.builder(
-                        itemCount: page.orders.length,
-                        itemBuilder: (_, i) => OrderListRow(
-                          summary: page.orders[i],
-                          onTap: () =>
-                              context.push('/orders/${page.orders[i].id}'),
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: c.surfaceElev,
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: Column(
+                          children: [
+                            for (var i = 0; i < page.orders.length; i++) ...[
+                              OrderListRow(
+                                summary: page.orders[i],
+                                onTap: () => context.push(
+                                  '/orders/${page.orders[i].id}',
+                                ),
+                              ),
+                              if (i < page.orders.length - 1)
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 66),
+                                  child: Divider(
+                                    height: 1,
+                                    thickness: 0.5,
+                                    color: c.borderSoft,
+                                  ),
+                                ),
+                            ],
+                            if (page.hasMore)
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                child: Center(
+                                  child: SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      if (page.hasMore)
-                        const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(vertical: 24),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                        ),
-                    ],
+                    ),
                   );
                 },
               ),
