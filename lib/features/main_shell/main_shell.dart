@@ -3,6 +3,7 @@
 // ignore_for_file: non_constant_identifier_names
 import 'package:flutter/material.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/main_shell/kuru_bottom_nav.dart';
 
@@ -11,9 +12,7 @@ import 'package:kuru_mobile/features/main_shell/kuru_bottom_nav.dart';
 /// + onTabChanged + the active tab body.
 ///
 /// The trailing `+` action on the bottom nav is the global Point-of-Sale
-/// entry (visible on every tab). Plan 1 has no POS screen yet; tapping
-/// shows a placeholder snackbar. Replace [_onPosPressed] with a
-/// `context.push('/pos')` when the POS feature lands.
+/// entry (visible on every tab).
 class MainShell extends StatelessWidget {
   const MainShell({
     required this.currentIndex,
@@ -27,13 +26,7 @@ class MainShell extends StatelessWidget {
   final Widget body;
 
   void _onPosPressed(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l.posComingSoon),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    context.push('/pos');
   }
 
   @override

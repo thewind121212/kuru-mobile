@@ -298,6 +298,133 @@ class AppLocalizationsVi extends AppLocalizations {
   String get posComingSoon => 'Thu ngân sắp ra mắt';
 
   @override
+  String get posTitle => 'Thu ngân';
+
+  @override
+  String get posSubtitle => 'Bắt đầu bán nhanh từ điện thoại.';
+
+  @override
+  String get posHeroMetric => 'Bán hàng nhanh';
+
+  @override
+  String get posHeroMeta =>
+      'Tạo đơn, nhận thanh toán và ghi nhận tồn kho từ cùng một luồng.';
+
+  @override
+  String get posPrimaryAction => 'Tạo đơn bán';
+
+  @override
+  String get posSectionStart => 'Bắt đầu';
+
+  @override
+  String get posQuickOrder => 'Đơn bán nhanh';
+
+  @override
+  String get posQuickOrderMeta => 'Tạo đơn mới từ giỏ hàng';
+
+  @override
+  String get posScanBarcode => 'Quét mã vạch';
+
+  @override
+  String get posScanBarcodeMeta => 'Luồng quét sản phẩm sẽ nối vào POS sau';
+
+  @override
+  String get posScanComingSoon =>
+      'Quét mã vạch trong POS sẽ được nối ở bước tiếp theo';
+
+  @override
+  String get posSectionManage => 'Quản lý';
+
+  @override
+  String get posViewOrders => 'Xem đơn hàng';
+
+  @override
+  String get posViewOrdersMeta => 'Mở danh sách đơn đã tạo';
+
+  @override
+  String get posPayment => 'Thanh toán';
+
+  @override
+  String get posSuccess => 'Hoàn tất';
+
+  @override
+  String get posSearchLabel => 'Tìm sản phẩm';
+
+  @override
+  String get posSearchHint => 'Tên sản phẩm hoặc mã vạch';
+
+  @override
+  String get posScanHint => 'Hướng camera vào mã vạch sản phẩm';
+
+  @override
+  String get posBarcodeAdded => 'Đã thêm sản phẩm từ mã vạch';
+
+  @override
+  String get posEmptySearch => 'Quét mã hoặc tìm sản phẩm';
+
+  @override
+  String get posEmptySearchMeta =>
+      'Sản phẩm sẽ được thêm trực tiếp vào giỏ POS.';
+
+  @override
+  String get posNoProducts => 'Không tìm thấy sản phẩm phù hợp';
+
+  @override
+  String get posCart => 'Giỏ hàng';
+
+  @override
+  String get posCartHint => 'Thêm ít nhất một sản phẩm để thanh toán.';
+
+  @override
+  String get posEmptyCart => 'Giỏ hàng đang trống';
+
+  @override
+  String get posClearCart => 'Xóa giỏ';
+
+  @override
+  String get posRemoveLine => 'Xóa dòng hàng';
+
+  @override
+  String get posTotal => 'Tổng tiền';
+
+  @override
+  String get posCharge => 'Thu tiền';
+
+  @override
+  String get posAmountReceived => 'Tiền khách đưa';
+
+  @override
+  String get posChange => 'Tiền thối';
+
+  @override
+  String get posRemaining => 'Còn thiếu';
+
+  @override
+  String get posConfirmPayment => 'Xác nhận thanh toán';
+
+  @override
+  String get posPaymentNote => 'Đơn sẽ được tạo và ghi nhận thanh toán ngay.';
+
+  @override
+  String get posPaymentReference => 'Nội dung chuyển khoản';
+
+  @override
+  String get posPaymentFailed => 'Không thể tạo đơn thanh toán';
+
+  @override
+  String get posSuccessTitle => 'Thanh toán thành công';
+
+  @override
+  String get posSuccessBody =>
+      'Đơn bán đã được tạo và giỏ hàng đã được làm mới.';
+
+  @override
+  String get posNewSale => 'Đơn mới';
+
+  @override
+  String get posViewOrder => 'Xem đơn vừa tạo';
+
+  @override
   String get settingsPlaceholder => 'Cài đặt sắp ra mắt';
 
   @override

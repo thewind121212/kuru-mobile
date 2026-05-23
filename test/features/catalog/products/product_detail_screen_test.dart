@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_stock_location.dart';
@@ -86,6 +87,32 @@ void main() {
             ],
           ),
         ),
+        productContainerLotsProvider('p-1').overrideWith(
+          (_) async => [
+            ProductContainerLot(
+              id: 'lot-base-1',
+              orgId: 'o-1',
+              warehouseId: 'w-1',
+              productId: 'p-1',
+              qtyInitial: 10,
+              qtyRemaining: 7,
+              barcode: 'LOT-BASE',
+              createdAt: DateTime(2026, 5, 20),
+            ),
+            ProductContainerLot(
+              id: 'lot-variant-1',
+              orgId: 'o-1',
+              warehouseId: 'w-1',
+              productId: 'p-1',
+              qtyInitial: 6,
+              qtyRemaining: 3,
+              barcode: 'LOT-VAR',
+              variantId: 'v-1',
+              variantName: 'Size L',
+              createdAt: DateTime(2026, 5, 21),
+            ),
+          ],
+        ),
         canWriteProductsProvider.overrideWithValue(true),
         productWarehouseOptionsProvider.overrideWith(
           (_) async => const [
@@ -94,6 +121,7 @@ void main() {
         ),
       ]),
     );
+    await t.pump();
     await t.pump();
     expect(find.text('Cà phê'), findsWidgets);
     expect(find.text('Phân loại'), findsOneWidget);
@@ -110,17 +138,34 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     expect(find.text('Tồn kho đơn vị gốc'), findsOneWidget);
-    expect(find.text('19 Cái'), findsWidgets);
+    expect(find.text('26 Cái'), findsWidgets);
     expect(find.text('Tồn kho biến thể'), findsOneWidget);
     expect(find.text('Chạm để xem theo chi nhánh'), findsOneWidget);
-    expect(find.text('5 Cái'), findsWidgets);
+    expect(find.text('8 Cái'), findsWidgets);
+    await t.scrollUntilVisible(
+      find.byKey(const ValueKey('product-container-lots-section')),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Lô hàng'), findsOneWidget);
+    expect(find.text('2 lô đang theo dõi'), findsOneWidget);
+    expect(find.text('Tổng còn 10 Cái'), findsOneWidget);
+    expect(find.text('Kho 1'), findsWidgets);
+    expect(find.text('LOT-BASE'), findsOneWidget);
+    expect(find.text('LOT-VAR'), findsOneWidget);
+    expect(find.text('Size L'), findsWidgets);
+    expect(find.text('Đã dùng 50%'), findsOneWidget);
     expect(find.byKey(const ValueKey('variant-stock-v-1')), findsNothing);
-    expect(find.text('Kho 1'), findsNothing);
+    await t.scrollUntilVisible(
+      find.byKey(const ValueKey('stock-summary-variants')),
+      -160,
+      scrollable: find.byType(Scrollable).first,
+    );
     await t.tap(find.byKey(const ValueKey('stock-summary-variants')));
     await t.pumpAndSettle();
     expect(find.text('Tồn kho biến thể'), findsWidgets);
     expect(find.byKey(const ValueKey('variant-stock-v-1')), findsOneWidget);
-    expect(find.text('Kho 1'), findsOneWidget);
+    expect(find.text('Kho 1'), findsWidgets);
     expect(find.text('Tồn kho'), findsWidgets);
     expect(find.text('Thống kê'), findsOneWidget);
     expect(find.text('Mô tả'), findsOneWidget);
@@ -132,6 +177,7 @@ void main() {
     await t.pumpWidget(
       _app([
         productByIdProvider('p-1').overrideWith((_) => _detail()),
+        productContainerLotsProvider('p-1').overrideWith((_) async => const []),
         canWriteProductsProvider.overrideWithValue(false),
       ]),
     );
@@ -144,6 +190,7 @@ void main() {
     await t.pumpWidget(
       _app([
         productByIdProvider('p-1').overrideWith((_) => archived),
+        productContainerLotsProvider('p-1').overrideWith((_) async => const []),
         canWriteProductsProvider.overrideWithValue(true),
       ]),
     );
@@ -160,6 +207,7 @@ void main() {
         productByIdProvider(
           'p-1',
         ).overrideWith((_) => _detail(imageUrl: 'coffee.jpg')),
+        productContainerLotsProvider('p-1').overrideWith((_) async => const []),
         canWriteProductsProvider.overrideWithValue(false),
       ]),
     );

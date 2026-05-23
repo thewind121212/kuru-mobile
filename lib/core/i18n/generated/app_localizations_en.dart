@@ -302,6 +302,134 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posComingSoon => 'POS coming soon';
 
   @override
+  String get posTitle => 'POS';
+
+  @override
+  String get posSubtitle => 'Start a sale from your phone.';
+
+  @override
+  String get posHeroMetric => 'Quick selling';
+
+  @override
+  String get posHeroMeta =>
+      'Create orders, receive payment, and record inventory from one flow.';
+
+  @override
+  String get posPrimaryAction => 'Create sale';
+
+  @override
+  String get posSectionStart => 'Start';
+
+  @override
+  String get posQuickOrder => 'Quick sale';
+
+  @override
+  String get posQuickOrderMeta => 'Create a new order from a cart';
+
+  @override
+  String get posScanBarcode => 'Scan barcode';
+
+  @override
+  String get posScanBarcodeMeta => 'Product scanning will connect to POS next';
+
+  @override
+  String get posScanComingSoon =>
+      'POS barcode scanning will be connected in the next step';
+
+  @override
+  String get posSectionManage => 'Manage';
+
+  @override
+  String get posViewOrders => 'View orders';
+
+  @override
+  String get posViewOrdersMeta => 'Open the orders you have created';
+
+  @override
+  String get posPayment => 'Payment';
+
+  @override
+  String get posSuccess => 'Done';
+
+  @override
+  String get posSearchLabel => 'Find product';
+
+  @override
+  String get posSearchHint => 'Product name or barcode';
+
+  @override
+  String get posScanHint => 'Point the camera at the product barcode';
+
+  @override
+  String get posBarcodeAdded => 'Product added from barcode';
+
+  @override
+  String get posEmptySearch => 'Scan a code or search products';
+
+  @override
+  String get posEmptySearchMeta =>
+      'Products are added directly to the POS cart.';
+
+  @override
+  String get posNoProducts => 'No matching products found';
+
+  @override
+  String get posCart => 'Cart';
+
+  @override
+  String get posCartHint => 'Add at least one product to take payment.';
+
+  @override
+  String get posEmptyCart => 'Cart is empty';
+
+  @override
+  String get posClearCart => 'Clear cart';
+
+  @override
+  String get posRemoveLine => 'Remove line';
+
+  @override
+  String get posTotal => 'Total';
+
+  @override
+  String get posCharge => 'Charge';
+
+  @override
+  String get posAmountReceived => 'Amount received';
+
+  @override
+  String get posChange => 'Change';
+
+  @override
+  String get posRemaining => 'Remaining';
+
+  @override
+  String get posConfirmPayment => 'Confirm payment';
+
+  @override
+  String get posPaymentNote =>
+      'The order will be created and paid immediately.';
+
+  @override
+  String get posPaymentReference => 'Transfer reference';
+
+  @override
+  String get posPaymentFailed => 'Could not create paid order';
+
+  @override
+  String get posSuccessTitle => 'Payment complete';
+
+  @override
+  String get posSuccessBody =>
+      'The sale order was created and the cart has been reset.';
+
+  @override
+  String get posNewSale => 'New sale';
+
+  @override
+  String get posViewOrder => 'View created order';
+
+  @override
   String get settingsPlaceholder => 'Settings coming soon';
 
   @override

@@ -8,14 +8,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  test('default locale is null (follow system)', () async {
+  test('default locale is Vietnamese', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
     );
     addTearDown(container.dispose);
-    expect(container.read(localeControllerProvider), isNull);
+    expect(container.read(localeControllerProvider)?.languageCode, 'vi');
   });
 
   test('persists chosen locale across reads', () async {

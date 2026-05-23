@@ -7,6 +7,7 @@ import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
@@ -185,6 +186,74 @@ void main() {
       );
       final res = await repo.getById('p-1');
       expect((res as ApiSuccess<ProductDetail>).data.id, 'p-1');
+    });
+  });
+
+  group('getContainerLots', () {
+    test('200 returns parsed container lots', () async {
+      when(
+        () => dio.get<dynamic>(
+          any(),
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenAnswer(
+        (_) async => ok({
+          'containerLots': [
+            {
+              'id': 'lot-1',
+              'orgId': 'o-1',
+              'warehouseId': 'w-1',
+              'productId': 'p-1',
+              'qtyInitial': 12,
+              'qtyRemaining': 5,
+              'barcode': 'LOT-001',
+              'variantId': 'v-1',
+              'variantName': 'Size L',
+              'createdAt': '2026-05-20T10:30:00.000Z',
+            },
+          ],
+        }),
+      );
+
+      final res = await repo.getContainerLots(productId: 'p-1');
+
+      expect(res, isA<ApiSuccess<List<ProductContainerLot>>>());
+      final lots = (res as ApiSuccess<List<ProductContainerLot>>).data;
+      expect(lots, hasLength(1));
+      expect(lots.single.id, 'lot-1');
+      expect(lots.single.qtyRemaining, 5);
+      final captured =
+          verify(
+                () => dio.get<dynamic>(
+                  '/product/GetContainerLots',
+                  queryParameters: captureAny(named: 'queryParameters'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured, {'productId': 'p-1'});
+    });
+
+    test('passes optional variantId query param', () async {
+      when(
+        () => dio.get<dynamic>(
+          any(),
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenAnswer(
+        (_) async => ok({'containerLots': <Map<String, dynamic>>[]}),
+      );
+
+      await repo.getContainerLots(productId: 'p-1', variantId: 'v-1');
+
+      final captured =
+          verify(
+                () => dio.get<dynamic>(
+                  '/product/GetContainerLots',
+                  queryParameters: captureAny(named: 'queryParameters'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured, {'productId': 'p-1', 'variantId': 'v-1'});
     });
   });
 

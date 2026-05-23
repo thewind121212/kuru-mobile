@@ -7,9 +7,7 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/main_shell/main_shell.dart';
 
 void main() {
-  testWidgets('MainShell renders 3 NavigationDestinations with Tabler icons', (
-    tester,
-  ) async {
+  testWidgets('MainShell renders four tabs with Tabler icons', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
@@ -24,9 +22,11 @@ void main() {
     );
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Catalog'), findsOneWidget);
+    expect(find.text('Orders'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
     expect(find.byIcon(TablerIcons.home), findsOneWidget);
     expect(find.byIcon(TablerIcons.layout_grid), findsOneWidget);
+    expect(find.byIcon(TablerIcons.receipt), findsOneWidget);
     expect(find.byIcon(TablerIcons.settings), findsOneWidget);
     expect(find.text('TAB_BODY'), findsOneWidget);
   });

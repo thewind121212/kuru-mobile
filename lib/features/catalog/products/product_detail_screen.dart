@@ -12,6 +12,7 @@ import 'package:kuru_mobile/design/core/layout/k_settings_section.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_stock_location.dart';
@@ -27,6 +28,7 @@ final _vnd = NumberFormat.currency(
   symbol: 'đ',
   decimalDigits: 0,
 );
+final _date = DateFormat('dd/MM/yyyy');
 
 /// Pushed detail screen for a single product — hero image + 5 grouped
 /// info sections (Phân loại / Giá / Tồn kho / Thống kê / Mô tả).
@@ -174,6 +176,9 @@ class _Body extends ConsumerWidget {
     final variantsById = {
       for (final variant in detail.variants) variant.id: variant,
     };
+    final defaultVariantId = _defaultVariantId(detail);
+    final lotsAsync = ref.watch(productContainerLotsProvider(detail.id));
+    final lots = lotsAsync.valueOrNull ?? const <ProductContainerLot>[];
     num baseStockTotal = 0;
     final rowsByVariantId = <String, List<ProductStockLocation>>{};
     for (final stock in detail.stocks) {
@@ -185,25 +190,38 @@ class _Body extends ConsumerWidget {
         rowsByVariantId.putIfAbsent(variant.id, () => []).add(stock);
       }
     }
+    final lotsByVariantId = <String, List<ProductContainerLot>>{};
+    for (final lot in lots) {
+      final variantId = lot.variantId ?? defaultVariantId;
+      final variant = variantId == null ? null : variantsById[variantId];
+      if (variant == null || variant.isDefault) {
+        baseStockTotal += lot.qtyRemaining;
+      } else {
+        lotsByVariantId.putIfAbsent(variant.id, () => []).add(lot);
+      }
+    }
     final variantStockGroups = [
       for (final variant in customVariants)
         _VariantStockGroup(
           variant: variant,
-          rows: rowsByVariantId[variant.id] ?? const <ProductStockLocation>[],
+          stockRows:
+              rowsByVariantId[variant.id] ?? const <ProductStockLocation>[],
+          lotRows: lotsByVariantId[variant.id] ?? const <ProductContainerLot>[],
         ),
     ];
     final variantStockTotal = variantStockGroups.fold<num>(
       0,
       (sum, group) => sum + group.totalQty,
     );
-    final warehouseLabels = customVariants.isEmpty
-        ? const <String, String>{}
-        : {
+    final needsWarehouseLabels = customVariants.isNotEmpty || lots.isNotEmpty;
+    final warehouseLabels = needsWarehouseLabels
+        ? {
             for (final warehouse
                 in ref.watch(productWarehouseOptionsProvider).valueOrNull ??
                     const <ProductWarehouseOption>[])
               warehouse.warehouseId: warehouse.name,
-          };
+          }
+        : const <String, String>{};
     return SingleChildScrollView(
       padding: const EdgeInsets.only(top: 12, bottom: 96),
       child: Column(
@@ -349,6 +367,12 @@ class _Body extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
+          _ContainerLotsSection(
+            lotsAsync: lotsAsync,
+            unitLabel: unitLabel,
+            warehouseLabels: warehouseLabels,
+          ),
+          const SizedBox(height: 20),
           KSettingsSection(
             header: 'Thống kê',
             children: [
@@ -400,12 +424,387 @@ class _Body extends ConsumerWidget {
 }
 
 class _VariantStockGroup {
-  const _VariantStockGroup({required this.variant, required this.rows});
+  const _VariantStockGroup({
+    required this.variant,
+    required this.stockRows,
+    required this.lotRows,
+  });
 
   final ProductVariant variant;
-  final List<ProductStockLocation> rows;
+  final List<ProductStockLocation> stockRows;
+  final List<ProductContainerLot> lotRows;
 
-  num get totalQty => rows.fold<num>(0, (sum, stock) => sum + stock.qty);
+  num get totalQty =>
+      stockRows.fold<num>(0, (sum, stock) => sum + stock.qty) +
+      lotRows.fold<num>(0, (sum, lot) => sum + lot.qtyRemaining);
+}
+
+class _LotWarehouseGroup {
+  const _LotWarehouseGroup({
+    required this.warehouseId,
+    required this.warehouseName,
+    required this.lots,
+  });
+
+  final String warehouseId;
+  final String warehouseName;
+  final List<ProductContainerLot> lots;
+
+  num get totalRemaining =>
+      lots.fold<num>(0, (sum, lot) => sum + lot.qtyRemaining);
+  num get totalInitial => lots.fold<num>(0, (sum, lot) => sum + lot.qtyInitial);
+}
+
+class _ContainerLotsSection extends StatelessWidget {
+  const _ContainerLotsSection({
+    required this.lotsAsync,
+    required this.unitLabel,
+    required this.warehouseLabels,
+  });
+
+  final AsyncValue<List<ProductContainerLot>> lotsAsync;
+  final String unitLabel;
+  final Map<String, String> warehouseLabels;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final lots = lotsAsync.valueOrNull ?? const <ProductContainerLot>[];
+    Widget body;
+
+    if (lotsAsync.isLoading && lots.isEmpty) {
+      body = Padding(
+        key: const ValueKey('product-container-lots-loading'),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: c.accent600,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(
+              'Đang tải lô hàng...',
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if (lotsAsync.hasError && lots.isEmpty) {
+      body = Padding(
+        key: const ValueKey('product-container-lots-error'),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        child: Text(
+          'Không tải được lô hàng',
+          style: TextStyle(
+            color: c.danger,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    } else if (lots.isEmpty) {
+      body = Padding(
+        key: const ValueKey('product-container-lots-empty'),
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        child: Text(
+          'Chưa có lô hàng',
+          style: TextStyle(
+            color: c.textMuted,
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    } else {
+      body = Column(
+        key: const ValueKey('product-container-lots-section'),
+        children: [
+          _LotSummary(lots: lots, unitLabel: unitLabel),
+          for (final group in _groupLots(lots, warehouseLabels))
+            _LotWarehouseBlock(group: group, unitLabel: unitLabel),
+        ],
+      );
+    }
+
+    return KSettingsSection(header: 'Lô hàng', children: [body]);
+  }
+}
+
+class _LotSummary extends StatelessWidget {
+  const _LotSummary({required this.lots, required this.unitLabel});
+
+  final List<ProductContainerLot> lots;
+  final String unitLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final total = lots.fold<num>(0, (sum, lot) => sum + lot.qtyRemaining);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 10),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE6F7F0),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(
+              TablerIcons.packages,
+              color: Color(0xFF10B981),
+              size: 20,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${lots.length} lô đang theo dõi',
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Tổng còn ${_formatQty(total, unitLabel)}',
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LotWarehouseBlock extends StatelessWidget {
+  const _LotWarehouseBlock({required this.group, required this.unitLabel});
+
+  final _LotWarehouseGroup group;
+  final String unitLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          color: c.surfaceHover,
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+          child: Row(
+            children: [
+              Icon(
+                TablerIcons.building_warehouse,
+                size: 17,
+                color: c.textMuted,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  group.warehouseName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              Text(
+                '${_formatQty(group.totalRemaining, unitLabel)} / '
+                '${_formatQty(group.totalInitial, unitLabel)}',
+                style: TextStyle(
+                  color: c.textMuted,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+        for (final lot in group.lots) _LotRow(lot: lot, unitLabel: unitLabel),
+      ],
+    );
+  }
+}
+
+class _LotRow extends StatelessWidget {
+  const _LotRow({required this.lot, required this.unitLabel});
+
+  final ProductContainerLot lot;
+  final String unitLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final progress = lot.qtyInitial <= 0
+        ? 0.0
+        : (lot.qtyRemaining / lot.qtyInitial).clamp(0, 1).toDouble();
+    final accent = lot.isEmpty
+        ? c.danger
+        : lot.isPartiallyUsed
+        ? c.warning
+        : c.success;
+    final dateText = lot.createdAt == null ? '—' : _date.format(lot.createdAt!);
+    return Padding(
+      key: ValueKey('product-lot-row-${lot.id}'),
+      padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 34,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 2),
+              child: CircularProgressIndicator(
+                value: progress,
+                strokeWidth: 4,
+                backgroundColor: c.borderSoft,
+                color: accent,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        lot.barcode ?? 'Lô ${_shortId(lot.id)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: c.textPrimary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          fontFeatures: const [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${_formatQty(lot.qtyRemaining, unitLabel)} / '
+                      '${_formatQty(lot.qtyInitial, unitLabel)}',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    _LotMeta(icon: TablerIcons.calendar, text: dateText),
+                    _LotMeta(
+                      icon: TablerIcons.versions,
+                      text: lot.variantName ?? 'Mặc định',
+                    ),
+                    if (lot.isPartiallyUsed)
+                      _LotMeta(
+                        icon: TablerIcons.chart_pie,
+                        text: 'Đã dùng ${((1 - progress) * 100).round()}%',
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LotMeta extends StatelessWidget {
+  const _LotMeta({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: c.textMuted),
+        const SizedBox(width: 4),
+        Text(
+          text,
+          style: TextStyle(
+            color: c.textMuted,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+List<_LotWarehouseGroup> _groupLots(
+  List<ProductContainerLot> lots,
+  Map<String, String> warehouseLabels,
+) {
+  final byWarehouse = <String, List<ProductContainerLot>>{};
+  for (final lot in lots) {
+    byWarehouse.putIfAbsent(lot.warehouseId, () => []).add(lot);
+  }
+  final groups = [
+    for (final entry in byWarehouse.entries)
+      _LotWarehouseGroup(
+        warehouseId: entry.key,
+        warehouseName: warehouseLabels[entry.key] ?? entry.key,
+        lots: entry.value,
+      ),
+  ]..sort((a, b) => a.warehouseName.compareTo(b.warehouseName));
+  return groups;
+}
+
+String? _defaultVariantId(ProductDetail detail) {
+  for (final variant in detail.variants) {
+    if (variant.isDefault) return variant.id;
+  }
+  return null;
+}
+
+String _shortId(String id) => id.length <= 6 ? id : id.substring(0, 6);
+
+String _lotStockLineName(
+  ProductContainerLot lot,
+  Map<String, String> warehouseLabels,
+) {
+  final warehouseName = warehouseLabels[lot.warehouseId] ?? lot.warehouseId;
+  return 'Lô ${lot.barcode ?? _shortId(lot.id)} · $warehouseName';
 }
 
 class _StockSummaryRow extends StatelessWidget {
@@ -683,7 +1082,7 @@ class _VariantStockSheetRow extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 10),
-              if (group.rows.isEmpty)
+              if (group.stockRows.isEmpty && group.lotRows.isEmpty)
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
@@ -695,13 +1094,19 @@ class _VariantStockSheetRow extends StatelessWidget {
                     ),
                   ),
                 )
-              else
-                for (final stock in group.rows)
+              else ...[
+                for (final stock in group.stockRows)
                   _StockBranchLine(
                     name:
                         warehouseLabels[stock.warehouseId] ?? stock.warehouseId,
                     qtyText: _formatQty(stock.qty, unitLabel),
                   ),
+                for (final lot in group.lotRows)
+                  _StockBranchLine(
+                    name: _lotStockLineName(lot, warehouseLabels),
+                    qtyText: _formatQty(lot.qtyRemaining, unitLabel),
+                  ),
+              ],
             ],
           ),
         ),

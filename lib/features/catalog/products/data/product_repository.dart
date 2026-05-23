@@ -8,6 +8,7 @@ import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart' show mapDioError;
 import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
@@ -84,6 +85,32 @@ class ProductRepository {
       return ApiResult.success(ProductDetail.fromJson(data));
     } on DioException catch (e) {
       log.w('GetProductById($productId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  Future<ApiResult<List<ProductContainerLot>>> getContainerLots({
+    required String productId,
+    String? variantId,
+  }) async {
+    try {
+      final res = await _dio.get<dynamic>(
+        '/product/GetContainerLots',
+        queryParameters: {
+          'productId': productId,
+          if (variantId != null) 'variantId': variantId,
+        },
+      );
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final items = (data['containerLots'] as List<dynamic>? ?? const [])
+          .map((e) => ProductContainerLot.fromJson(e as Map<String, dynamic>))
+          .where((lot) => lot.id.isNotEmpty && lot.warehouseId.isNotEmpty)
+          .toList();
+      log.i('GetContainerLots ← ${res.statusCode} count=${items.length}');
+      return ApiResult.success(items);
+    } on DioException catch (e) {
+      log.w('GetContainerLots($productId) failed: ${e.message}');
       return ApiResult.failure(_extract(e));
     }
   }

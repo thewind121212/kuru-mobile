@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
+import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/orders/models/order_cart_draft.dart';
@@ -15,11 +17,12 @@ void main() {
           currentOrgIdProvider.overrideWithValue('org_test'),
           orderCartProvider.overrideWith(_EmptyCartNotifier.new),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          locale: Locale('vi'),
-          home: OrderCreateScreen(),
+          locale: const Locale('vi'),
+          home: const OrderCreateScreen(),
         ),
       ),
     );

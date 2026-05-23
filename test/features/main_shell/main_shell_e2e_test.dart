@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kuru_category_api/kuru_category_api.dart' as gen;
 import 'package:kuru_mobile/app/router.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
@@ -14,12 +15,21 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
 import 'package:kuru_mobile/core/permissions/resolved_permissions.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:kuru_mobile/features/orders/models/order_overview_page.dart';
+import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 import 'package:kuru_mobile/features/splash/splash_screen.dart';
 
 /// Minimal notifier that always says "onboarding seen" — no SharedPrefs needed.
 class _SeenNotifier extends OnboardingSeenController {
   @override
   bool build() => true;
+}
+
+class _EmptyOrderListNotifier extends OrderListNotifier {
+  @override
+  Future<OrderOverviewPage> build() async {
+    return const OrderOverviewPage(orders: [], total: 0, page: 1, limit: 20);
+  }
 }
 
 void main() {
@@ -115,5 +125,74 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.text('Categories'), findsWidgets);
+  });
+
+  testWidgets('POS can return to Orders shell branch without page-key clash', (
+    tester,
+  ) async {
+    const fakeUser = UserInfo(
+      email: 'test@x.com',
+      orgInfos: <OrgInfo>[
+        OrgInfo(id: 'org-x', name: 'Test Org', role: 'Chủ sở hữu'),
+      ],
+    );
+    late GoRouter router;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appBootstrapProvider.overrideWith(
+            (_) async => const BootstrapAuthed(fakeUser),
+          ),
+          splashGateProvider.overrideWith(
+            (ref) async => const BootstrapAuthed(fakeUser),
+          ),
+          currentOrgIdProvider.overrideWithValue('org-x'),
+          onboardingSeenProvider.overrideWith(_SeenNotifier.new),
+          categoryOverviewProvider.overrideWith(
+            (ref) async => <gen.CategoryResponse>[],
+          ),
+          orderListProvider.overrideWith(_EmptyOrderListNotifier.new),
+          myPermissionsProvider.overrideWith(
+            (ref) async => const ResolvedPermissions(orgRole: OrgRole.staff),
+          ),
+          biometricEnabledProvider.overrideWith((ref) async => false),
+          biometricAvailableProvider.overrideWith((ref) async => false),
+        ],
+        child: Consumer(
+          builder: (ctx, ref, _) {
+            router = ref.watch(routerProvider);
+            return MaterialApp.router(
+              routerConfig: router,
+              theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+              locale: const Locale('en'),
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.byTooltip('Open POS'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.text('POS'), findsOneWidget);
+
+    router.go('/orders');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Orders'), findsWidgets);
+    expect(find.text('POS'), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 }
