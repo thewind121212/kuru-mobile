@@ -3,8 +3,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
+import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
@@ -534,61 +536,82 @@ class _ItemRow extends StatelessWidget {
 
   final OrderLineItem item;
 
+  /// Order line items snapshot the image at sale time. BE can store either
+  /// a full URL (`http…`) or just the avatar filename — resolve both.
+  String? _resolveImageUrl() {
+    final raw = item.imageUrl?.trim();
+    if (raw == null || raw.isEmpty) return null;
+    if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+    return '${Env.imageBaseUrl}/product-avatar/$raw';
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
     final qty = item.qty == item.qty.truncate()
         ? item.qty.toStringAsFixed(0)
         : item.qty.toStringAsFixed(2);
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: Container(
-              width: 44,
-              height: 44,
-              color: const Color(0xFFEFF1F4),
-              alignment: Alignment.center,
-              child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                  ? Image.network(
-                      item.imageUrl!,
-                      fit: BoxFit.cover,
-                      width: 44,
-                      height: 44,
-                      errorBuilder: (_, __, ___) => const Icon(
+    final imageUrl = _resolveImageUrl();
+    return InkWell(
+      onTap: () => context.push('/catalog/products/${item.productId}'),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                width: 44,
+                height: 44,
+                color: const Color(0xFFEFF1F4),
+                alignment: Alignment.center,
+                child: imageUrl != null
+                    ? Image.network(
+                        imageUrl,
+                        fit: BoxFit.cover,
+                        width: 44,
+                        height: 44,
+                        errorBuilder: (_, __, ___) => const Icon(
+                          TablerIcons.package,
+                          size: 22,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      )
+                    : const Icon(
                         TablerIcons.package,
                         size: 22,
                         color: Color(0xFF94A3B8),
                       ),
-                    )
-                  : const Icon(
-                      TablerIcons.package,
-                      size: 22,
-                      color: Color(0xFF94A3B8),
-                    ),
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.productName,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: c.textPrimary,
-                  ),
-                ),
-                if (item.variantName != null &&
-                    item.variantName!.isNotEmpty) ...[
-                  const SizedBox(height: 2),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
-                    item.variantName!,
+                    item.productName,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: c.textPrimary,
+                    ),
+                  ),
+                  if (item.variantName?.isNotEmpty ?? false) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      item.variantName!,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: c.textMuted,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 4),
+                  Text(
+                    '$qty × ${_vnd.format(item.unitPrice)}',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
@@ -596,28 +619,26 @@ class _ItemRow extends StatelessWidget {
                     ),
                   ),
                 ],
-                const SizedBox(height: 4),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
                 Text(
-                  '$qty × ${_vnd.format(item.unitPrice)}',
+                  _vnd.format(item.totalAmount),
                   style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: c.textMuted,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: c.textPrimary,
                   ),
                 ),
+                const SizedBox(height: 4),
+                Icon(TablerIcons.chevron_right, size: 16, color: c.textMuted),
               ],
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            _vnd.format(item.totalAmount),
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-              color: c.textPrimary,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
