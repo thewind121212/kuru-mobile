@@ -21,6 +21,7 @@ import 'package:kuru_mobile/features/orders/order_create_screen.dart';
 import 'package:kuru_mobile/features/orders/order_detail_screen.dart';
 import 'package:kuru_mobile/features/orders/order_list_screen.dart';
 import 'package:kuru_mobile/features/org_picker/org_picker_screen.dart';
+import 'package:kuru_mobile/features/pos/pos_screen.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
 import 'package:kuru_mobile/features/settings/appearance_screen.dart';
 import 'package:kuru_mobile/features/settings/profile_screen.dart';
@@ -101,6 +102,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) =>
             OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
+      GoRoute(path: '/pos', builder: (_, __) => const PosScreen()),
 
       // Top-level alias for opening a product detail from outside the catalog
       // shell branch (e.g. tapping a line-item inside /orders/:id). Pushing
@@ -109,8 +111,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       // registered under the catalog StatefulShellBranch.
       GoRoute(
         path: '/products/:id',
-        builder: (_, state) =>
-            ProductDetailScreen(productId: state.pathParameters['id']!),
+        // Use an explicit non-colliding page key so the same
+        // ProductDetailScreen reachable via `/catalog/products/:id` inside
+        // the catalog shell can also be pushed on the root navigator from
+        // `/orders/:id` without triggering Navigator's
+        // `!keyReservation.contains(key)` assertion.
+        pageBuilder: (_, state) {
+          final id = state.pathParameters['id']!;
+          return MaterialPage<void>(
+            key: ValueKey('orders-product-$id'),
+            child: ProductDetailScreen(productId: id),
+          );
+        },
       ),
 
       // Authenticated shell — bottom-nav with four branches.
@@ -267,6 +279,7 @@ String? _routeForBootstrap(
     '/home',
     '/catalog',
     '/orders',
+    '/pos',
     '/products',
     '/settings',
   ];
