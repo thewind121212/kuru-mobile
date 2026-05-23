@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:kuru_mobile/core/parsing/parse_date.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment_method.dart';
 
 part 'order_payment.freezed.dart';
@@ -25,7 +26,7 @@ class OrderPayment with _$OrderPayment {
       amount: (json['amount'] as num).toDouble(),
       reference: json['reference'] as String?,
       note: json['note'] as String?,
-      paidAt: DateTime.parse(json['paidAt'] as String),
+      paidAt: parseProtoDateRequired(json['paidAt'], field: 'paidAt'),
     );
   }
 }

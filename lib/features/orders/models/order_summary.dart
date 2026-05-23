@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:kuru_mobile/core/parsing/parse_date.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment_status.dart';
 import 'package:kuru_mobile/features/orders/models/order_sale_channel.dart';
 import 'package:kuru_mobile/features/orders/models/order_status.dart';
@@ -38,7 +39,7 @@ class OrderSummary with _$OrderSummary {
       totalAmount: (json['totalAmount'] as num).toDouble(),
       paidAmount: (json['paidAmount'] as num).toDouble(),
       itemCount: (json['itemCount'] as num).toInt(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt: parseProtoDateRequired(json['createdAt'], field: 'createdAt'),
       saleChannel: OrderSaleChannel.fromWire(json['saleChannel'] as String?),
       storeId: json['storeId'] as String?,
       storeName: json['storeName'] as String?,

@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:kuru_mobile/core/parsing/parse_date.dart';
 import 'package:kuru_mobile/features/orders/models/discount_type.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment.dart';
@@ -45,9 +46,6 @@ class OrderDetail with _$OrderDetail {
   const OrderDetail._();
 
   factory OrderDetail.fromJson(Map<String, dynamic> json) {
-    DateTime? parseDate(Object? v) =>
-        v == null ? null : DateTime.parse(v as String);
-
     final items =
         (json['items'] as List<dynamic>?)
             ?.map((e) => OrderLineItem.fromJson(e as Map<String, dynamic>))
@@ -82,10 +80,10 @@ class OrderDetail with _$OrderDetail {
       changeAmount: (json['changeAmount'] as num?)?.toDouble() ?? 0,
       storeId: json['storeId'] as String?,
       storeName: json['storeName'] as String?,
-      fulfilledAt: parseDate(json['fulfilledAt']),
+      fulfilledAt: parseProtoDate(json['fulfilledAt']),
       fulfilledBy: json['fulfilledBy'] as String?,
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
+      createdAt: parseProtoDateRequired(json['createdAt'], field: 'createdAt'),
+      updatedAt: parseProtoDateRequired(json['updatedAt'], field: 'updatedAt'),
       createdBy: json['createdBy'] as String,
       items: items,
       payments: payments,
