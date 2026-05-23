@@ -87,12 +87,22 @@ class OrderListScreen extends ConsumerWidget {
                         ],
                       );
                     }
-                    return ListView.builder(
-                      itemCount: page.orders.length,
-                      itemBuilder: (_, i) => OrderListRow(
-                        summary: page.orders[i],
-                        onTap: () =>
-                            context.push('/orders/${page.orders[i].id}'),
+                    return NotificationListener<ScrollNotification>(
+                      onNotification: (n) {
+                        if (n is ScrollUpdateNotification &&
+                            n.metrics.pixels >=
+                                n.metrics.maxScrollExtent - 200) {
+                          ref.read(orderListProvider.notifier).loadMore();
+                        }
+                        return false;
+                      },
+                      child: ListView.builder(
+                        itemCount: page.orders.length,
+                        itemBuilder: (_, i) => OrderListRow(
+                          summary: page.orders[i],
+                          onTap: () =>
+                              context.push('/orders/${page.orders[i].id}'),
+                        ),
                       ),
                     );
                   },

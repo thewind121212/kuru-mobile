@@ -7,6 +7,13 @@ import 'package:kuru_mobile/features/orders/models/order_overview_page.dart';
 import 'package:kuru_mobile/features/orders/order_list_screen.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 
+class _FakeOrderListNotifier extends OrderListNotifier {
+  _FakeOrderListNotifier(this._page);
+  final OrderOverviewPage _page;
+  @override
+  Future<OrderOverviewPage> build() async => _page;
+}
+
 void main() {
   testWidgets('shows title and empty-state when no orders', (tester) async {
     const emptyPage = OrderOverviewPage(
@@ -20,7 +27,9 @@ void main() {
       ProviderScope(
         overrides: [
           currentOrgIdProvider.overrideWithValue('org_test'),
-          orderListProvider.overrideWith((_) async => emptyPage),
+          orderListProvider.overrideWith(
+            () => _FakeOrderListNotifier(emptyPage),
+          ),
         ],
         child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,

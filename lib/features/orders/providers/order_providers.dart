@@ -16,6 +16,7 @@ import 'package:kuru_mobile/features/orders/models/order_overview_page.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment_status.dart';
 import 'package:kuru_mobile/features/orders/models/order_sale_channel.dart';
 import 'package:kuru_mobile/features/orders/models/order_status.dart';
+import 'package:kuru_mobile/features/orders/models/order_summary.dart';
 
 /// `/api/v1`-scoped dio (clone of shared, same pattern as productDioProvider).
 final ordersDioProvider = Provider<Dio>((ref) {
@@ -52,18 +53,68 @@ final orderFiltersProvider =
       OrderFiltersNotifier.new,
     );
 
-/// Single-page fetch. Accumulator upgrade comes in Task 7.2.
-final orderListProvider = FutureProvider<OrderOverviewPage>((ref) async {
-  final orgId = ref.watch(currentOrgIdProvider);
-  final filters = ref.watch(orderFiltersProvider);
-  if (orgId == null) {
-    throw StateError('No org selected');
+/// Accumulates pages of orders; supports infinite scroll via [loadMore].
+class OrderListNotifier extends AsyncNotifier<OrderOverviewPage> {
+  List<OrderSummary> _accum = [];
+  bool _loadingMore = false;
+
+  @override
+  Future<OrderOverviewPage> build() async {
+    ref.watch(currentOrgIdProvider);
+    final filters = ref.watch(orderFiltersProvider);
+    final orgId = ref.read(currentOrgIdProvider);
+    if (orgId == null) throw StateError('No org selected');
+    _accum = [];
+    _loadingMore = false;
+    final result = await ref
+        .read(orderRepositoryProvider)
+        .getOrderOverview(orgId: orgId, filters: filters.copyWith(page: 1));
+    final page = switch (result) {
+      ApiSuccess<OrderOverviewPage>(:final data) => data,
+      ApiFailure<OrderOverviewPage>(:final err) => throw err,
+    };
+    _accum = page.orders;
+    return page.copyWith(orders: _accum);
   }
-  return ref
-      .watch(orderRepositoryProvider)
-      .getOrderOverview(orgId: orgId, filters: filters)
-      .unwrap();
-});
+
+  Future<void> loadMore() async {
+    final current = state.valueOrNull;
+    if (_loadingMore || current == null || !current.hasMore) return;
+    _loadingMore = true;
+    state = const AsyncValue<OrderOverviewPage>.loading().copyWithPrevious(
+      state,
+    );
+    try {
+      final orgId = ref.read(currentOrgIdProvider)!;
+      final filters = ref.read(orderFiltersProvider);
+      final nextPage = current.page + 1;
+      final result = await ref
+          .read(orderRepositoryProvider)
+          .getOrderOverview(
+            orgId: orgId,
+            filters: filters.copyWith(page: nextPage),
+          );
+      final next = switch (result) {
+        ApiSuccess<OrderOverviewPage>(:final data) => data,
+        ApiFailure<OrderOverviewPage>(:final err) => throw err,
+      };
+      _accum = [..._accum, ...next.orders];
+      state = AsyncValue.data(next.copyWith(orders: _accum));
+    } on Object catch (e, st) {
+      state = AsyncValue<OrderOverviewPage>.error(
+        e,
+        st,
+      ).copyWithPrevious(state);
+    } finally {
+      _loadingMore = false;
+    }
+  }
+}
+
+final orderListProvider =
+    AsyncNotifierProvider<OrderListNotifier, OrderOverviewPage>(
+      OrderListNotifier.new,
+    );
 
 /// Order detail family.
 final orderDetailProvider = FutureProvider.family<OrderDetail, String>((
