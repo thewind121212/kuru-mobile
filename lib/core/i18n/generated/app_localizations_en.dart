@@ -612,4 +612,275 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brandActionDelete => 'Delete';
+
+  @override
+  String get navOrders => 'Orders';
+
+  @override
+  String get orderListTitle => 'Orders';
+
+  @override
+  String get orderListSearchHint => 'Search by order # or customer';
+
+  @override
+  String get orderListEmptyAll => 'No orders yet';
+
+  @override
+  String get orderListEmptyFiltered => 'No orders match your filters';
+
+  @override
+  String get orderListEmptyCta => 'Create first order';
+
+  @override
+  String get orderListNewOrder => 'New order';
+
+  @override
+  String get orderListFilterTitle => 'Filters';
+
+  @override
+  String get orderListFilterApply => 'Apply';
+
+  @override
+  String get orderListFilterReset => 'Reset';
+
+  @override
+  String get orderListFilterPaymentStatus => 'Payment status';
+
+  @override
+  String get orderListFilterSaleChannel => 'Sales channel';
+
+  @override
+  String get orderListFilterFromDate => 'From';
+
+  @override
+  String get orderListFilterToDate => 'To';
+
+  @override
+  String get orderStatusDraft => 'Draft';
+
+  @override
+  String get orderStatusPending => 'Pending';
+
+  @override
+  String get orderStatusCompleted => 'Completed';
+
+  @override
+  String get orderStatusCancelled => 'Cancelled';
+
+  @override
+  String get orderStatusAll => 'All';
+
+  @override
+  String get orderPaymentStatusUnpaid => 'Unpaid';
+
+  @override
+  String get orderPaymentStatusPartial => 'Partial';
+
+  @override
+  String get orderPaymentStatusPaid => 'Paid';
+
+  @override
+  String get orderPaymentMethodCash => 'Cash';
+
+  @override
+  String get orderPaymentMethodBankTransfer => 'Bank transfer';
+
+  @override
+  String get orderPaymentMethodCard => 'Card';
+
+  @override
+  String get orderPaymentMethodOther => 'Other';
+
+  @override
+  String get orderSaleChannelShop => 'Shop';
+
+  @override
+  String get orderSaleChannelEcommerce => 'E-commerce';
+
+  @override
+  String get orderWalkIn => 'Walk-in';
+
+  @override
+  String get orderNoCustomer => 'No customer';
+
+  @override
+  String orderItemsCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get orderDetailTitle => 'Order details';
+
+  @override
+  String get orderDetailNotFound => 'Order not found';
+
+  @override
+  String get orderDetailSubtotal => 'Subtotal';
+
+  @override
+  String get orderDetailDiscount => 'Discount';
+
+  @override
+  String get orderDetailTax => 'Tax';
+
+  @override
+  String get orderDetailTotal => 'Total';
+
+  @override
+  String get orderDetailPaid => 'Paid';
+
+  @override
+  String get orderDetailChange => 'Change';
+
+  @override
+  String get orderDetailCustomer => 'Customer';
+
+  @override
+  String get orderDetailNote => 'Note';
+
+  @override
+  String get orderDetailItems => 'Items';
+
+  @override
+  String get orderDetailPayments => 'Payments';
+
+  @override
+  String get orderDetailAddPayment => 'Add payment';
+
+  @override
+  String get orderDetailMarkCompleted => 'Mark completed';
+
+  @override
+  String get orderDetailCancel => 'Cancel order';
+
+  @override
+  String get orderDetailVoid => 'Void';
+
+  @override
+  String get orderDetailCancelDialogTitle => 'Cancel order?';
+
+  @override
+  String get orderDetailCancelReasonHint => 'Reason';
+
+  @override
+  String get orderDetailVoidDialogTitle => 'Void this order?';
+
+  @override
+  String get orderDetailVoidDialogBody =>
+      'A completed order will be marked as voided. This cannot be undone.';
+
+  @override
+  String get orderDetailMarkCompletedDialogTitle => 'Mark as completed?';
+
+  @override
+  String get orderDetailUpdated => 'Order updated';
+
+  @override
+  String get orderCreateTitle => 'New order';
+
+  @override
+  String get orderCreateEmptyCta => 'Add product';
+
+  @override
+  String get orderCreateAddMore => 'Add another product';
+
+  @override
+  String get orderCreateClearCart => 'Clear cart';
+
+  @override
+  String get orderCreateDiscardDialogTitle => 'Discard cart?';
+
+  @override
+  String get orderCreateDiscardDialogBody =>
+      'You\'ll lose the items you\'ve added.';
+
+  @override
+  String get orderCreateDiscardConfirm => 'Discard';
+
+  @override
+  String get orderCreateKeepEditing => 'Keep editing';
+
+  @override
+  String get orderCreateCustomerName => 'Customer name';
+
+  @override
+  String get orderCreateCustomerPhone => 'Phone';
+
+  @override
+  String get orderCreateNote => 'Note';
+
+  @override
+  String get orderCreateOrderDiscount => 'Order discount';
+
+  @override
+  String get orderCreateManualTax => 'Tax (%)';
+
+  @override
+  String get orderCreateDiscountTypeNone => 'None';
+
+  @override
+  String get orderCreateDiscountTypePercentage => 'Percent';
+
+  @override
+  String get orderCreateDiscountTypeFixed => 'Fixed';
+
+  @override
+  String get orderCreateSaveDraft => 'Save as draft';
+
+  @override
+  String get orderCreatePay => 'Pay';
+
+  @override
+  String get orderCreateSavedDraft => 'Draft saved';
+
+  @override
+  String get orderCreatePaid => 'Payment received';
+
+  @override
+  String get addLineSheetTitle => 'Add product';
+
+  @override
+  String get addLineSheetEditTitle => 'Edit product';
+
+  @override
+  String get addLineSheetSearchHint => 'Search products';
+
+  @override
+  String get addLineSheetEmpty => 'Type to search products';
+
+  @override
+  String get addLineSheetVariantPick => 'Choose variant';
+
+  @override
+  String get addLineSheetQty => 'Quantity';
+
+  @override
+  String get addLineSheetUnitPrice => 'Unit price';
+
+  @override
+  String get addLineSheetLineDiscount => 'Line discount';
+
+  @override
+  String get addLineSheetAdd => 'Add to order';
+
+  @override
+  String get addLineSheetUpdate => 'Update';
+
+  @override
+  String get orderPaymentSheetTitle => 'Payment';
+
+  @override
+  String get orderPaymentSheetMethod => 'Method';
+
+  @override
+  String get orderPaymentSheetAmount => 'Amount';
+
+  @override
+  String get orderPaymentSheetReference => 'Reference';
+
+  @override
+  String get orderPaymentSheetNote => 'Note';
+
+  @override
+  String get orderPaymentSheetConfirm => 'Confirm';
 }

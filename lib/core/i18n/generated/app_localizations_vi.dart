@@ -591,4 +591,275 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get brandActionDelete => 'Xóa';
+
+  @override
+  String get navOrders => 'Đơn hàng';
+
+  @override
+  String get orderListTitle => 'Đơn hàng';
+
+  @override
+  String get orderListSearchHint => 'Tìm theo mã đơn hoặc khách';
+
+  @override
+  String get orderListEmptyAll => 'Chưa có đơn hàng nào';
+
+  @override
+  String get orderListEmptyFiltered => 'Không có đơn phù hợp bộ lọc';
+
+  @override
+  String get orderListEmptyCta => 'Tạo đơn đầu tiên';
+
+  @override
+  String get orderListNewOrder => 'Đơn mới';
+
+  @override
+  String get orderListFilterTitle => 'Bộ lọc';
+
+  @override
+  String get orderListFilterApply => 'Áp dụng';
+
+  @override
+  String get orderListFilterReset => 'Đặt lại';
+
+  @override
+  String get orderListFilterPaymentStatus => 'Trạng thái thanh toán';
+
+  @override
+  String get orderListFilterSaleChannel => 'Kênh bán';
+
+  @override
+  String get orderListFilterFromDate => 'Từ ngày';
+
+  @override
+  String get orderListFilterToDate => 'Đến ngày';
+
+  @override
+  String get orderStatusDraft => 'Nháp';
+
+  @override
+  String get orderStatusPending => 'Chờ xử lý';
+
+  @override
+  String get orderStatusCompleted => 'Hoàn tất';
+
+  @override
+  String get orderStatusCancelled => 'Đã hủy';
+
+  @override
+  String get orderStatusAll => 'Tất cả';
+
+  @override
+  String get orderPaymentStatusUnpaid => 'Chưa thanh toán';
+
+  @override
+  String get orderPaymentStatusPartial => 'Thanh toán một phần';
+
+  @override
+  String get orderPaymentStatusPaid => 'Đã thanh toán';
+
+  @override
+  String get orderPaymentMethodCash => 'Tiền mặt';
+
+  @override
+  String get orderPaymentMethodBankTransfer => 'Chuyển khoản';
+
+  @override
+  String get orderPaymentMethodCard => 'Thẻ';
+
+  @override
+  String get orderPaymentMethodOther => 'Khác';
+
+  @override
+  String get orderSaleChannelShop => 'Cửa hàng';
+
+  @override
+  String get orderSaleChannelEcommerce => 'Thương mại điện tử';
+
+  @override
+  String get orderWalkIn => 'Khách lẻ';
+
+  @override
+  String get orderNoCustomer => 'Không có khách hàng';
+
+  @override
+  String orderItemsCount(int count) {
+    return '$count món';
+  }
+
+  @override
+  String get orderDetailTitle => 'Chi tiết đơn';
+
+  @override
+  String get orderDetailNotFound => 'Không tìm thấy đơn hàng';
+
+  @override
+  String get orderDetailSubtotal => 'Tạm tính';
+
+  @override
+  String get orderDetailDiscount => 'Giảm giá';
+
+  @override
+  String get orderDetailTax => 'Thuế';
+
+  @override
+  String get orderDetailTotal => 'Tổng cộng';
+
+  @override
+  String get orderDetailPaid => 'Đã trả';
+
+  @override
+  String get orderDetailChange => 'Tiền thừa';
+
+  @override
+  String get orderDetailCustomer => 'Khách hàng';
+
+  @override
+  String get orderDetailNote => 'Ghi chú';
+
+  @override
+  String get orderDetailItems => 'Sản phẩm';
+
+  @override
+  String get orderDetailPayments => 'Thanh toán';
+
+  @override
+  String get orderDetailAddPayment => 'Thêm thanh toán';
+
+  @override
+  String get orderDetailMarkCompleted => 'Đánh dấu hoàn tất';
+
+  @override
+  String get orderDetailCancel => 'Hủy đơn';
+
+  @override
+  String get orderDetailVoid => 'Hủy bỏ (Void)';
+
+  @override
+  String get orderDetailCancelDialogTitle => 'Hủy đơn hàng?';
+
+  @override
+  String get orderDetailCancelReasonHint => 'Lý do hủy';
+
+  @override
+  String get orderDetailVoidDialogTitle => 'Hủy bỏ đơn hàng?';
+
+  @override
+  String get orderDetailVoidDialogBody =>
+      'Đơn đã hoàn tất sẽ được đánh dấu hủy bỏ. Không thể hoàn tác.';
+
+  @override
+  String get orderDetailMarkCompletedDialogTitle => 'Đánh dấu hoàn tất?';
+
+  @override
+  String get orderDetailUpdated => 'Đã cập nhật đơn hàng';
+
+  @override
+  String get orderCreateTitle => 'Đơn mới';
+
+  @override
+  String get orderCreateEmptyCta => 'Thêm sản phẩm';
+
+  @override
+  String get orderCreateAddMore => 'Thêm sản phẩm khác';
+
+  @override
+  String get orderCreateClearCart => 'Xóa giỏ hàng';
+
+  @override
+  String get orderCreateDiscardDialogTitle => 'Bỏ giỏ hàng?';
+
+  @override
+  String get orderCreateDiscardDialogBody =>
+      'Bạn sẽ mất các sản phẩm đang chọn.';
+
+  @override
+  String get orderCreateDiscardConfirm => 'Bỏ';
+
+  @override
+  String get orderCreateKeepEditing => 'Tiếp tục';
+
+  @override
+  String get orderCreateCustomerName => 'Tên khách hàng';
+
+  @override
+  String get orderCreateCustomerPhone => 'Số điện thoại';
+
+  @override
+  String get orderCreateNote => 'Ghi chú';
+
+  @override
+  String get orderCreateOrderDiscount => 'Giảm giá đơn';
+
+  @override
+  String get orderCreateManualTax => 'Thuế (%)';
+
+  @override
+  String get orderCreateDiscountTypeNone => 'Không';
+
+  @override
+  String get orderCreateDiscountTypePercentage => 'Phần trăm';
+
+  @override
+  String get orderCreateDiscountTypeFixed => 'Cố định';
+
+  @override
+  String get orderCreateSaveDraft => 'Lưu nháp';
+
+  @override
+  String get orderCreatePay => 'Thanh toán';
+
+  @override
+  String get orderCreateSavedDraft => 'Đã lưu đơn nháp';
+
+  @override
+  String get orderCreatePaid => 'Đã thanh toán';
+
+  @override
+  String get addLineSheetTitle => 'Thêm sản phẩm';
+
+  @override
+  String get addLineSheetEditTitle => 'Sửa sản phẩm';
+
+  @override
+  String get addLineSheetSearchHint => 'Tìm sản phẩm';
+
+  @override
+  String get addLineSheetEmpty => 'Nhập tên để tìm sản phẩm';
+
+  @override
+  String get addLineSheetVariantPick => 'Chọn phân loại';
+
+  @override
+  String get addLineSheetQty => 'Số lượng';
+
+  @override
+  String get addLineSheetUnitPrice => 'Đơn giá';
+
+  @override
+  String get addLineSheetLineDiscount => 'Giảm giá dòng';
+
+  @override
+  String get addLineSheetAdd => 'Thêm vào đơn';
+
+  @override
+  String get addLineSheetUpdate => 'Cập nhật';
+
+  @override
+  String get orderPaymentSheetTitle => 'Thanh toán';
+
+  @override
+  String get orderPaymentSheetMethod => 'Hình thức';
+
+  @override
+  String get orderPaymentSheetAmount => 'Số tiền';
+
+  @override
+  String get orderPaymentSheetReference => 'Mã tham chiếu';
+
+  @override
+  String get orderPaymentSheetNote => 'Ghi chú';
+
+  @override
+  String get orderPaymentSheetConfirm => 'Xác nhận';
 }
