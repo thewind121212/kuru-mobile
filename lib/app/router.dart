@@ -17,6 +17,9 @@ import 'package:kuru_mobile/features/home/home_stub_screen.dart';
 import 'package:kuru_mobile/features/login/login_screen.dart';
 import 'package:kuru_mobile/features/main_shell/main_shell.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
+import 'package:kuru_mobile/features/orders/order_create_screen.dart';
+import 'package:kuru_mobile/features/orders/order_detail_screen.dart';
+import 'package:kuru_mobile/features/orders/order_list_screen.dart';
 import 'package:kuru_mobile/features/org_picker/org_picker_screen.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
 import 'package:kuru_mobile/features/settings/appearance_screen.dart';
@@ -87,7 +90,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const RecoveryCodeScreen(),
       ),
 
-      // Authenticated shell — bottom-nav with three branches.
+      // Full-screen order routes — outside the shell so they cover the
+      // bottom nav (no tab bar visible during create / detail).
+      GoRoute(
+        path: '/orders/new',
+        builder: (_, __) => const OrderCreateScreen(),
+      ),
+      GoRoute(
+        path: '/orders/:id',
+        builder: (_, state) =>
+            OrderDetailScreen(orderId: state.pathParameters['id']!),
+      ),
+
+      // Authenticated shell — bottom-nav with four branches.
       StatefulShellRoute.indexedStack(
         builder: (context, state, navShell) => MainShell(
           currentIndex: navShell.currentIndex,
@@ -162,7 +177,16 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Branch 2: Settings
+          // Branch 2: Orders
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/orders',
+                builder: (_, __) => const OrderListScreen(),
+              ),
+            ],
+          ),
+          // Branch 3: Settings
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -226,9 +250,9 @@ String? _routeForBootstrap(
   }
   // Authed shell branches — bottom-nav routes (and their sub-paths) are
   // all valid destinations. Without this safelist, a deep link / push
-  // notification / restored URL hitting /catalog or /settings would
-  // bounce back to /home.
-  const authedShellPrefixes = ['/home', '/catalog', '/settings'];
+  // notification / restored URL hitting /catalog, /orders or /settings
+  // would bounce back to /home.
+  const authedShellPrefixes = ['/home', '/catalog', '/orders', '/settings'];
   final isAuthedShellRoute = authedShellPrefixes.any(loc.startsWith);
   return isAuthedShellRoute ? null : '/home';
 }
