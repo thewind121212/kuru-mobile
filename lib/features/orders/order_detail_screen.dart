@@ -553,7 +553,7 @@ class _ItemRow extends StatelessWidget {
         : item.qty.toStringAsFixed(2);
     final imageUrl = _resolveImageUrl();
     return InkWell(
-      onTap: () => context.push('/catalog/products/${item.productId}'),
+      onTap: () => context.push('/products/${item.productId}'),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         child: Row(

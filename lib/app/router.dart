@@ -102,6 +102,17 @@ final routerProvider = Provider<GoRouter>((ref) {
             OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
 
+      // Top-level alias for opening a product detail from outside the catalog
+      // shell branch (e.g. tapping a line-item inside /orders/:id). Pushing
+      // `/catalog/products/<id>` from the orders branch causes a Navigator
+      // key-reservation collision because the same path is already
+      // registered under the catalog StatefulShellBranch.
+      GoRoute(
+        path: '/products/:id',
+        builder: (_, state) =>
+            ProductDetailScreen(productId: state.pathParameters['id']!),
+      ),
+
       // Authenticated shell — bottom-nav with four branches.
       StatefulShellRoute.indexedStack(
         builder: (context, state, navShell) => MainShell(
@@ -252,7 +263,13 @@ String? _routeForBootstrap(
   // all valid destinations. Without this safelist, a deep link / push
   // notification / restored URL hitting /catalog, /orders or /settings
   // would bounce back to /home.
-  const authedShellPrefixes = ['/home', '/catalog', '/orders', '/settings'];
+  const authedShellPrefixes = [
+    '/home',
+    '/catalog',
+    '/orders',
+    '/products',
+    '/settings',
+  ];
   final isAuthedShellRoute = authedShellPrefixes.any(loc.startsWith);
   return isAuthedShellRoute ? null : '/home';
 }
