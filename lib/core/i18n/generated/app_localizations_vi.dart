@@ -611,7 +611,44 @@ class AppLocalizationsVi extends AppLocalizations {
   String get orderListEmptyCta => 'Tạo đơn đầu tiên';
 
   @override
+  String get orderListEmptyBody => 'Tạo đơn đầu tiên để bắt đầu.';
+
+  @override
   String get orderListNewOrder => 'Đơn mới';
+
+  @override
+  String get orderListLoading => 'Đang tải…';
+
+  @override
+  String orderListLoadError(String error) {
+    return 'Không tải được đơn: $error';
+  }
+
+  @override
+  String get orderListOrderUnit => 'đơn hàng';
+
+  @override
+  String orderListPaymentFilterChip(String status) {
+    return 'TT: $status';
+  }
+
+  @override
+  String orderListChannelFilterChip(String channel) {
+    return 'Kênh: $channel';
+  }
+
+  @override
+  String orderListFromDateChip(String date) {
+    return 'Từ $date';
+  }
+
+  @override
+  String orderListToDateChip(String date) {
+    return 'Đến $date';
+  }
+
+  @override
+  String get orderListClearFilters => 'Xóa lọc';
 
   @override
   String get orderListFilterTitle => 'Bộ lọc';
@@ -862,4 +899,52 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get orderPaymentSheetConfirm => 'Xác nhận';
+
+  @override
+  String get commonRequiredBadge => 'Bắt buộc';
+
+  @override
+  String get commonActions => 'Tác vụ';
+
+  @override
+  String get commonName => 'Tên';
+
+  @override
+  String get commonPhone => 'SĐT';
+
+  @override
+  String get commonStore => 'Cửa hàng';
+
+  @override
+  String get orderDetailSectionInfo => 'Thông tin đơn';
+
+  @override
+  String get orderDetailFieldCreatedAt => 'Tạo lúc';
+
+  @override
+  String get orderDetailFieldChannel => 'Kênh bán';
+
+  @override
+  String get orderDetailSectionSummary => 'Tổng kết';
+
+  @override
+  String get orderDetailPaymentsEmpty => 'Chưa có thanh toán';
+
+  @override
+  String get orderCreateCartEmptyTitle => 'Chưa có sản phẩm trong giỏ';
+
+  @override
+  String get orderCreateCustomerNameHint => 'VD: Anh Nam';
+
+  @override
+  String get orderCreatePhoneHint => '0xxxxxxxxx';
+
+  @override
+  String get orderCreateNoteHint => 'Ghi chú thêm cho đơn hàng';
+
+  @override
+  String get orderCreateManualTaxHint => 'VD: 8';
+
+  @override
+  String get orderCreatePercentHint => '0–100';
 }

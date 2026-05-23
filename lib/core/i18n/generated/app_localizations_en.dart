@@ -632,7 +632,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String get orderListEmptyCta => 'Create first order';
 
   @override
+  String get orderListEmptyBody => 'Create your first order to get started.';
+
+  @override
   String get orderListNewOrder => 'New order';
+
+  @override
+  String get orderListLoading => 'Loading…';
+
+  @override
+  String orderListLoadError(String error) {
+    return 'Could not load orders: $error';
+  }
+
+  @override
+  String get orderListOrderUnit => 'orders';
+
+  @override
+  String orderListPaymentFilterChip(String status) {
+    return 'Payment: $status';
+  }
+
+  @override
+  String orderListChannelFilterChip(String channel) {
+    return 'Channel: $channel';
+  }
+
+  @override
+  String orderListFromDateChip(String date) {
+    return 'From $date';
+  }
+
+  @override
+  String orderListToDateChip(String date) {
+    return 'To $date';
+  }
+
+  @override
+  String get orderListClearFilters => 'Clear filters';
 
   @override
   String get orderListFilterTitle => 'Filters';
@@ -883,4 +920,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderPaymentSheetConfirm => 'Confirm';
+
+  @override
+  String get commonRequiredBadge => 'Required';
+
+  @override
+  String get commonActions => 'Actions';
+
+  @override
+  String get commonName => 'Name';
+
+  @override
+  String get commonPhone => 'Phone';
+
+  @override
+  String get commonStore => 'Store';
+
+  @override
+  String get orderDetailSectionInfo => 'Order info';
+
+  @override
+  String get orderDetailFieldCreatedAt => 'Created at';
+
+  @override
+  String get orderDetailFieldChannel => 'Sale channel';
+
+  @override
+  String get orderDetailSectionSummary => 'Summary';
+
+  @override
+  String get orderDetailPaymentsEmpty => 'No payments yet';
+
+  @override
+  String get orderCreateCartEmptyTitle => 'Cart is empty';
+
+  @override
+  String get orderCreateCustomerNameHint => 'e.g. Mr. Nam';
+
+  @override
+  String get orderCreatePhoneHint => '0xxxxxxxxx';
+
+  @override
+  String get orderCreateNoteHint => 'Add notes for this order';
+
+  @override
+  String get orderCreateManualTaxHint => 'e.g. 8';
+
+  @override
+  String get orderCreatePercentHint => '0–100';
 }

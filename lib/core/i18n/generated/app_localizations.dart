@@ -1166,11 +1166,65 @@ abstract class AppLocalizations {
   /// **'Tạo đơn đầu tiên'**
   String get orderListEmptyCta;
 
+  /// No description provided for @orderListEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn đầu tiên để bắt đầu.'**
+  String get orderListEmptyBody;
+
   /// No description provided for @orderListNewOrder.
   ///
   /// In vi, this message translates to:
   /// **'Đơn mới'**
   String get orderListNewOrder;
+
+  /// No description provided for @orderListLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải…'**
+  String get orderListLoading;
+
+  /// No description provided for @orderListLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được đơn: {error}'**
+  String orderListLoadError(String error);
+
+  /// No description provided for @orderListOrderUnit.
+  ///
+  /// In vi, this message translates to:
+  /// **'đơn hàng'**
+  String get orderListOrderUnit;
+
+  /// No description provided for @orderListPaymentFilterChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'TT: {status}'**
+  String orderListPaymentFilterChip(String status);
+
+  /// No description provided for @orderListChannelFilterChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kênh: {channel}'**
+  String orderListChannelFilterChip(String channel);
+
+  /// No description provided for @orderListFromDateChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ {date}'**
+  String orderListFromDateChip(String date);
+
+  /// No description provided for @orderListToDateChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến {date}'**
+  String orderListToDateChip(String date);
+
+  /// No description provided for @orderListClearFilters.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa lọc'**
+  String get orderListClearFilters;
 
   /// No description provided for @orderListFilterTitle.
   ///
@@ -1663,6 +1717,102 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xác nhận'**
   String get orderPaymentSheetConfirm;
+
+  /// No description provided for @commonRequiredBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc'**
+  String get commonRequiredBadge;
+
+  /// No description provided for @commonActions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tác vụ'**
+  String get commonActions;
+
+  /// No description provided for @commonName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên'**
+  String get commonName;
+
+  /// No description provided for @commonPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT'**
+  String get commonPhone;
+
+  /// No description provided for @commonStore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa hàng'**
+  String get commonStore;
+
+  /// No description provided for @orderDetailSectionInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin đơn'**
+  String get orderDetailSectionInfo;
+
+  /// No description provided for @orderDetailFieldCreatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo lúc'**
+  String get orderDetailFieldCreatedAt;
+
+  /// No description provided for @orderDetailFieldChannel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kênh bán'**
+  String get orderDetailFieldChannel;
+
+  /// No description provided for @orderDetailSectionSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng kết'**
+  String get orderDetailSectionSummary;
+
+  /// No description provided for @orderDetailPaymentsEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thanh toán'**
+  String get orderDetailPaymentsEmpty;
+
+  /// No description provided for @orderCreateCartEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có sản phẩm trong giỏ'**
+  String get orderCreateCartEmptyTitle;
+
+  /// No description provided for @orderCreateCustomerNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Anh Nam'**
+  String get orderCreateCustomerNameHint;
+
+  /// No description provided for @orderCreatePhoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'0xxxxxxxxx'**
+  String get orderCreatePhoneHint;
+
+  /// No description provided for @orderCreateNoteHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú thêm cho đơn hàng'**
+  String get orderCreateNoteHint;
+
+  /// No description provided for @orderCreateManualTaxHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: 8'**
+  String get orderCreateManualTaxHint;
+
+  /// No description provided for @orderCreatePercentHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'0–100'**
+  String get orderCreatePercentHint;
 }
 
 class _AppLocalizationsDelegate

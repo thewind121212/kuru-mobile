@@ -121,8 +121,8 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 0, 24, 14),
                   child: Text(
                     async.maybeWhen(
-                      data: (p) => '${p.total} ${_unit(p.total, l)}',
-                      orElse: () => 'Đang tải…',
+                      data: (p) => '${p.total} ${l.orderListOrderUnit}',
+                      orElse: () => l.orderListLoading,
                     ),
                     style: TextStyle(fontSize: 13, color: c.textMuted),
                   ),
@@ -158,7 +158,7 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
                 error: (e, _) => SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
-                    child: Center(child: Text('Không tải được đơn: $e')),
+                    child: Center(child: Text(l.orderListLoadError('$e'))),
                   ),
                 ),
                 data: (page) {
@@ -185,7 +185,7 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Tạo đơn đầu tiên để bắt đầu.',
+                              l.orderListEmptyBody,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: c.textMuted,
@@ -259,8 +259,6 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
     );
   }
 
-  String _unit(int n, AppLocalizations l) => n == 1 ? 'đơn hàng' : 'đơn hàng';
-
   Map<OrderStatus?, String> _statusLabels(AppLocalizations l) => {
     null: l.orderStatusAll,
     OrderStatus.draft: l.orderStatusDraft,
@@ -287,7 +285,9 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
     if (f.paymentStatus != null) {
       chips.add(
         _OrderChipData(
-          label: 'TT: ${_paymentLabel(f.paymentStatus!, l)}',
+          label: l.orderListPaymentFilterChip(
+            _paymentLabel(f.paymentStatus!, l),
+          ),
           onRemove: () => notifier.setPaymentStatus(null),
         ),
       );
@@ -295,7 +295,7 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
     if (f.saleChannel != null) {
       chips.add(
         _OrderChipData(
-          label: 'Kênh: ${_channelLabel(f.saleChannel!, l)}',
+          label: l.orderListChannelFilterChip(_channelLabel(f.saleChannel!, l)),
           onRemove: () => notifier.setSaleChannel(null),
         ),
       );
@@ -303,7 +303,7 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
     if (f.fromDate != null || f.toDate != null) {
       chips.add(
         _OrderChipData(
-          label: _dateLabel(f.fromDate, f.toDate),
+          label: _dateLabel(f.fromDate, f.toDate, l),
           onRemove: () => notifier.setDateRange(null, null),
         ),
       );
@@ -322,13 +322,13 @@ class _OrderListScreenState extends ConsumerState<OrderListScreen> {
     OrderSaleChannel.ecommerce => l.orderSaleChannelEcommerce,
   };
 
-  String _dateLabel(DateTime? from, DateTime? to) {
+  String _dateLabel(DateTime? from, DateTime? to, AppLocalizations l) {
     final fmt = DateFormat('dd/MM');
     if (from != null && to != null) {
       return '${fmt.format(from)} → ${fmt.format(to)}';
     }
-    if (from != null) return 'Từ ${fmt.format(from)}';
-    return 'Đến ${fmt.format(to!)}';
+    if (from != null) return l.orderListFromDateChip(fmt.format(from));
+    return l.orderListToDateChip(fmt.format(to!));
   }
 }
 
@@ -402,7 +402,9 @@ class _OrderFilterBar extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 10),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-                    child: const Text('Xóa lọc'),
+                    child: Text(
+                      AppLocalizations.of(context).orderListClearFilters,
+                    ),
                   ),
                 ],
               ),

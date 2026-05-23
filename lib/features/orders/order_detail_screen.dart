@@ -81,7 +81,7 @@ class OrderDetailScreen extends ConsumerWidget {
         ),
         actions: [
           IconButton(
-            tooltip: 'Tác vụ',
+            tooltip: l.commonActions,
             icon: const Icon(TablerIcons.dots_vertical),
             onPressed: async.maybeWhen(
               data: (d) =>
@@ -160,7 +160,7 @@ class OrderDetailScreen extends ConsumerWidget {
 
     final picked = await showKActionSheet<String>(
       context: context,
-      title: 'Tác vụ',
+      title: l.commonActions,
       actions: actions,
     );
     if (picked == null || !context.mounted) return;
@@ -337,13 +337,13 @@ class _Body extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           KSettingsSection(
-            header: 'Thông tin đơn',
+            header: l.orderDetailSectionInfo,
             children: [
               KSettingsRow(
                 leadingIcon: TablerIcons.calendar_event,
                 iconBackground: _tintBlueBg,
                 iconColor: _tintBlueFg,
-                label: 'Tạo lúc',
+                label: l.orderDetailFieldCreatedAt,
                 trailingText: _dateLong.format(d.createdAt.toLocal()),
                 showChevron: false,
               ),
@@ -351,7 +351,7 @@ class _Body extends StatelessWidget {
                 leadingIcon: _channelIcon(d.saleChannel.name),
                 iconBackground: _tintPurpleBg,
                 iconColor: _tintPurpleFg,
-                label: 'Kênh bán',
+                label: l.orderDetailFieldChannel,
                 trailingText: _channelLabel(d.saleChannel.name, l),
                 showChevron: false,
               ),
@@ -360,7 +360,7 @@ class _Body extends StatelessWidget {
                   leadingIcon: TablerIcons.building_store,
                   iconBackground: _tintSlateBg,
                   iconColor: _tintSlateFg,
-                  label: 'Cửa hàng',
+                  label: l.commonStore,
                   trailingText: storeName,
                   showChevron: false,
                 ),
@@ -375,7 +375,7 @@ class _Body extends StatelessWidget {
                     leadingIcon: TablerIcons.user,
                     iconBackground: _tintBlueBg,
                     iconColor: _tintBlueFg,
-                    label: 'Tên',
+                    label: l.commonName,
                     trailingText: name,
                     showChevron: false,
                   ),
@@ -384,7 +384,7 @@ class _Body extends StatelessWidget {
                     leadingIcon: TablerIcons.phone,
                     iconBackground: _tintGreenBg,
                     iconColor: _tintGreenFg,
-                    label: 'SĐT',
+                    label: l.commonPhone,
                     trailingText: phone,
                     showChevron: false,
                   ),
@@ -399,7 +399,7 @@ class _Body extends StatelessWidget {
             ],
           ),
           KSettingsSection(
-            header: 'Tổng kết',
+            header: l.orderDetailSectionSummary,
             children: [
               _SummaryRow(
                 leadingIcon: TablerIcons.list_numbers,
@@ -454,9 +454,9 @@ class _Body extends StatelessWidget {
             header: '${l.orderDetailPayments} (${d.payments.length})',
             children: [
               if (d.payments.isEmpty)
-                const _EmptyTile(
+                _EmptyTile(
                   icon: TablerIcons.cash,
-                  text: 'Chưa có thanh toán',
+                  text: l.orderDetailPaymentsEmpty,
                 )
               else
                 for (final p in d.payments) _PaymentRow(payment: p),

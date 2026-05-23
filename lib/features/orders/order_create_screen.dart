@@ -248,7 +248,7 @@ class _OrderCreateScreenState extends ConsumerState<OrderCreateScreen> {
                         KTextField(
                           label: l.orderCreateCustomerName,
                           controller: _customerName,
-                          placeholder: 'VD: Anh Nam',
+                          placeholder: l.orderCreateCustomerNameHint,
                           maxLength: 120,
                         ),
                         const SizedBox(height: 12),
@@ -256,7 +256,7 @@ class _OrderCreateScreenState extends ConsumerState<OrderCreateScreen> {
                           label: l.orderCreateCustomerPhone,
                           controller: _customerPhone,
                           keyboardType: TextInputType.phone,
-                          placeholder: '0xxxxxxxxx',
+                          placeholder: l.orderCreatePhoneHint,
                           maxLength: 30,
                         ),
                       ],
@@ -269,7 +269,7 @@ class _OrderCreateScreenState extends ConsumerState<OrderCreateScreen> {
                         KTextarea(
                           label: l.orderCreateNote,
                           controller: _note,
-                          placeholder: 'Ghi chú thêm cho đơn hàng',
+                          placeholder: l.orderCreateNoteHint,
                           maxLines: 4,
                           maxLength: 500,
                         ),
@@ -325,7 +325,7 @@ class _OrderCreateScreenState extends ConsumerState<OrderCreateScreen> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          placeholder: 'VD: 8',
+                          placeholder: l.orderCreateManualTaxHint,
                         ),
                       ],
                     ),
@@ -405,7 +405,7 @@ class _CreateSection extends StatelessWidget {
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Text(
-                      'Bắt buộc',
+                      AppLocalizations.of(context).commonRequiredBadge,
                       style: TextStyle(
                         color: c.danger,
                         fontSize: 10,
@@ -447,7 +447,7 @@ class _EmptyCartTile extends StatelessWidget {
           Icon(TablerIcons.shopping_cart, size: 36, color: c.textMuted),
           const SizedBox(height: 10),
           Text(
-            'Chưa có sản phẩm trong giỏ',
+            AppLocalizations.of(context).orderCreateCartEmptyTitle,
             style: TextStyle(
               color: c.textPrimary,
               fontSize: 13,
@@ -719,7 +719,7 @@ class _PercentFieldState extends State<_PercentField> {
       label: widget.label,
       controller: _ctrl,
       keyboardType: TextInputType.number,
-      placeholder: '0–100',
+      placeholder: AppLocalizations.of(context).orderCreatePercentHint,
     );
   }
 }
