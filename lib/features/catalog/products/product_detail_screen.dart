@@ -1,3 +1,4 @@
+import 'package:barcode_widget/barcode_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -785,71 +786,22 @@ class _BarcodePreviewBars extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = kuruColors(context);
-    return SizedBox(
-      width: double.infinity,
-      height: 84,
-      child: CustomPaint(
-        painter: _BarcodePreviewPainter(
-          value: value,
-          color: c.textPrimary,
-          quietZoneColor: c.surface,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: ColoredBox(
+        color: Colors.white,
+        child: SizedBox(
+          width: double.infinity,
+          height: 84,
+          child: BarcodeWidget(
+            barcode: Barcode.code128(),
+            data: value,
+            drawText: false,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          ),
         ),
       ),
     );
-  }
-}
-
-class _BarcodePreviewPainter extends CustomPainter {
-  const _BarcodePreviewPainter({
-    required this.value,
-    required this.color,
-    required this.quietZoneColor,
-  });
-
-  final String value;
-  final Color color;
-  final Color quietZoneColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bg = Paint()..color = quietZoneColor;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(8)),
-      bg,
-    );
-
-    final codeUnits = value.codeUnits.isEmpty ? const [48] : value.codeUnits;
-    final bits = <bool>[true, false, true, false, true];
-    for (final unit in codeUnits) {
-      for (var bit = 6; bit >= 0; bit--) {
-        bits.add(((unit >> bit) & 1) == 1);
-      }
-      bits.addAll(const [false, true, false]);
-    }
-    bits.addAll(const [true, false, true, false, true]);
-
-    final paint = Paint()..color = color;
-    const quiet = 14.0;
-    final usableWidth = (size.width - quiet * 2).clamp(0.0, size.width);
-    if (usableWidth == 0) return;
-    final module = usableWidth / bits.length;
-    final top = size.height * 0.08;
-    final baseHeight = size.height * 0.84;
-    for (var i = 0; i < bits.length; i++) {
-      if (!bits[i]) continue;
-      final width = (i % 5 == 0 ? module * 1.8 : module).clamp(1.0, 4.0);
-      final height = i.isEven ? baseHeight : baseHeight * 0.92;
-      final left = quiet + i * module;
-      canvas.drawRect(Rect.fromLTWH(left, top, width, height), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _BarcodePreviewPainter oldDelegate) {
-    return oldDelegate.value != value ||
-        oldDelegate.color != color ||
-        oldDelegate.quietZoneColor != quietZoneColor;
   }
 }
 
