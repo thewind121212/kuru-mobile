@@ -10,21 +10,40 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
+import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
-import 'package:kuru_mobile/design/core/input/k_text_field.dart';
-import 'package:kuru_mobile/design/core/scanner/k_barcode_scan_button.dart';
+import 'package:kuru_mobile/design/core/input/k_currency_field.dart';
+import 'package:kuru_mobile/design/core/scanner/k_barcode_scanner_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/orders/data/order_repository.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment_method.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 import 'package:kuru_mobile/features/pos/data/pos_barcode_repository.dart';
+import 'package:kuru_mobile/features/pos/providers/pos_branch_provider.dart';
+import 'package:lottie/lottie.dart';
 
 enum _PosView { sale, payment, success }
+
+String? _resolveProductImageUrl(String? imageUrl) {
+  final raw = imageUrl?.trim();
+  if (raw == null || raw.isEmpty) return null;
+  if (raw.startsWith('http://') || raw.startsWith('https://')) return raw;
+  return '${Env.imageBaseUrl}/product-avatar/$raw';
+}
+
+String _productDetailPath(String productId, {String? variantId}) {
+  final rawVariantId = variantId?.trim();
+  if (rawVariantId != null && rawVariantId.isNotEmpty) {
+    return '/products/$productId/variants/$rawVariantId';
+  }
+  return '/products/$productId';
+}
 
 class PosScreen extends ConsumerStatefulWidget {
   const PosScreen({super.key});
@@ -118,8 +137,17 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   void _openPayment() {
+    final l = AppLocalizations.of(context);
     final totals = ref.read(orderCartTotalsProvider);
     if (totals.total <= 0 || ref.read(orderCartProvider).items.isEmpty) return;
+    final branchId = _effectiveBranchId(
+      ref.read(productWarehouseOptionsProvider).valueOrNull,
+      ref.read(posSelectedBranchIdProvider),
+    );
+    if (branchId == null) {
+      KNotify.warning(context, l.posBranchRequired);
+      return;
+    }
     setState(() {
       _method = OrderPaymentMethod.cash;
       _amount.text = NumberFormat('#').format(totals.total);
@@ -151,6 +179,14 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     final totals = ref.read(orderCartTotalsProvider);
     final orgId = ref.read(currentOrgIdProvider);
     if (cart.items.isEmpty || orgId == null || _submitting) return;
+    final branchId = _effectiveBranchId(
+      ref.read(productWarehouseOptionsProvider).valueOrNull,
+      ref.read(posSelectedBranchIdProvider),
+    );
+    if (branchId == null) {
+      KNotify.warning(context, l.posBranchRequired);
+      return;
+    }
     final amount = _method == OrderPaymentMethod.cash
         ? _paymentAmount()
         : totals.total;
@@ -167,6 +203,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       orgId: orgId,
       idempotencyKey: key,
       draft: cart,
+      storeId: branchId,
       payment: OrderPaymentInput(
         method: _method,
         amount: amount,
@@ -298,30 +335,41 @@ class _SaleView extends ConsumerWidget {
     final query = search.text.trim();
     final cart = ref.watch(orderCartProvider);
     final totals = ref.watch(orderCartTotalsProvider);
+    final branches = ref.watch(productWarehouseOptionsProvider);
+    final selectedBranchId = ref.watch(posSelectedBranchIdProvider);
+    final effectiveBranch = _effectiveBranch(
+      branches.valueOrNull,
+      selectedBranchId,
+    );
     return Column(
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-          child: KTextField(
-            label: l.posSearchLabel,
+          child: _BranchSelector(
+            branches: branches,
+            selectedBranch: effectiveBranch,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+          child: _PosInputField(
+            hint: l.posSearchHint,
             controller: search,
-            placeholder: l.posSearchHint,
             leadingIcon: const Icon(TablerIcons.search),
-            trailingIcon: barcodeLoading
-                ? const Padding(
-                    padding: EdgeInsets.all(14),
-                    child: SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  )
-                : KBarcodeScanButton(
-                    onScan: onScan,
-                    tooltip: l.posScanBarcode,
-                    title: l.posScanBarcode,
-                    hint: l.posScanHint,
-                  ),
+            trailingIcon: IconButton(
+              tooltip: l.posScanPrimary,
+              icon: Icon(TablerIcons.barcode, color: c.accent600),
+              onPressed: barcodeLoading
+                  ? null
+                  : () async {
+                      final value = await showKBarcodeScannerSheet(
+                        context,
+                        title: l.posScanBarcode,
+                        hint: l.posScanHint,
+                      );
+                      if (value != null && value.isNotEmpty) onScan(value);
+                    },
+            ),
             textInputAction: TextInputAction.search,
           ),
         ),
@@ -330,15 +378,15 @@ class _SaleView extends ConsumerWidget {
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             children: [
-              if (query.isEmpty)
-                _EmptySearchPanel()
-              else
+              if (query.isNotEmpty) ...[
                 _ProductResults(
                   query: query,
+                  branchId: effectiveBranch?.warehouseId,
                   format: format,
                   onAdd: onAddProduct,
                 ),
-              const SizedBox(height: 18),
+                const SizedBox(height: 18),
+              ],
               _CartPanel(format: format),
               const SizedBox(height: 12),
               if (cart.items.isEmpty)
@@ -354,9 +402,11 @@ class _SaleView extends ConsumerWidget {
             ],
           ),
         ),
-        _ChargeBar(
+        _PosBottomDock(
           itemCount: cart.items.length,
           total: totals.total,
+          barcodeLoading: barcodeLoading,
+          onScan: onScan,
           onCharge: onCharge,
           format: format,
         ),
@@ -365,14 +415,212 @@ class _SaleView extends ConsumerWidget {
   }
 }
 
+class _BranchSelector extends ConsumerWidget {
+  const _BranchSelector({required this.branches, required this.selectedBranch});
+
+  final AsyncValue<List<ProductWarehouseOption>> branches;
+  final ProductWarehouseOption? selectedBranch;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    return branches.when(
+      data: (items) {
+        if (items.isEmpty) {
+          return _BranchChip(label: l.posBranchMissing, muted: true);
+        }
+        final selected = selectedBranch ?? items.first;
+        return _BranchChip(
+          label: selected.name,
+          onTap: () => _showBranchPicker(context, ref, items, selected),
+        );
+      },
+      loading: () => _BranchChip(label: l.posBranchLoading, muted: true),
+      error: (_, __) => _BranchChip(label: l.posBranchMissing, muted: true),
+    );
+  }
+
+  Future<void> _showBranchPicker(
+    BuildContext context,
+    WidgetRef ref,
+    List<ProductWarehouseOption> branches,
+    ProductWarehouseOption selected,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        final l = AppLocalizations.of(sheetContext);
+        final c = kuruColors(sheetContext);
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+            children: [
+              Text(
+                l.posBranchPickerTitle,
+                style: TextStyle(
+                  color: c.textPrimary,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 10),
+              for (final branch in branches)
+                _BranchPickerRow(
+                  branch: branch,
+                  selected: branch.warehouseId == selected.warehouseId,
+                  onTap: () async {
+                    await ref
+                        .read(posSelectedBranchIdProvider.notifier)
+                        .setBranch(branch.warehouseId);
+                    if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _BranchChip extends StatelessWidget {
+  const _BranchChip({required this.label, this.onTap, this.muted = false});
+
+  final String label;
+  final VoidCallback? onTap;
+  final bool muted;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    final fg = muted ? c.textMuted : c.textPrimary;
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: c.borderSoft),
+          ),
+          child: Row(
+            children: [
+              Icon(TablerIcons.building_store, color: c.accent600, size: 18),
+              const SizedBox(width: 8),
+              Text(
+                l.posBranchLabel,
+                style: TextStyle(
+                  color: c.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: fg,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              if (onTap != null)
+                Icon(TablerIcons.chevron_down, color: c.textMuted, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BranchPickerRow extends StatelessWidget {
+  const _BranchPickerRow({
+    required this.branch,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final ProductWarehouseOption branch;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: selected ? c.accent100 : Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              Icon(
+                TablerIcons.building_store,
+                color: selected ? c.accent700 : c.textMuted,
+                size: 20,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      branch.name,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (branch.address?.isNotEmpty ?? false) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        branch.address!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: c.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (selected) Icon(TablerIcons.check, color: c.accent700),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ProductResults extends ConsumerWidget {
   const _ProductResults({
     required this.query,
+    required this.branchId,
     required this.format,
     required this.onAdd,
   });
 
   final String query;
+  final String? branchId;
   final String Function(double amount) format;
   final void Function(ProductSummary product, {String? barcode}) onAdd;
 
@@ -381,7 +629,12 @@ class _ProductResults extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final c = kuruColors(context);
     final products = ref.watch(
-      productListProvider(ProductListFilter(search: query)),
+      productListProvider(
+        ProductListFilter(
+          search: query,
+          warehouseIds: branchId == null ? const [] : [branchId!],
+        ),
+      ),
     );
     return products.when(
       data: (page) {
@@ -398,7 +651,7 @@ class _ProductResults extends ConsumerWidget {
                 _ProductRow(
                   product: page.items[i],
                   format: format,
-                  onTap: () => onAdd(page.items[i]),
+                  onAdd: () => onAdd(page.items[i]),
                 ),
                 if (i < math.min(page.items.length, 12) - 1)
                   Divider(height: 1, thickness: 0.5, color: c.borderSoft),
@@ -417,12 +670,12 @@ class _ProductRow extends StatelessWidget {
   const _ProductRow({
     required this.product,
     required this.format,
-    required this.onTap,
+    required this.onAdd,
   });
 
   final ProductSummary product;
   final String Function(double amount) format;
-  final VoidCallback onTap;
+  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
@@ -433,33 +686,12 @@ class _ProductRow extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: onAdd,
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
           child: Row(
             children: [
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: c.pageBg,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignment: Alignment.center,
-                child: product.hasImage
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          product.imageUrl!,
-                          fit: BoxFit.cover,
-                          width: 42,
-                          height: 42,
-                          errorBuilder: (_, __, ___) =>
-                              Icon(TablerIcons.package, color: c.textMuted),
-                        ),
-                      )
-                    : Icon(TablerIcons.package, color: c.textMuted),
-              ),
+              _ProductThumb(imageUrl: product.imageUrl, size: 42),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -471,7 +703,7 @@ class _ProductRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: c.textPrimary,
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
@@ -489,9 +721,125 @@ class _ProductRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              Icon(TablerIcons.plus, color: c.accent600, size: 20),
+              IconButton.filledTonal(
+                tooltip: AppLocalizations.of(context).addLineSheetAdd,
+                icon: const Icon(TablerIcons.plus, size: 19),
+                onPressed: onAdd,
+                style: IconButton.styleFrom(
+                  backgroundColor: c.accent100,
+                  foregroundColor: c.accent700,
+                  minimumSize: const Size.square(38),
+                  fixedSize: const Size.square(38),
+                  padding: EdgeInsets.zero,
+                ),
+              ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductThumb extends StatelessWidget {
+  const _ProductThumb({required this.imageUrl, required this.size});
+
+  final String? imageUrl;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final resolvedUrl = _resolveProductImageUrl(imageUrl);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        width: size,
+        height: size,
+        color: const Color(0xFFEFF1F4),
+        alignment: Alignment.center,
+        child: resolvedUrl == null
+            ? const Icon(
+                TablerIcons.package,
+                color: Color(0xFF94A3B8),
+                size: 22,
+              )
+            : Image.network(
+                resolvedUrl,
+                fit: BoxFit.cover,
+                width: size,
+                height: size,
+                errorBuilder: (_, __, ___) =>
+                    Icon(TablerIcons.package, color: c.textMuted, size: 22),
+              ),
+      ),
+    );
+  }
+}
+
+class _PosInputField extends StatelessWidget {
+  const _PosInputField({
+    required this.hint,
+    required this.controller,
+    this.leadingIcon,
+    this.trailingIcon,
+    this.keyboardType,
+    this.textInputAction,
+    this.onSubmitted,
+  });
+
+  final String hint;
+  final TextEditingController controller;
+  final Widget? leadingIcon;
+  final Widget? trailingIcon;
+  final TextInputType? keyboardType;
+  final TextInputAction? textInputAction;
+  final ValueChanged<String>? onSubmitted;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      onSubmitted: onSubmitted,
+      style: TextStyle(
+        color: c.textPrimary,
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: c.textMuted,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        prefixIcon: leadingIcon == null
+            ? null
+            : IconTheme(
+                data: IconThemeData(color: c.textMuted, size: 18),
+                child: leadingIcon!,
+              ),
+        suffixIcon: trailingIcon,
+        filled: true,
+        fillColor: c.surfaceElev,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 15,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: c.borderSoft),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: c.borderSoft),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: c.accent500, width: 1.5),
         ),
       ),
     );
@@ -502,6 +850,50 @@ class _CartPanel extends ConsumerWidget {
   const _CartPanel({required this.format});
 
   final String Function(double amount) format;
+
+  Future<void> _showLineSheet(
+    BuildContext context,
+    WidgetRef ref,
+    int index,
+    OrderLineItem item,
+  ) async {
+    final detailPath = _productDetailPath(
+      item.productId,
+      variantId: item.variantId,
+    );
+    final router = GoRouter.of(context);
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.9,
+      ),
+      builder: (sheetContext) {
+        return _CartLineSheet(
+          item: item,
+          format: format,
+          onSave: (next) {
+            final current = ref.read(orderCartProvider);
+            if (index < current.items.length) {
+              ref.read(orderCartProvider.notifier).updateLineAt(index, next);
+            }
+            Navigator.of(sheetContext).pop();
+          },
+          onRemove: () {
+            final current = ref.read(orderCartProvider);
+            if (index < current.items.length) {
+              ref.read(orderCartProvider.notifier).removeLineAt(index);
+            }
+            Navigator.of(sheetContext).pop();
+          },
+          onViewDetail: () {
+            router.push(detailPath);
+          },
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -552,21 +944,13 @@ class _CartPanel extends ConsumerWidget {
               _CartRow(
                 item: cart.items[i],
                 format: format,
-                onIncrement: () => notifier.updateLineAt(
-                  i,
-                  cart.items[i].copyWith(qty: cart.items[i].qty + 1),
+                onTap: () => _showLineSheet(context, ref, i, cart.items[i]),
+                onViewDetail: () => context.push(
+                  _productDetailPath(
+                    cart.items[i].productId,
+                    variantId: cart.items[i].variantId,
+                  ),
                 ),
-                onDecrement: () {
-                  final nextQty = cart.items[i].qty - 1;
-                  if (nextQty <= 0) {
-                    notifier.removeLineAt(i);
-                  } else {
-                    notifier.updateLineAt(
-                      i,
-                      cart.items[i].copyWith(qty: nextQty),
-                    );
-                  }
-                },
                 onRemove: () => notifier.removeLineAt(i),
               ),
               if (i < cart.items.length - 1)
@@ -582,15 +966,15 @@ class _CartRow extends StatelessWidget {
   const _CartRow({
     required this.item,
     required this.format,
-    required this.onIncrement,
-    required this.onDecrement,
+    required this.onTap,
+    required this.onViewDetail,
     required this.onRemove,
   });
 
   final OrderLineItem item;
   final String Function(double amount) format;
-  final VoidCallback onIncrement;
-  final VoidCallback onDecrement;
+  final VoidCallback onTap;
+  final VoidCallback onViewDetail;
   final VoidCallback onRemove;
 
   @override
@@ -599,62 +983,372 @@ class _CartRow extends StatelessWidget {
     final qty = item.qty == item.qty.truncate()
         ? item.qty.toStringAsFixed(0)
         : item.qty.toStringAsFixed(2);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 8, 10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  item.productName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  '$qty x ${format(item.unitPrice)}',
-                  style: TextStyle(
-                    color: c.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          _QtyButton(icon: TablerIcons.minus, onPressed: onDecrement),
-          SizedBox(
-            width: 34,
-            child: Text(
-              qty,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: c.textPrimary,
-                fontWeight: FontWeight.w800,
+    final lineTotal = item.qty * item.unitPrice;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Row(
+            children: [
+              InkWell(
+                onTap: onViewDetail,
+                borderRadius: BorderRadius.circular(12),
+                child: _ProductThumb(imageUrl: item.imageUrl, size: 46),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.productName,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    if (item.variantName?.isNotEmpty ?? false) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        item.variantName!,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: c.accent700,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 3),
+                    Text(
+                      '$qty x ${format(item.unitPrice)}',
+                      style: TextStyle(
+                        color: c.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    format(lineTotal),
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        tooltip: AppLocalizations.of(context).posRemoveLine,
+                        icon: Icon(
+                          TablerIcons.trash,
+                          color: c.danger,
+                          size: 18,
+                        ),
+                        onPressed: onRemove,
+                        style: IconButton.styleFrom(
+                          minimumSize: const Size.square(30),
+                          fixedSize: const Size.square(30),
+                          padding: EdgeInsets.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                      ),
+                      Icon(
+                        TablerIcons.chevron_right,
+                        color: c.textMuted,
+                        size: 18,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
-          _QtyButton(icon: TablerIcons.plus, onPressed: onIncrement),
-          IconButton(
-            tooltip: AppLocalizations.of(context).posRemoveLine,
-            icon: Icon(TablerIcons.trash, color: c.danger, size: 19),
-            onPressed: onRemove,
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _QtyButton extends StatelessWidget {
-  const _QtyButton({required this.icon, required this.onPressed});
+class _CartLineSheet extends StatefulWidget {
+  const _CartLineSheet({
+    required this.item,
+    required this.format,
+    required this.onSave,
+    required this.onRemove,
+    required this.onViewDetail,
+  });
+
+  final OrderLineItem item;
+  final String Function(double amount) format;
+  final ValueChanged<OrderLineItem> onSave;
+  final VoidCallback onRemove;
+  final VoidCallback onViewDetail;
+
+  @override
+  State<_CartLineSheet> createState() => _CartLineSheetState();
+}
+
+class _CartLineSheetState extends State<_CartLineSheet> {
+  late final TextEditingController _qty;
+  late int? _price;
+
+  @override
+  void initState() {
+    super.initState();
+    _qty = TextEditingController(text: _formatNumberInput(widget.item.qty));
+    _price = widget.item.unitPrice.round();
+    _qty.addListener(_refresh);
+  }
+
+  @override
+  void dispose() {
+    _qty
+      ..removeListener(_refresh)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  double? get _parsedQty {
+    final value = _parsePositiveNumber(_qty.text);
+    if (value == null || value <= 0) return null;
+    return value;
+  }
+
+  double? get _parsedPrice {
+    final value = _price?.toDouble();
+    if (value == null || value < 0) return null;
+    return value;
+  }
+
+  bool get _canSave => _parsedQty != null && _parsedPrice != null;
+
+  double get _lineTotal => (_parsedQty ?? 0) * (_parsedPrice ?? 0);
+
+  void _stepQty(double delta) {
+    final current = _parsedQty ?? widget.item.qty;
+    final next = math.max<double>(1, current + delta);
+    _qty.text = _formatNumberInput(next);
+  }
+
+  void _save() {
+    final qty = _parsedQty;
+    final price = _parsedPrice;
+    if (qty == null || price == null) return;
+    widget.onSave(widget.item.copyWith(qty: qty, unitPrice: price));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    return SafeArea(
+      child: AnimatedPadding(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        padding: EdgeInsets.only(bottom: keyboardInset),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      l.posAdjustLineTitle,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: MaterialLocalizations.of(
+                      context,
+                    ).closeButtonTooltip,
+                    icon: const Icon(TablerIcons.x),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: c.pageBg,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: c.borderSoft),
+                ),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: widget.onViewDetail,
+                      borderRadius: BorderRadius.circular(12),
+                      child: _ProductThumb(
+                        imageUrl: widget.item.imageUrl,
+                        size: 54,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.item.productName,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 14,
+                              height: 1.15,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          if (widget.item.variantName?.isNotEmpty ?? false) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.item.variantName!,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: c.accent700,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    IconButton.filledTonal(
+                      tooltip: l.posViewProductDetail,
+                      icon: const Icon(TablerIcons.external_link, size: 18),
+                      onPressed: widget.onViewDetail,
+                      style: IconButton.styleFrom(
+                        backgroundColor: c.surfaceElev,
+                        foregroundColor: c.textPrimary,
+                        minimumSize: const Size.square(38),
+                        fixedSize: const Size.square(38),
+                        padding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                l.posAdjustQty,
+                style: TextStyle(
+                  color: c.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  _SheetStepButton(
+                    icon: TablerIcons.minus,
+                    onPressed: () => _stepQty(-1),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: _SheetNumberField(
+                      label: l.posAdjustQty,
+                      controller: _qty,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  _SheetStepButton(
+                    icon: TablerIcons.plus,
+                    onPressed: () => _stepQty(1),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              KCurrencyField(
+                label: l.posAdjustUnitPrice,
+                value: _price,
+                onChanged: (value) => setState(() => _price = value),
+              ),
+              const SizedBox(height: 12),
+              _LineTotalBand(
+                label: l.posLineTotal,
+                value: widget.format(_lineTotal),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 96,
+                    child: OutlinedButton(
+                      onPressed: widget.onRemove,
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: c.danger,
+                        minimumSize: const Size(96, 50),
+                        side: BorderSide(
+                          color: c.danger.withValues(alpha: 0.35),
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Icon(TablerIcons.trash),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: _canSave ? _save : null,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(50),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        l.posSaveLine,
+                        style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SheetStepButton extends StatelessWidget {
+  const _SheetStepButton({required this.icon, required this.onPressed});
 
   final IconData icon;
   final VoidCallback onPressed;
@@ -662,30 +1356,160 @@ class _QtyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    return IconButton.filledTonal(
-      icon: Icon(icon, size: 17),
+    return IconButton.filled(
+      icon: Icon(icon, size: 22),
       onPressed: onPressed,
       style: IconButton.styleFrom(
-        backgroundColor: c.pageBg,
-        foregroundColor: c.textPrimary,
-        minimumSize: const Size.square(34),
-        fixedSize: const Size.square(34),
+        backgroundColor: c.accent600,
+        foregroundColor: Colors.white,
+        minimumSize: const Size.square(52),
+        fixedSize: const Size.square(52),
         padding: EdgeInsets.zero,
       ),
     );
   }
 }
 
-class _ChargeBar extends StatelessWidget {
-  const _ChargeBar({
+class _LineTotalBand extends StatelessWidget {
+  const _LineTotalBand({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+      decoration: BoxDecoration(
+        color: c.accent100,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.accent200),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                color: c.accent700,
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              color: c.accent700,
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SheetNumberField extends StatelessWidget {
+  const _SheetNumberField({
+    required this.label,
+    required this.controller,
+    this.textAlign = TextAlign.start,
+  });
+
+  final String label;
+  final TextEditingController controller;
+  final TextAlign textAlign;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return TextField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp('[0-9,.]'))],
+      textAlign: textAlign,
+      style: TextStyle(
+        color: c.textPrimary,
+        fontSize: 15,
+        fontWeight: FontWeight.w800,
+      ),
+      decoration: InputDecoration(
+        hintText: label,
+        floatingLabelBehavior: FloatingLabelBehavior.never,
+        hintStyle: TextStyle(
+          color: c.textMuted,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 15,
+        ),
+        filled: true,
+        fillColor: c.surfaceElev,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: c.borderSoft),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: c.borderSoft),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: c.accent500, width: 1.5),
+        ),
+      ),
+    );
+  }
+}
+
+String _formatNumberInput(double value) {
+  return value.truncateToDouble() == value
+      ? value.toStringAsFixed(0)
+      : value.toStringAsFixed(2);
+}
+
+double? _parsePositiveNumber(String input) {
+  var value = input.trim().replaceAll(' ', '');
+  if (value.isEmpty) return null;
+  value = value.replaceAll(RegExp('[^0-9,.]'), '');
+  final comma = value.lastIndexOf(',');
+  final dot = value.lastIndexOf('.');
+  final separator = math.max(comma, dot);
+  if (separator < 0) return double.tryParse(value);
+
+  final decimals = value.length - separator - 1;
+  final hasBoth = comma >= 0 && dot >= 0;
+  if (!hasBoth && decimals == 3) {
+    return double.tryParse(value.replaceAll(RegExp('[,.]'), ''));
+  }
+
+  final integer = value.substring(0, separator).replaceAll(RegExp('[,.]'), '');
+  final fraction = value
+      .substring(separator + 1)
+      .replaceAll(RegExp('[,.]'), '');
+  final normalized = '$integer.$fraction';
+  return double.tryParse(normalized);
+}
+
+class _PosBottomDock extends StatelessWidget {
+  const _PosBottomDock({
     required this.itemCount,
     required this.total,
+    required this.barcodeLoading,
+    required this.onScan,
     required this.onCharge,
     required this.format,
   });
 
   final int itemCount;
   final double total;
+  final bool barcodeLoading;
+  final ValueChanged<String> onScan;
   final VoidCallback onCharge;
   final String Function(double amount) format;
 
@@ -693,56 +1517,161 @@ class _ChargeBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final c = kuruColors(context);
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        16,
-        12,
-        16,
-        12 + MediaQuery.paddingOf(context).bottom,
-      ),
-      decoration: BoxDecoration(
-        color: c.surfaceElev,
-        border: Border(top: BorderSide(color: c.borderSoft)),
-      ),
-      child: Row(
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
+    return SizedBox(
+      height: 118 + bottomInset,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  l.posTotal,
-                  style: TextStyle(
-                    color: c.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 34,
+            bottom: 0,
+            child: Container(
+              padding: EdgeInsets.fromLTRB(16, 16, 16, 12 + bottomInset),
+              decoration: BoxDecoration(
+                color: c.surfaceElev,
+                border: Border(top: BorderSide(color: c.borderSoft)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, -8),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  format(total),
-                  style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
+                ],
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          l.posTotal,
+                          style: TextStyle(
+                            color: c.textMuted,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            format(total),
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 21,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          FilledButton.icon(
-            onPressed: itemCount == 0 ? null : onCharge,
-            icon: const Icon(TablerIcons.cash),
-            label: Text(l.posCharge),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size(132, 48),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+                  const SizedBox(width: 100),
+                  FilledButton(
+                    onPressed: itemCount == 0 ? null : onCharge,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(104, 50),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                    ),
+                    child: Text(
+                      l.posCharge,
+                      style: const TextStyle(fontWeight: FontWeight.w900),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
+          Positioned(
+            top: 0,
+            child: _ScanPrimaryButton(loading: barcodeLoading, onScan: onScan),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _ScanPrimaryButton extends StatelessWidget {
+  const _ScanPrimaryButton({required this.loading, required this.onScan});
+
+  final bool loading;
+  final ValueChanged<String> onScan;
+
+  Future<void> _open(BuildContext context) async {
+    final l = AppLocalizations.of(context);
+    final value = await showKBarcodeScannerSheet(
+      context,
+      title: l.posScanBarcode,
+      hint: l.posScanHint,
+    );
+    if (value != null && value.isNotEmpty) onScan(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    return Semantics(
+      label: l.posScanPrimary,
+      button: true,
+      child: Tooltip(
+        message: l.posScanPrimary,
+        child: Material(
+          color: Colors.transparent,
+          shape: const CircleBorder(),
+          child: InkWell(
+            onTap: loading ? null : () => _open(context),
+            customBorder: const CircleBorder(),
+            child: Ink(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                color: c.accent600,
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: loading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.white,
+                        ),
+                      )
+                    : ColorFiltered(
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                        child: Lottie.asset(
+                          'assets/lottie/scan.json',
+                          width: 56,
+                          height: 56,
+                          fit: BoxFit.contain,
+                          repeat: true,
+                          errorBuilder: (_, __, ___) => const Icon(
+                            TablerIcons.barcode,
+                            color: Colors.white,
+                            size: 34,
+                          ),
+                        ),
+                      ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -788,10 +1717,10 @@ class _PaymentView extends ConsumerWidget {
         _PaymentTotal(total: totals.total, format: format),
         const SizedBox(height: 18),
         _MethodPicker(value: method, onChanged: onMethodChanged),
-        const SizedBox(height: 18),
+        const SizedBox(height: 20),
         if (method == OrderPaymentMethod.cash) ...[
-          KTextField(
-            label: l.posAmountReceived,
+          _PosInputField(
+            hint: l.posAmountReceived,
             controller: amount,
             keyboardType: TextInputType.number,
             leadingIcon: const Icon(TablerIcons.cash),
@@ -803,9 +1732,10 @@ class _PaymentView extends ConsumerWidget {
             runSpacing: 8,
             children: [
               for (final pick in _quickPicks(totals.total))
-                ActionChip(
-                  label: Text(format(pick)),
-                  onPressed: () {
+                _CashQuickPick(
+                  label: format(pick),
+                  selected: paid == pick,
+                  onTap: () {
                     amount.text = NumberFormat('#').format(pick);
                     onAmountChanged();
                   },
@@ -912,33 +1842,182 @@ class _MethodPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    return SegmentedButton<OrderPaymentMethod>(
-      segments: [
-        ButtonSegment(
-          value: OrderPaymentMethod.cash,
-          icon: const Icon(TablerIcons.cash),
-          label: Text(l.orderPaymentMethodCash),
+    final c = kuruColors(context);
+    final methods = [
+      _PaymentMethodOption(
+        method: OrderPaymentMethod.cash,
+        icon: TablerIcons.cash,
+        label: l.orderPaymentMethodCash,
+      ),
+      _PaymentMethodOption(
+        method: OrderPaymentMethod.bankTransfer,
+        icon: TablerIcons.building_bank,
+        label: l.orderPaymentMethodBankTransfer,
+      ),
+      _PaymentMethodOption(
+        method: OrderPaymentMethod.card,
+        icon: TablerIcons.credit_card,
+        label: l.orderPaymentMethodCard,
+      ),
+      _PaymentMethodOption(
+        method: OrderPaymentMethod.other,
+        icon: TablerIcons.dots,
+        label: l.orderPaymentMethodOther,
+      ),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          l.orderPaymentSheetMethod,
+          style: TextStyle(
+            color: c.textMuted,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
         ),
-        ButtonSegment(
-          value: OrderPaymentMethod.bankTransfer,
-          icon: const Icon(TablerIcons.building_bank),
-          label: Text(l.orderPaymentMethodBankTransfer),
-        ),
-        ButtonSegment(
-          value: OrderPaymentMethod.card,
-          icon: const Icon(TablerIcons.credit_card),
-          label: Text(l.orderPaymentMethodCard),
-        ),
-        ButtonSegment(
-          value: OrderPaymentMethod.other,
-          icon: const Icon(TablerIcons.dots),
-          label: Text(l.orderPaymentMethodOther),
+        const SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: methods.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            mainAxisExtent: 78,
+          ),
+          itemBuilder: (context, index) {
+            final option = methods[index];
+            return _PaymentMethodTile(
+              option: option,
+              selected: option.method == value,
+              onTap: () => onChanged(option.method),
+            );
+          },
         ),
       ],
-      selected: {value},
-      onSelectionChanged: (values) => onChanged(values.first),
-      showSelectedIcon: false,
-      style: const ButtonStyle(visualDensity: VisualDensity.compact),
+    );
+  }
+}
+
+class _PaymentMethodOption {
+  const _PaymentMethodOption({
+    required this.method,
+    required this.icon,
+    required this.label,
+  });
+
+  final OrderPaymentMethod method;
+  final IconData icon;
+  final String label;
+}
+
+class _PaymentMethodTile extends StatelessWidget {
+  const _PaymentMethodTile({
+    required this.option,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final _PaymentMethodOption option;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: selected ? c.accent100 : c.surfaceElev,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: selected ? c.accent600 : c.borderSoft,
+              width: selected ? 1.5 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: selected ? c.accent600 : c.pageBg,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                alignment: Alignment.center,
+                child: Icon(
+                  option.icon,
+                  size: 21,
+                  color: selected ? Colors.white : c.textMuted,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  option.label,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: selected ? c.accent700 : c.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    height: 1.15,
+                  ),
+                ),
+              ),
+              if (selected)
+                Icon(TablerIcons.check, color: c.accent700, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CashQuickPick extends StatelessWidget {
+  const _CashQuickPick({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: selected ? c.accent600 : c.surfaceElev,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: selected ? c.accent600 : c.borderSoft),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: selected ? Colors.white : c.textPrimary,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -1123,47 +2202,6 @@ class _SuccessView extends StatelessWidget {
   }
 }
 
-class _EmptySearchPanel extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    final c = kuruColors(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 18),
-      decoration: BoxDecoration(
-        color: c.surfaceElev,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: c.borderSoft),
-      ),
-      child: Column(
-        children: [
-          Icon(TablerIcons.barcode, size: 34, color: c.textMuted),
-          const SizedBox(height: 10),
-          Text(
-            l.posEmptySearch,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: c.textPrimary,
-              fontSize: 14,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            l.posEmptySearchMeta,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: c.textMuted,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _PlainState extends StatelessWidget {
   const _PlainState({this.text, this.loading = false});
 
@@ -1205,6 +2243,24 @@ List<double> _quickPicks(double total) {
     if (rounded > total) picks.add(rounded);
   }
   return picks.toList()..sort();
+}
+
+ProductWarehouseOption? _effectiveBranch(
+  List<ProductWarehouseOption>? branches,
+  String? selectedId,
+) {
+  if (branches == null || branches.isEmpty) return null;
+  for (final branch in branches) {
+    if (branch.warehouseId == selectedId) return branch;
+  }
+  return branches.first;
+}
+
+String? _effectiveBranchId(
+  List<ProductWarehouseOption>? branches,
+  String? selectedId,
+) {
+  return _effectiveBranch(branches, selectedId)?.warehouseId;
 }
 
 String _generatePaymentReference() {

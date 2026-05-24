@@ -323,6 +323,7 @@ void main() {
       await repo.createOrder(
         orgId: 'org-1',
         idempotencyKey: 'fixed-uuid',
+        storeId: 'store-1',
         draft: const OrderCartDraft(
           items: [lineItem],
           customerName: '', // empty → must NOT appear in body
@@ -340,6 +341,7 @@ void main() {
       expect(body['orgId'], 'org-1');
       expect(body['idempotencyKey'], 'fixed-uuid');
       expect(body['saleChannel'], 'SHOP');
+      expect(body['storeId'], 'store-1');
       final items = body['items'] as List<dynamic>;
       expect(items, hasLength(1));
       expect(items.first, containsPair('productId', 'p_1'));

@@ -731,14 +731,50 @@ abstract class AppLocalizations {
   /// No description provided for @posSearchLabel.
   ///
   /// In vi, this message translates to:
-  /// **'Tìm sản phẩm'**
+  /// **'Tìm bằng tên'**
   String get posSearchLabel;
 
   /// No description provided for @posSearchHint.
   ///
   /// In vi, this message translates to:
-  /// **'Tên sản phẩm hoặc mã vạch'**
+  /// **'Nhập tên sản phẩm'**
   String get posSearchHint;
+
+  /// No description provided for @posScanPrimary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét sản phẩm'**
+  String get posScanPrimary;
+
+  /// No description provided for @posBranchLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi nhánh'**
+  String get posBranchLabel;
+
+  /// No description provided for @posBranchLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải chi nhánh'**
+  String get posBranchLoading;
+
+  /// No description provided for @posBranchMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có chi nhánh bán hàng'**
+  String get posBranchMissing;
+
+  /// No description provided for @posBranchRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn chi nhánh trước khi thu tiền'**
+  String get posBranchRequired;
+
+  /// No description provided for @posBranchPickerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn chi nhánh bán hàng'**
+  String get posBranchPickerTitle;
 
   /// No description provided for @posScanHint.
   ///
@@ -755,13 +791,13 @@ abstract class AppLocalizations {
   /// No description provided for @posEmptySearch.
   ///
   /// In vi, this message translates to:
-  /// **'Quét mã hoặc tìm sản phẩm'**
+  /// **'Bấm nút Quét sản phẩm bên dưới'**
   String get posEmptySearch;
 
   /// No description provided for @posEmptySearchMeta.
   ///
   /// In vi, this message translates to:
-  /// **'Sản phẩm sẽ được thêm trực tiếp vào giỏ POS.'**
+  /// **'Hoặc nhập tên sản phẩm nếu không quét được mã.'**
   String get posEmptySearchMeta;
 
   /// No description provided for @posNoProducts.
@@ -799,6 +835,42 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xóa dòng hàng'**
   String get posRemoveLine;
+
+  /// No description provided for @posAdjustLineTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh dòng hàng'**
+  String get posAdjustLineTitle;
+
+  /// No description provided for @posAdjustQty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số lượng'**
+  String get posAdjustQty;
+
+  /// No description provided for @posAdjustUnitPrice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá bán'**
+  String get posAdjustUnitPrice;
+
+  /// No description provided for @posLineTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thành tiền'**
+  String get posLineTotal;
+
+  /// No description provided for @posSaveLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật'**
+  String get posSaveLine;
+
+  /// No description provided for @posViewProductDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết sản phẩm'**
+  String get posViewProductDetail;
 
   /// No description provided for @posTotal.
   ///

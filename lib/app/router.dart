@@ -110,6 +110,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       // key-reservation collision because the same path is already
       // registered under the catalog StatefulShellBranch.
       GoRoute(
+        path: '/products/:id/variants/:variantId',
+        pageBuilder: (_, state) {
+          final id = state.pathParameters['id']!;
+          final variantId = state.pathParameters['variantId']!;
+          return MaterialPage<void>(
+            key: ValueKey('orders-product-$id-variant-$variantId'),
+            child: ProductVariantDetailScreen(
+              productId: id,
+              variantId: variantId,
+            ),
+          );
+        },
+      ),
+      GoRoute(
         path: '/products/:id',
         // Use an explicit non-colliding page key so the same
         // ProductDetailScreen reachable via `/catalog/products/:id` inside

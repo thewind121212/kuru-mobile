@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 import 'package:kuru_mobile/app/theme/theme_controller.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_barcode.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
@@ -20,6 +21,7 @@ ProductDetail _detail({
   List<ProductStockLocation> stocks = const [],
   List<ProductUmo> umos = const [],
   List<ProductVariant> variants = const [],
+  List<ProductBarcode> barcodes = const [],
 }) => ProductDetail(
   id: 'p-1',
   name: 'Cà phê',
@@ -39,6 +41,7 @@ ProductDetail _detail({
   stocks: stocks,
   umos: umos,
   variants: variants,
+  barcodes: barcodes,
 );
 
 Widget _app(List<Override> overrides) => ProviderScope(
@@ -83,6 +86,21 @@ void main() {
                 avgCost: 0,
                 totalCostValue: 0,
                 totalQtyImported: 0,
+              ),
+            ],
+            barcodes: const [
+              ProductBarcode(
+                id: 'b-internal',
+                value: 'INT-001',
+                kind: 'INTERNAL',
+                productId: 'p-1',
+              ),
+              ProductBarcode(
+                id: 'b-variant',
+                value: 'VAR-ALIAS-1',
+                kind: 'ALIAS',
+                productId: 'p-1',
+                variantId: 'v-1',
               ),
             ],
           ),
@@ -132,6 +150,22 @@ void main() {
     expect(find.text('Size L'), findsWidgets);
     expect(find.text('Có mã vạch'), findsNothing);
     expect(find.text('VAR-1'), findsNothing);
+    await t.scrollUntilVisible(
+      find.byKey(const ValueKey('product-barcode-b-internal')),
+      160,
+      scrollable: find.byType(Scrollable).first,
+    );
+    expect(find.text('Mã vạch'), findsOneWidget);
+    expect(find.text('INT-001'), findsOneWidget);
+    expect(find.text('VAR-ALIAS-1'), findsOneWidget);
+    expect(find.textContaining('Nội bộ'), findsOneWidget);
+    expect(find.textContaining('Bán hàng'), findsOneWidget);
+    await t.tap(find.byKey(const ValueKey('product-barcode-b-internal')));
+    await t.pumpAndSettle();
+    expect(find.text('Sao chép'), findsNothing);
+    expect(find.text('Sản phẩm'), findsOneWidget);
+    await t.tap(find.byTooltip('Đóng'));
+    await t.pumpAndSettle();
     await t.scrollUntilVisible(
       find.byKey(const ValueKey('stock-summary-variants')),
       160,

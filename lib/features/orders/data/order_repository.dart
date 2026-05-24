@@ -86,6 +86,7 @@ class OrderRepository {
     required String orgId,
     required String idempotencyKey,
     required OrderCartDraft draft,
+    String? storeId,
     OrderPaymentInput? payment,
   }) async {
     try {
@@ -112,6 +113,8 @@ class OrderRepository {
         body['discountValue'] = draft.discountValue;
       }
       body['saleChannel'] = draft.saleChannel.toWire();
+      final trimmedStoreId = trimOrNull(storeId);
+      if (trimmedStoreId != null) body['storeId'] = trimmedStoreId;
 
       if (payment != null) body['payment'] = payment.toJson();
 

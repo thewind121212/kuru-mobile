@@ -46,7 +46,7 @@ class MainShell extends StatelessWidget {
           KuruBottomNavItem(icon: TablerIcons.receipt, label: l.navOrders),
           KuruBottomNavItem(icon: TablerIcons.settings, label: l.navSettings),
         ],
-        actionIcon: TablerIcons.plus,
+        actionIcon: TablerIcons.cash_register,
         actionTooltip: l.posOpenTooltip,
         onActionPressed: () => _onPosPressed(context),
       ),

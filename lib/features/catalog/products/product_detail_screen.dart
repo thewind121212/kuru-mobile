@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +13,7 @@ import 'package:kuru_mobile/design/core/layout/k_settings_section.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/uoms.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_barcode.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_status.dart';
@@ -332,6 +334,11 @@ class _Body extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
+          _ProductBarcodesSection(
+            barcodes: detail.barcodes,
+            variantsById: variantsById,
+          ),
+          const SizedBox(height: 20),
           KSettingsSection(
             header: 'Tồn kho',
             children: [
@@ -455,6 +462,458 @@ class _LotWarehouseGroup {
   num get totalInitial => lots.fold<num>(0, (sum, lot) => sum + lot.qtyInitial);
 }
 
+class _ProductBarcodesSection extends StatelessWidget {
+  const _ProductBarcodesSection({
+    required this.barcodes,
+    required this.variantsById,
+  });
+
+  final List<ProductBarcode> barcodes;
+  final Map<String, ProductVariant> variantsById;
+
+  @override
+  Widget build(BuildContext context) {
+    final visible = barcodes
+        .where((barcode) => barcode.value.trim().isNotEmpty)
+        .toList(growable: false);
+    return KSettingsSection(
+      header: 'Mã vạch',
+      children: [
+        if (visible.isEmpty)
+          const _SectionMessage(
+            key: ValueKey('product-barcodes-empty'),
+            text: 'Chưa có mã vạch',
+          )
+        else
+          for (final barcode in visible)
+            _BarcodeRow(
+              key: ValueKey('product-barcode-${barcode.id}'),
+              barcode: barcode,
+              scopeLabel: _barcodeScopeLabel(barcode, variantsById),
+            ),
+      ],
+    );
+  }
+}
+
+class _BarcodeRow extends StatelessWidget {
+  const _BarcodeRow({
+    required this.barcode,
+    required this.scopeLabel,
+    super.key,
+  });
+
+  final ProductBarcode barcode;
+  final String scopeLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _openBarcodeSheet(
+          context,
+          barcode: barcode,
+          scopeLabel: scopeLabel,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF1F4),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  TablerIcons.barcode,
+                  color: Color(0xFF64748B),
+                  size: 21,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      barcode.value,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      '$scopeLabel · ${_barcodeKindLabel(barcode)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textMuted,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              if (!barcode.isActive)
+                _TinyStatusPill(
+                  text: 'Tạm ngưng',
+                  color: c.warning,
+                  background: c.warningSoft,
+                ),
+              Icon(Icons.chevron_right, size: 20, color: c.textMuted),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TinyStatusPill extends StatelessWidget {
+  const _TinyStatusPill({
+    required this.text,
+    required this.color,
+    required this.background,
+  });
+
+  final String text;
+  final Color color;
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(right: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 10,
+          fontWeight: FontWeight.w900,
+        ),
+      ),
+    );
+  }
+}
+
+Future<void> _openBarcodeSheet(
+  BuildContext context, {
+  required ProductBarcode barcode,
+  required String scopeLabel,
+}) {
+  return showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (_) => _BarcodeSheet(barcode: barcode, scopeLabel: scopeLabel),
+  );
+}
+
+class _BarcodeSheet extends StatelessWidget {
+  const _BarcodeSheet({required this.barcode, required this.scopeLabel});
+
+  final ProductBarcode barcode;
+  final String scopeLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: c.surfaceElev,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 18),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: c.border,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Mã vạch',
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    tooltip: 'Đóng',
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(TablerIcons.x),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  _BarcodeMetaPill(text: scopeLabel),
+                  _BarcodeMetaPill(text: _barcodeKindLabel(barcode)),
+                  if (!barcode.isActive)
+                    const _BarcodeMetaPill(text: 'Tạm ngưng'),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                decoration: BoxDecoration(
+                  color: c.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: c.borderSoft),
+                ),
+                child: Column(
+                  children: [
+                    _BarcodePreviewBars(value: barcode.value),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        const SizedBox(width: 40),
+                        Expanded(
+                          child: SelectableText(
+                            barcode.value,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: c.textPrimary,
+                              fontSize: 20,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0,
+                              fontFeatures: const [
+                                FontFeature.tabularFigures(),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 40,
+                          height: 40,
+                          child: IconButton(
+                            tooltip: 'Sao chép',
+                            padding: EdgeInsets.zero,
+                            iconSize: 20,
+                            onPressed: () async {
+                              await Clipboard.setData(
+                                ClipboardData(text: barcode.value),
+                              );
+                              if (!context.mounted) return;
+                              KNotify.success(context, 'Đã sao chép mã vạch');
+                            },
+                            icon: Icon(
+                              TablerIcons.copy,
+                              color: c.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _BarcodeMetaPill extends StatelessWidget {
+  const _BarcodeMetaPill({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: c.surfaceHover,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: c.textSecondary,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _BarcodePreviewBars extends StatelessWidget {
+  const _BarcodePreviewBars({required this.value});
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return SizedBox(
+      width: double.infinity,
+      height: 84,
+      child: CustomPaint(
+        painter: _BarcodePreviewPainter(
+          value: value,
+          color: c.textPrimary,
+          quietZoneColor: c.surface,
+        ),
+      ),
+    );
+  }
+}
+
+class _BarcodePreviewPainter extends CustomPainter {
+  const _BarcodePreviewPainter({
+    required this.value,
+    required this.color,
+    required this.quietZoneColor,
+  });
+
+  final String value;
+  final Color color;
+  final Color quietZoneColor;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final bg = Paint()..color = quietZoneColor;
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Offset.zero & size, const Radius.circular(8)),
+      bg,
+    );
+
+    final codeUnits = value.codeUnits.isEmpty ? const [48] : value.codeUnits;
+    final bits = <bool>[true, false, true, false, true];
+    for (final unit in codeUnits) {
+      for (var bit = 6; bit >= 0; bit--) {
+        bits.add(((unit >> bit) & 1) == 1);
+      }
+      bits.addAll(const [false, true, false]);
+    }
+    bits.addAll(const [true, false, true, false, true]);
+
+    final paint = Paint()..color = color;
+    const quiet = 14.0;
+    final usableWidth = (size.width - quiet * 2).clamp(0.0, size.width);
+    if (usableWidth == 0) return;
+    final module = usableWidth / bits.length;
+    final top = size.height * 0.08;
+    final baseHeight = size.height * 0.84;
+    for (var i = 0; i < bits.length; i++) {
+      if (!bits[i]) continue;
+      final width = (i % 5 == 0 ? module * 1.8 : module).clamp(1.0, 4.0);
+      final height = i.isEven ? baseHeight : baseHeight * 0.92;
+      final left = quiet + i * module;
+      canvas.drawRect(Rect.fromLTWH(left, top, width, height), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _BarcodePreviewPainter oldDelegate) {
+    return oldDelegate.value != value ||
+        oldDelegate.color != color ||
+        oldDelegate.quietZoneColor != quietZoneColor;
+  }
+}
+
+class _SectionMessage extends StatelessWidget {
+  const _SectionMessage({
+    required this.text,
+    super.key,
+    this.color,
+    this.leading,
+  });
+
+  final String text;
+  final Color? color;
+  final Widget? leading;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return SizedBox(
+      width: double.infinity,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (leading != null) ...[leading!, const SizedBox(width: 10)],
+            Expanded(
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: color ?? c.textMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  height: 1.35,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+String _barcodeKindLabel(ProductBarcode barcode) {
+  if (barcode.isInternal) return 'Nội bộ';
+  if (barcode.isAlias) return 'Bán hàng';
+  final kind = barcode.kind.trim();
+  return kind.isEmpty ? 'Mã vạch' : kind;
+}
+
+String _barcodeScopeLabel(
+  ProductBarcode barcode,
+  Map<String, ProductVariant> variantsById,
+) {
+  final variantId = barcode.variantId;
+  if (variantId != null && variantId.isNotEmpty) {
+    return variantsById[variantId]?.name ?? 'Biến thể';
+  }
+  final packId = barcode.packId;
+  if (packId != null && packId.isNotEmpty) return 'Đơn vị quy đổi';
+  return 'Sản phẩm';
+}
+
 class _ContainerLotsSection extends StatelessWidget {
   const _ContainerLotsSection({
     required this.lotsAsync,
@@ -473,56 +932,25 @@ class _ContainerLotsSection extends StatelessWidget {
     Widget body;
 
     if (lotsAsync.isLoading && lots.isEmpty) {
-      body = Padding(
+      body = _SectionMessage(
         key: const ValueKey('product-container-lots-loading'),
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 18,
-              height: 18,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: c.accent600,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              'Đang tải lô hàng...',
-              style: TextStyle(
-                color: c.textMuted,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+        text: 'Đang tải lô hàng...',
+        leading: SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(strokeWidth: 2, color: c.accent600),
         ),
       );
     } else if (lotsAsync.hasError && lots.isEmpty) {
-      body = Padding(
+      body = _SectionMessage(
         key: const ValueKey('product-container-lots-error'),
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-        child: Text(
-          'Không tải được lô hàng',
-          style: TextStyle(
-            color: c.danger,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+        text: 'Không tải được lô hàng',
+        color: c.danger,
       );
     } else if (lots.isEmpty) {
-      body = Padding(
-        key: const ValueKey('product-container-lots-empty'),
-        padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-        child: Text(
-          'Chưa có lô hàng',
-          style: TextStyle(
-            color: c.textMuted,
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
+      body = const _SectionMessage(
+        key: ValueKey('product-container-lots-empty'),
+        text: 'Chưa có lô hàng',
       );
     } else {
       body = Column(
@@ -944,6 +1372,7 @@ class _VariantStockSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = kuruColors(context);
     final total = groups.fold<num>(0, (sum, group) => sum + group.totalQty);
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     return DraggableScrollableSheet(
       initialChildSize: 0.68,
       minChildSize: 0.38,
@@ -1007,7 +1436,7 @@ class _VariantStockSheet extends StatelessWidget {
                   ? const Center(child: Text('Chưa có biến thể'))
                   : ListView.separated(
                       controller: controller,
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                      padding: EdgeInsets.fromLTRB(16, 0, 16, 24 + bottomInset),
                       itemCount: groups.length,
                       separatorBuilder: (_, __) => const SizedBox(height: 10),
                       itemBuilder: (context, index) => _VariantStockSheetRow(

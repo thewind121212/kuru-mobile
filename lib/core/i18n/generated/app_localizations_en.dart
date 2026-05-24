@@ -352,10 +352,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posSuccess => 'Done';
 
   @override
-  String get posSearchLabel => 'Find product';
+  String get posSearchLabel => 'Search by name';
 
   @override
-  String get posSearchHint => 'Product name or barcode';
+  String get posSearchHint => 'Enter product name';
+
+  @override
+  String get posScanPrimary => 'Scan product';
+
+  @override
+  String get posBranchLabel => 'Branch';
+
+  @override
+  String get posBranchLoading => 'Loading branch';
+
+  @override
+  String get posBranchMissing => 'No selling branch found';
+
+  @override
+  String get posBranchRequired => 'Select a branch before charging';
+
+  @override
+  String get posBranchPickerTitle => 'Select selling branch';
 
   @override
   String get posScanHint => 'Point the camera at the product barcode';
@@ -364,11 +382,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posBarcodeAdded => 'Product added from barcode';
 
   @override
-  String get posEmptySearch => 'Scan a code or search products';
+  String get posEmptySearch => 'Tap Scan product below';
 
   @override
   String get posEmptySearchMeta =>
-      'Products are added directly to the POS cart.';
+      'Or enter a product name when scanning is not available.';
 
   @override
   String get posNoProducts => 'No matching products found';
@@ -387,6 +405,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get posRemoveLine => 'Remove line';
+
+  @override
+  String get posAdjustLineTitle => 'Adjust line';
+
+  @override
+  String get posAdjustQty => 'Quantity';
+
+  @override
+  String get posAdjustUnitPrice => 'Sell price';
+
+  @override
+  String get posLineTotal => 'Line total';
+
+  @override
+  String get posSaveLine => 'Update';
+
+  @override
+  String get posViewProductDetail => 'View product detail';
 
   @override
   String get posTotal => 'Total';

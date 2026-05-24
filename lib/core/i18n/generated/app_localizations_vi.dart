@@ -348,10 +348,28 @@ class AppLocalizationsVi extends AppLocalizations {
   String get posSuccess => 'Hoàn tất';
 
   @override
-  String get posSearchLabel => 'Tìm sản phẩm';
+  String get posSearchLabel => 'Tìm bằng tên';
 
   @override
-  String get posSearchHint => 'Tên sản phẩm hoặc mã vạch';
+  String get posSearchHint => 'Nhập tên sản phẩm';
+
+  @override
+  String get posScanPrimary => 'Quét sản phẩm';
+
+  @override
+  String get posBranchLabel => 'Chi nhánh';
+
+  @override
+  String get posBranchLoading => 'Đang tải chi nhánh';
+
+  @override
+  String get posBranchMissing => 'Chưa có chi nhánh bán hàng';
+
+  @override
+  String get posBranchRequired => 'Chọn chi nhánh trước khi thu tiền';
+
+  @override
+  String get posBranchPickerTitle => 'Chọn chi nhánh bán hàng';
 
   @override
   String get posScanHint => 'Hướng camera vào mã vạch sản phẩm';
@@ -360,11 +378,11 @@ class AppLocalizationsVi extends AppLocalizations {
   String get posBarcodeAdded => 'Đã thêm sản phẩm từ mã vạch';
 
   @override
-  String get posEmptySearch => 'Quét mã hoặc tìm sản phẩm';
+  String get posEmptySearch => 'Bấm nút Quét sản phẩm bên dưới';
 
   @override
   String get posEmptySearchMeta =>
-      'Sản phẩm sẽ được thêm trực tiếp vào giỏ POS.';
+      'Hoặc nhập tên sản phẩm nếu không quét được mã.';
 
   @override
   String get posNoProducts => 'Không tìm thấy sản phẩm phù hợp';
@@ -383,6 +401,24 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get posRemoveLine => 'Xóa dòng hàng';
+
+  @override
+  String get posAdjustLineTitle => 'Chỉnh dòng hàng';
+
+  @override
+  String get posAdjustQty => 'Số lượng';
+
+  @override
+  String get posAdjustUnitPrice => 'Giá bán';
+
+  @override
+  String get posLineTotal => 'Thành tiền';
+
+  @override
+  String get posSaveLine => 'Cập nhật';
+
+  @override
+  String get posViewProductDetail => 'Xem chi tiết sản phẩm';
 
   @override
   String get posTotal => 'Tổng tiền';
