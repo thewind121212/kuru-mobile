@@ -15,9 +15,13 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
 import 'package:kuru_mobile/core/permissions/resolved_permissions.dart';
 import 'package:kuru_mobile/features/catalog/categories/providers/category_providers.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
+import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/orders/models/order_overview_page.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 import 'package:kuru_mobile/features/splash/splash_screen.dart';
+import 'package:kuru_mobile/main.dart' show sharedPrefsProvider;
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// Minimal notifier that always says "onboarding seen" — no SharedPrefs needed.
 class _SeenNotifier extends OnboardingSeenController {
@@ -138,9 +142,16 @@ void main() {
     );
     late GoRouter router;
 
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final prefs = await SharedPreferences.getInstance();
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          productWarehouseOptionsProvider.overrideWith(
+            (ref) async => const <ProductWarehouseOption>[],
+          ),
           appBootstrapProvider.overrideWith(
             (_) async => const BootstrapAuthed(fakeUser),
           ),
