@@ -6,11 +6,14 @@ import 'package:kuru_mobile/core/logging/log.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/dio_client.dart' show mapDioError;
+import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 
 /// Hand-built request maps (per spec §3 — DTO wins over generated client).
@@ -82,6 +85,32 @@ class ProductRepository {
       return ApiResult.success(ProductDetail.fromJson(data));
     } on DioException catch (e) {
       log.w('GetProductById($productId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  Future<ApiResult<List<ProductContainerLot>>> getContainerLots({
+    required String productId,
+    String? variantId,
+  }) async {
+    try {
+      final res = await _dio.get<dynamic>(
+        '/product/GetContainerLots',
+        queryParameters: {
+          'productId': productId,
+          if (variantId != null) 'variantId': variantId,
+        },
+      );
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final items = (data['containerLots'] as List<dynamic>? ?? const [])
+          .map((e) => ProductContainerLot.fromJson(e as Map<String, dynamic>))
+          .where((lot) => lot.id.isNotEmpty && lot.warehouseId.isNotEmpty)
+          .toList();
+      log.i('GetContainerLots ← ${res.statusCode} count=${items.length}');
+      return ApiResult.success(items);
+    } on DioException catch (e) {
+      log.w('GetContainerLots($productId) failed: ${e.message}');
       return ApiResult.failure(_extract(e));
     }
   }
@@ -210,6 +239,40 @@ class ProductRepository {
     }
   }
 
+  Future<ApiResult<List<ProductVariant>>> saveVariants({
+    required String productId,
+    List<ProductVariantUpsert> variants = const [],
+    List<String> deleteVariantIds = const [],
+  }) async {
+    if (variants.isEmpty && deleteVariantIds.isEmpty) {
+      return ApiResult.success(const <ProductVariant>[]);
+    }
+    try {
+      final res = await _dio.patch<dynamic>(
+        '/product/SaveProductVariants',
+        data: <String, dynamic>{
+          'productId': productId,
+          'variants': variants.map((v) => v.toJson()).toList(),
+          'deleteVariantIds': deleteVariantIds,
+        },
+      );
+      final data =
+          (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>;
+      final parsed = (data['variants'] as List<dynamic>? ?? const [])
+          .map((e) => ProductVariant.fromJson(e as Map<String, dynamic>))
+          .where((variant) => variant.id.isNotEmpty)
+          .toList();
+      log.i(
+        'SaveProductVariants ← ${res.statusCode} id=$productId '
+        'upsert=${variants.length} delete=${deleteVariantIds.length}',
+      );
+      return ApiResult.success(parsed);
+    } on DioException catch (e) {
+      log.w('SaveProductVariants($productId) failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
   /// Converts a [DioException] into a typed [ApiException].
   ///
   /// Prefers any [ApiException] already attached to `e.error` by the
@@ -220,6 +283,36 @@ class ProductRepository {
     if (attached is ApiException) return attached;
     return mapDioError(e);
   }
+}
+
+class ProductVariantUpsert {
+  const ProductVariantUpsert({
+    required this.name,
+    this.id,
+    this.sellPrice,
+    this.importPrice,
+    this.exportPrice,
+    this.imageUrl,
+    this.attributeValueIds = const [],
+  });
+
+  final String? id;
+  final String name;
+  final num? sellPrice;
+  final num? importPrice;
+  final num? exportPrice;
+  final JsonOptional<String>? imageUrl;
+  final List<String> attributeValueIds;
+
+  Map<String, dynamic> toJson() => {
+    if (id != null) 'id': id,
+    'name': name,
+    if (sellPrice != null) 'sellPrice': sellPrice,
+    if (importPrice != null) 'importPrice': importPrice,
+    if (exportPrice != null) 'exportPrice': exportPrice,
+    if (imageUrl?.isSet ?? false) 'imageUrl': imageUrl!.value,
+    if (attributeValueIds.isNotEmpty) 'attributeValueIds': attributeValueIds,
+  };
 }
 
 class ProductStockAdjustment {

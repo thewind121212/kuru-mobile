@@ -10,13 +10,18 @@ import 'package:kuru_mobile/features/catalog/categories/category_detail_screen.d
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/product_detail_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/product_form_screen.dart';
+import 'package:kuru_mobile/features/catalog/products/product_variant_detail_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/products_list_screen.dart';
 import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
 import 'package:kuru_mobile/features/login/login_screen.dart';
 import 'package:kuru_mobile/features/main_shell/main_shell.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
+import 'package:kuru_mobile/features/orders/order_create_screen.dart';
+import 'package:kuru_mobile/features/orders/order_detail_screen.dart';
+import 'package:kuru_mobile/features/orders/order_list_screen.dart';
 import 'package:kuru_mobile/features/org_picker/org_picker_screen.dart';
+import 'package:kuru_mobile/features/pos/pos_screen.dart';
 import 'package:kuru_mobile/features/register/register_screen.dart';
 import 'package:kuru_mobile/features/settings/appearance_screen.dart';
 import 'package:kuru_mobile/features/settings/profile_screen.dart';
@@ -86,7 +91,55 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const RecoveryCodeScreen(),
       ),
 
-      // Authenticated shell — bottom-nav with three branches.
+      // Full-screen order routes — outside the shell so they cover the
+      // bottom nav (no tab bar visible during create / detail).
+      GoRoute(
+        path: '/orders/new',
+        builder: (_, __) => const OrderCreateScreen(),
+      ),
+      GoRoute(
+        path: '/orders/:id',
+        builder: (_, state) =>
+            OrderDetailScreen(orderId: state.pathParameters['id']!),
+      ),
+      GoRoute(path: '/pos', builder: (_, __) => const PosScreen()),
+
+      // Top-level alias for opening a product detail from outside the catalog
+      // shell branch (e.g. tapping a line-item inside /orders/:id). Pushing
+      // `/catalog/products/<id>` from the orders branch causes a Navigator
+      // key-reservation collision because the same path is already
+      // registered under the catalog StatefulShellBranch.
+      GoRoute(
+        path: '/products/:id/variants/:variantId',
+        pageBuilder: (_, state) {
+          final id = state.pathParameters['id']!;
+          final variantId = state.pathParameters['variantId']!;
+          return MaterialPage<void>(
+            key: ValueKey('orders-product-$id-variant-$variantId'),
+            child: ProductVariantDetailScreen(
+              productId: id,
+              variantId: variantId,
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/products/:id',
+        // Use an explicit non-colliding page key so the same
+        // ProductDetailScreen reachable via `/catalog/products/:id` inside
+        // the catalog shell can also be pushed on the root navigator from
+        // `/orders/:id` without triggering Navigator's
+        // `!keyReservation.contains(key)` assertion.
+        pageBuilder: (_, state) {
+          final id = state.pathParameters['id']!;
+          return MaterialPage<void>(
+            key: ValueKey('orders-product-$id'),
+            child: ProductDetailScreen(productId: id),
+          );
+        },
+      ),
+
+      // Authenticated shell — bottom-nav with four branches.
       StatefulShellRoute.indexedStack(
         builder: (context, state, navShell) => MainShell(
           currentIndex: navShell.currentIndex,
@@ -136,6 +189,14 @@ final routerProvider = Provider<GoRouter>((ref) {
                         builder: (_, __) => const ProductFormScreen(),
                       ),
                       GoRoute(
+                        path: ':id/variants/:variantId',
+                        builder: (_, state) => ProductVariantDetailScreen(
+                          productId: state.pathParameters['id']!,
+                          variantId: state.pathParameters['variantId']!,
+                          initial: state.extra as ProductDetail?,
+                        ),
+                      ),
+                      GoRoute(
                         path: ':id',
                         builder: (_, state) => ProductDetailScreen(
                           productId: state.pathParameters['id']!,
@@ -153,7 +214,16 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Branch 2: Settings
+          // Branch 2: Orders
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/orders',
+                builder: (_, __) => const OrderListScreen(),
+              ),
+            ],
+          ),
+          // Branch 3: Settings
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -217,9 +287,16 @@ String? _routeForBootstrap(
   }
   // Authed shell branches — bottom-nav routes (and their sub-paths) are
   // all valid destinations. Without this safelist, a deep link / push
-  // notification / restored URL hitting /catalog or /settings would
-  // bounce back to /home.
-  const authedShellPrefixes = ['/home', '/catalog', '/settings'];
+  // notification / restored URL hitting /catalog, /orders or /settings
+  // would bounce back to /home.
+  const authedShellPrefixes = [
+    '/home',
+    '/catalog',
+    '/orders',
+    '/pos',
+    '/products',
+    '/settings',
+  ];
   final isAuthedShellRoute = authedShellPrefixes.any(loc.startsWith);
   return isAuthedShellRoute ? null : '/home';
 }

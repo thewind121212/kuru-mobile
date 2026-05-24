@@ -26,6 +26,9 @@ dependencies:
   # Feedback (toasts + snackbars wrapper — see lib/core/feedback/k_notify.dart)
   toastification: ^3.2.0
 
+  # UUID generation — for idempotency keys in order operations
+  uuid: ^4.5.1
+
   # Auth
   # NOTE: pub.dev's latest (0.6.3) caps SDK at <3.9.0 — incompatible with our
   # Dart 3.11.5. The maintainer's master branch (0.6.5) has the corrected
@@ -75,6 +78,9 @@ dependencies:
   kuru_product_api:
     path: lib/api/product
   mobile_scanner: ^7.2.0
+  flutter_animate: ^4.5.2
+  lottie: ^3.1.3
+  barcode_widget: ^2.0.4
 
 dev_dependencies:
   flutter_test:
@@ -99,6 +105,7 @@ flutter:
   generate: true     # turns on flutter_localizations codegen
   assets:
     - assets/
+    - assets/lottie/
 
 # App icon generation — produces iOS AppIcon set + Android mipmaps + adaptive
 # icon. Source: assets/logo.webp (1280x1280). Re-run when the source changes:

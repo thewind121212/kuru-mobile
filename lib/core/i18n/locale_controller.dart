@@ -6,8 +6,9 @@ import 'package:kuru_mobile/main.dart';
 ///
 /// State is `Locale?`. `null` means "follow the OS" — fed into
 /// `MaterialApp.router(locale:)` as null, which makes Flutter pick the
-/// best match for the device's reported locale. The user can also pin
-/// it to `vi` or `en`.
+/// best match for the device's reported locale. First run defaults to
+/// Vietnamese because that is the app's primary market; the user can
+/// still pick Auto, Vietnamese, or English from Settings.
 class LocaleController extends Notifier<Locale?> {
   static const _key = 'app_locale';
 
@@ -18,8 +19,9 @@ class LocaleController extends Notifier<Locale?> {
   @override
   Locale? build() {
     final code = ref.read(sharedPrefsProvider).getString(_key);
-    // Treat missing or explicit 'auto' as "follow the OS" → null locale.
-    if (code == null || code == 'auto') return null;
+    if (code == null) return const Locale('vi');
+    // Treat explicit 'auto' as "follow the OS" → null locale.
+    if (code == 'auto') return null;
     for (final loc in supported) {
       if (loc.languageCode == code) return loc;
     }

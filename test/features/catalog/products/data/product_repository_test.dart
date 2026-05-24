@@ -4,11 +4,14 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/models/create_product_body.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 import 'package:kuru_mobile/features/catalog/products/models/update_product_info_body.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -186,6 +189,74 @@ void main() {
     });
   });
 
+  group('getContainerLots', () {
+    test('200 returns parsed container lots', () async {
+      when(
+        () => dio.get<dynamic>(
+          any(),
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenAnswer(
+        (_) async => ok({
+          'containerLots': [
+            {
+              'id': 'lot-1',
+              'orgId': 'o-1',
+              'warehouseId': 'w-1',
+              'productId': 'p-1',
+              'qtyInitial': 12,
+              'qtyRemaining': 5,
+              'barcode': 'LOT-001',
+              'variantId': 'v-1',
+              'variantName': 'Size L',
+              'createdAt': '2026-05-20T10:30:00.000Z',
+            },
+          ],
+        }),
+      );
+
+      final res = await repo.getContainerLots(productId: 'p-1');
+
+      expect(res, isA<ApiSuccess<List<ProductContainerLot>>>());
+      final lots = (res as ApiSuccess<List<ProductContainerLot>>).data;
+      expect(lots, hasLength(1));
+      expect(lots.single.id, 'lot-1');
+      expect(lots.single.qtyRemaining, 5);
+      final captured =
+          verify(
+                () => dio.get<dynamic>(
+                  '/product/GetContainerLots',
+                  queryParameters: captureAny(named: 'queryParameters'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured, {'productId': 'p-1'});
+    });
+
+    test('passes optional variantId query param', () async {
+      when(
+        () => dio.get<dynamic>(
+          any(),
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenAnswer(
+        (_) async => ok({'containerLots': <Map<String, dynamic>>[]}),
+      );
+
+      await repo.getContainerLots(productId: 'p-1', variantId: 'v-1');
+
+      final captured =
+          verify(
+                () => dio.get<dynamic>(
+                  '/product/GetContainerLots',
+                  queryParameters: captureAny(named: 'queryParameters'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured, {'productId': 'p-1', 'variantId': 'v-1'});
+    });
+  });
+
   group('create', () {
     test('201 returns productId', () async {
       when(
@@ -285,6 +356,68 @@ void main() {
         },
       ]);
       expect(captured['removeUmoIds'], ['u-2']);
+    });
+  });
+
+  group('saveVariants', () {
+    test('PATCH sends upserts and deletions', () async {
+      when(
+        () => dio.patch<dynamic>(any(), data: any(named: 'data')),
+      ).thenAnswer(
+        (_) async => ok({
+          'success': true,
+          'variants': [
+            {
+              'id': 'v-1',
+              'productId': 'p-1',
+              'name': 'Size L',
+              'isDefault': false,
+              'sellPrice': 30000,
+              'avgCost': 0,
+              'totalCostValue': 0,
+              'totalQtyImported': 0,
+            },
+          ],
+        }),
+      );
+      final res = await repo.saveVariants(
+        productId: 'p-1',
+        variants: const [
+          ProductVariantUpsert(
+            id: 'v-1',
+            name: 'Size L',
+            sellPrice: 30000,
+            importPrice: 19000,
+            exportPrice: 32000,
+            imageUrl: JsonOptional.set('variant.jpg'),
+          ),
+        ],
+        deleteVariantIds: const ['v-2'],
+      );
+      expect(res, isA<ApiSuccess<List<ProductVariant>>>());
+      final captured =
+          verify(
+                () => dio.patch<dynamic>(
+                  '/product/SaveProductVariants',
+                  data: captureAny(named: 'data'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(captured, {
+        'productId': 'p-1',
+        'variants': [
+          {
+            'id': 'v-1',
+            'name': 'Size L',
+            'sellPrice': 30000,
+            'importPrice': 19000,
+            'exportPrice': 32000,
+            'imageUrl': 'variant.jpg',
+          },
+        ],
+        'deleteVariantIds': ['v-2'],
+      });
+      expect((res as ApiSuccess<List<ProductVariant>>).data, hasLength(1));
     });
   });
 

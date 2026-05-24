@@ -28,6 +28,8 @@ mixin _$ProductDetail {
   num get totalQtyImported => throw _privateConstructorUsedError;
   List<ProductStockLocation> get stocks => throw _privateConstructorUsedError;
   List<ProductUmo> get umos => throw _privateConstructorUsedError;
+  List<ProductVariant> get variants => throw _privateConstructorUsedError;
+  List<ProductBarcode> get barcodes => throw _privateConstructorUsedError;
   String? get imageUrl => throw _privateConstructorUsedError;
   String? get baseUnitLabel => throw _privateConstructorUsedError;
   num? get exportPrice => throw _privateConstructorUsedError;
@@ -64,6 +66,8 @@ abstract class $ProductDetailCopyWith<$Res> {
     num totalQtyImported,
     List<ProductStockLocation> stocks,
     List<ProductUmo> umos,
+    List<ProductVariant> variants,
+    List<ProductBarcode> barcodes,
     String? imageUrl,
     String? baseUnitLabel,
     num? exportPrice,
@@ -102,6 +106,8 @@ class _$ProductDetailCopyWithImpl<$Res, $Val extends ProductDetail>
     Object? totalQtyImported = null,
     Object? stocks = null,
     Object? umos = null,
+    Object? variants = null,
+    Object? barcodes = null,
     Object? imageUrl = freezed,
     Object? baseUnitLabel = freezed,
     Object? exportPrice = freezed,
@@ -158,6 +164,14 @@ class _$ProductDetailCopyWithImpl<$Res, $Val extends ProductDetail>
                 ? _value.umos
                 : umos // ignore: cast_nullable_to_non_nullable
                       as List<ProductUmo>,
+            variants: null == variants
+                ? _value.variants
+                : variants // ignore: cast_nullable_to_non_nullable
+                      as List<ProductVariant>,
+            barcodes: null == barcodes
+                ? _value.barcodes
+                : barcodes // ignore: cast_nullable_to_non_nullable
+                      as List<ProductBarcode>,
             imageUrl: freezed == imageUrl
                 ? _value.imageUrl
                 : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -221,6 +235,8 @@ abstract class _$$ProductDetailImplCopyWith<$Res>
     num totalQtyImported,
     List<ProductStockLocation> stocks,
     List<ProductUmo> umos,
+    List<ProductVariant> variants,
+    List<ProductBarcode> barcodes,
     String? imageUrl,
     String? baseUnitLabel,
     num? exportPrice,
@@ -258,6 +274,8 @@ class __$$ProductDetailImplCopyWithImpl<$Res>
     Object? totalQtyImported = null,
     Object? stocks = null,
     Object? umos = null,
+    Object? variants = null,
+    Object? barcodes = null,
     Object? imageUrl = freezed,
     Object? baseUnitLabel = freezed,
     Object? exportPrice = freezed,
@@ -314,6 +332,14 @@ class __$$ProductDetailImplCopyWithImpl<$Res>
             ? _value._umos
             : umos // ignore: cast_nullable_to_non_nullable
                   as List<ProductUmo>,
+        variants: null == variants
+            ? _value._variants
+            : variants // ignore: cast_nullable_to_non_nullable
+                  as List<ProductVariant>,
+        barcodes: null == barcodes
+            ? _value._barcodes
+            : barcodes // ignore: cast_nullable_to_non_nullable
+                  as List<ProductBarcode>,
         imageUrl: freezed == imageUrl
             ? _value.imageUrl
             : imageUrl // ignore: cast_nullable_to_non_nullable
@@ -370,6 +396,8 @@ class _$ProductDetailImpl extends _ProductDetail {
     required this.totalQtyImported,
     final List<ProductStockLocation> stocks = const <ProductStockLocation>[],
     final List<ProductUmo> umos = const <ProductUmo>[],
+    final List<ProductVariant> variants = const <ProductVariant>[],
+    final List<ProductBarcode> barcodes = const <ProductBarcode>[],
     this.imageUrl,
     this.baseUnitLabel,
     this.exportPrice,
@@ -381,6 +409,8 @@ class _$ProductDetailImpl extends _ProductDetail {
     this.description,
   }) : _stocks = stocks,
        _umos = umos,
+       _variants = variants,
+       _barcodes = barcodes,
        super._();
 
   @override
@@ -419,6 +449,24 @@ class _$ProductDetailImpl extends _ProductDetail {
     return EqualUnmodifiableListView(_umos);
   }
 
+  final List<ProductVariant> _variants;
+  @override
+  @JsonKey()
+  List<ProductVariant> get variants {
+    if (_variants is EqualUnmodifiableListView) return _variants;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_variants);
+  }
+
+  final List<ProductBarcode> _barcodes;
+  @override
+  @JsonKey()
+  List<ProductBarcode> get barcodes {
+    if (_barcodes is EqualUnmodifiableListView) return _barcodes;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_barcodes);
+  }
+
   @override
   final String? imageUrl;
   @override
@@ -440,7 +488,7 @@ class _$ProductDetailImpl extends _ProductDetail {
 
   @override
   String toString() {
-    return 'ProductDetail(id: $id, name: $name, status: $status, baseUnitCode: $baseUnitCode, sellPrice: $sellPrice, demandStock: $demandStock, avgCost: $avgCost, totalCostValue: $totalCostValue, totalQtyImported: $totalQtyImported, stocks: $stocks, umos: $umos, imageUrl: $imageUrl, baseUnitLabel: $baseUnitLabel, exportPrice: $exportPrice, importPrice: $importPrice, categoryId: $categoryId, distributorId: $distributorId, brandId: $brandId, brandName: $brandName, description: $description)';
+    return 'ProductDetail(id: $id, name: $name, status: $status, baseUnitCode: $baseUnitCode, sellPrice: $sellPrice, demandStock: $demandStock, avgCost: $avgCost, totalCostValue: $totalCostValue, totalQtyImported: $totalQtyImported, stocks: $stocks, umos: $umos, variants: $variants, barcodes: $barcodes, imageUrl: $imageUrl, baseUnitLabel: $baseUnitLabel, exportPrice: $exportPrice, importPrice: $importPrice, categoryId: $categoryId, distributorId: $distributorId, brandId: $brandId, brandName: $brandName, description: $description)';
   }
 
   @override
@@ -464,6 +512,8 @@ class _$ProductDetailImpl extends _ProductDetail {
                 other.totalQtyImported == totalQtyImported) &&
             const DeepCollectionEquality().equals(other._stocks, _stocks) &&
             const DeepCollectionEquality().equals(other._umos, _umos) &&
+            const DeepCollectionEquality().equals(other._variants, _variants) &&
+            const DeepCollectionEquality().equals(other._barcodes, _barcodes) &&
             (identical(other.imageUrl, imageUrl) ||
                 other.imageUrl == imageUrl) &&
             (identical(other.baseUnitLabel, baseUnitLabel) ||
@@ -497,6 +547,8 @@ class _$ProductDetailImpl extends _ProductDetail {
     totalQtyImported,
     const DeepCollectionEquality().hash(_stocks),
     const DeepCollectionEquality().hash(_umos),
+    const DeepCollectionEquality().hash(_variants),
+    const DeepCollectionEquality().hash(_barcodes),
     imageUrl,
     baseUnitLabel,
     exportPrice,
@@ -530,6 +582,8 @@ abstract class _ProductDetail extends ProductDetail {
     required final num totalQtyImported,
     final List<ProductStockLocation> stocks,
     final List<ProductUmo> umos,
+    final List<ProductVariant> variants,
+    final List<ProductBarcode> barcodes,
     final String? imageUrl,
     final String? baseUnitLabel,
     final num? exportPrice,
@@ -564,6 +618,10 @@ abstract class _ProductDetail extends ProductDetail {
   List<ProductStockLocation> get stocks;
   @override
   List<ProductUmo> get umos;
+  @override
+  List<ProductVariant> get variants;
+  @override
+  List<ProductBarcode> get barcodes;
   @override
   String? get imageUrl;
   @override

@@ -1,6 +1,6 @@
 ---
 name: mobile-design
-description: Use when implementing UI in kuru-mobile (any work in lib/design/, lib/features/, or test/design/ — new widgets, new screens, modifying existing widgets, adding tests for UI). Covers the design-system split (auth-glass vs content-flat), widget catalog, analyzer rules that trip subagents, and test patterns specific to this project. Read this BEFORE writing widget code or tests.
+description: MANDATORY before any design / styling / new-screen / restyle task in kuru-mobile. Use when implementing UI in kuru-mobile (any work in lib/design/, lib/features/, or test/design/ — new widgets, new screens, modifying existing widgets, restyle requests like "make it match products / settings", adding tests for UI). Covers the design-system split (auth-glass vs content-flat), the canonical screen archetypes (list / detail / form), the pastel-tint colour vocabulary, widget catalogue, analyzer rules that trip subagents, and test patterns specific to this project. Read this BEFORE writing widget code or tests. If the task says "make X look like Y", read the relevant archetype section below and mirror the structure literally.
 ---
 
 # Mobile design system — kuru-mobile
@@ -48,6 +48,156 @@ Do NOT mix glass and flat on the same screen. Don't use `KGlass` inside a Catalo
 
 - `docs/superpowers/specs/2026-05-16-catalog-core-design.md` — full spec for the flat design system (20 widgets, mobile adaptations, theme tokens, build order, deferred items).
 - `docs/superpowers/plans/2026-05-16-catalog-core-design.md` — implementation plan (25 task TDD cycles).
+
+## ⭐ Screen archetypes — reference implementations to mirror
+
+When a task says "build a list / detail / form screen" — or worse, "make X look like Product" — you MUST mirror the corresponding reference file structurally. The Product module is the canonical reference (most recent, most polished). Orders is the second example showing the patterns applied to a different domain.
+
+### Archetype A — List screen (paginated)
+
+**Reference:** `lib/features/catalog/products/products_list_screen.dart` (canonical) and `lib/features/orders/order_list_screen.dart` (applied).
+
+Mandatory structure:
+
+1. `Scaffold(backgroundColor: c.pageBg)` — **no AppBar.**
+2. `SafeArea(bottom: false)` → `RefreshIndicator` → `CustomScrollView` w/ `ScrollController`, `cacheExtent: 900`.
+3. **Slivers, in order:**
+   1. `SliverToBoxAdapter` — title block: 32 px / FontWeight.w800 / letterSpacing -0.8 title on left + small FilledButton.icon ("Tạo …") on right.
+   2. `SliverToBoxAdapter` — total-count line, 13 px, `c.textMuted` (`"$total {entity}"` or `"Đang tải…"`).
+   3. `SliverToBoxAdapter` — filter bar: search `TextField` (`hintText` + `prefixIcon: TablerIcons.search` size 18, `filled: true`, `fillColor: c.surfaceElev`, 12-radius, `BorderSide.none`, `contentPadding` vertical 13) + 48×48 filter button w/ active-count badge in `c.accent600`.
+   4. (Optional) `SliverToBoxAdapter` — pill-tab row for primary axis filter (`accent600` selected, `surfaceElev` idle). NOT `KTabNav` — use raw `Material + InkWell` pills to match products.
+   5. `async.when(data, loading, error)` slivers:
+      - **loading** → `SliverToBoxAdapter` w/ padding 48 + centered `CircularProgressIndicator`.
+      - **error** → `SliverToBoxAdapter` w/ padding 24 + centered `'Không tải được … : $e'`.
+      - **empty** → `SliverToBoxAdapter` w/ 48-padding column: 56 px icon in `Color(0xFF94A3B8)`, title 16 px `c.textPrimary`, subtitle 13 px `c.textMuted`, primary `FilledButton` CTA when relevant.
+      - **data** → see "List-row container" below.
+   6. `const SliverToBoxAdapter(child: SizedBox(height: 96))` — clearance for the floating bottom nav pill.
+4. **No FloatingActionButton.** Use the header "Tạo" button instead.
+5. **Infinite scroll:** ScrollController listener on the CustomScrollView; when `pos.pixels >= pos.maxScrollExtent - 600`, call `loadMore()` on the list provider's notifier.
+
+**List-row container (grouped surface):** items live inside ONE rounded `surfaceElev` container with hairline `borderSoft` dividers indented past the leading icon. Do NOT use `KListRow` for stacked list rows (it draws its own card, gives a "loose pile" look). Instead:
+
+```dart
+SliverToBoxAdapter(
+  child: Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    child: Container(
+      decoration: BoxDecoration(
+        color: c.surfaceElev,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(children: [
+        for (var i = 0; i < items.length; i++) ...[
+          MyRow(item: items[i]),
+          if (i < items.length - 1)
+            Padding(
+              padding: const EdgeInsets.only(left: 66), // = 14 + 40 + 12
+              child: Divider(height: 1, thickness: 0.5, color: c.borderSoft),
+            ),
+        ],
+        if (page.hasMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(
+              child: SizedBox(
+                width: 22, height: 22,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+      ]),
+    ),
+  ),
+)
+```
+
+**Row layout:** 14h/12v padding · 40×40 pastel-tinted icon container (10-radius) · 12 gap · ellipsized Expanded title-block (entity number 15 px w800 / secondary text 13 px w600 / muted meta 12 px w500) · 8 gap · right column (primary metric 15 px w800 + 4 gap + status pill 10 px w800).
+
+DO NOT put status labels inline next to the title — they overflow horizontally on long titles. The icon's tint already encodes status by colour. Use a small right-side pill for the secondary status (e.g. payment) instead.
+
+### Archetype B — Detail screen
+
+**Reference:** `lib/features/catalog/products/product_detail_screen.dart` (canonical) and `lib/features/orders/order_detail_screen.dart` (applied).
+
+Mandatory structure:
+
+1. `Scaffold(backgroundColor: c.pageBg)`.
+2. `AppBar(backgroundColor: c.pageBg, elevation: 0, scrolledUnderElevation: 0, centerTitle: true)` w/ title in 17 px w700 `c.textPrimary` showing the entity identifier (or fallback title while loading).
+3. AppBar `actions: [IconButton(icon: dots_vertical)]` → opens `showKActionSheet<String>` w/ relevant `KActionItem`s (use `danger: true` for destructive ones, never raw `PopupMenuButton`).
+4. Body = `SingleChildScrollView(padding: const EdgeInsets.only(top: 12, bottom: 96))` → `Column` of:
+   1. **Hero block** — 16-h-padding `_Hero` widget. Either an 18-radius image card (for products) OR an 18-radius `surfaceElev` container w/ status badges row → 32 px w800 metric → 13 px w600 `c.textMuted` meta line (for orders/non-image entities).
+   2. **`KSettingsSection`** groups (from `lib/design/core/layout/k_settings_section.dart`) — one section per logical area. Header is sentence-case Vietnamese ("Thông tin chính", "Phân loại", "Tổng kết", "Thanh toán (N)" w/ count). Children = `KSettingsRow` instances with pastel-tinted icon tiles.
+5. Bottom action: pinned `FilledButton` in `bottomNavigationBar: SafeArea(child: Padding(child: FilledButton(...)))` — only when there's a single primary action available at the current state.
+6. Loading state: centered `KSpinner` (or `CircularProgressIndicator`). Error state: centered icon + 15 px w700 message (use `receipt_off`, `package_off`, etc. — not a generic empty state widget).
+
+### Archetype C — Form / create screen
+
+**Reference:** `lib/features/catalog/products/product_form_screen.dart` (canonical) and `lib/features/orders/order_create_screen.dart` (applied).
+
+Mandatory structure:
+
+1. `Scaffold(backgroundColor: c.pageBg)`.
+2. `AppBar(backgroundColor: c.pageBg, elevation: 0, scrolledUnderElevation: 0)` w/ title 18 px w800 `c.textPrimary` ("Tạo X" / "Sửa X").
+3. Body = `SafeArea(child: Column(children: [Expanded(child: ListView(...)), _CreateFooter(...)]))`.
+4. `ListView` uses `keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag`, `padding: EdgeInsets.fromLTRB(16, 8, 16, 24 + bottomInset)` where `bottomInset = MediaQuery.viewInsetsOf(context).bottom`.
+5. Inside the ListView: stack of **`_CreateSection`** cards separated by `SizedBox(height: 18)`. Each section: `DecoratedBox(color: c.surfaceElev, border: Border.all(color: c.borderSoft), borderRadius: 18)` containing a 14-padding column with a 14 px w800 title + accent-tinted leading icon + optional "Bắt buộc" red badge, then the field stack. Reference: `lib/features/catalog/products/product_form_screen.dart:1521` (and the local copy in `lib/features/orders/order_create_screen.dart`). The widget is currently private to each form; copy-paste it locally until it's worth extracting.
+6. Field widgets:
+   - Single-line text → `KTextField` (`label`, `controller`, `placeholder`, `maxLength`, `keyboardType`, `errorText`).
+   - Multi-line → `KTextarea`.
+   - Currency → `KCurrencyField` (returns `int?`, opens a bottom-sheet picker).
+   - Picker triggers (category/brand/unit) → `_PickerTriggerRow` (label + value + chevron, taps to show `KActionSheet` or other picker).
+   - Segmented selection (≤4 options) → custom row of accent-toggled chips (see `_DiscountTypeChips` in `order_create_screen.dart`). Do NOT use Material `DropdownButtonFormField` — too noisy.
+7. Footer = **`_CreateFooter`** — `Container` w/ `c.surfaceElev` background + top hairline border, 16/12/16/16 padding, 50 px-tall `FilledButton.icon` (or two-button row for save-draft + primary). Spinner replaces icon while submitting; `disabledBackgroundColor: c.accent600.withValues(alpha: 0.38)`; 14-radius shape.
+
+### Archetype quick-pick table
+
+| Task phrasing | Mirror file |
+|---|---|
+| "list / overview / index screen" | `products_list_screen.dart` |
+| "detail screen" | `product_detail_screen.dart` |
+| "create / edit / form screen" | `product_form_screen.dart` |
+| "Make X look like Product" | All three of the above. |
+| "Make X look like Settings" | `lib/features/settings/settings_screen.dart` |
+
+## ⭐ Pastel icon-tint vocabulary
+
+Pastel (bg) / vivid (fg) pairs used everywhere icons need a tinted square. Always declare them as `const Color(0xFFXXXXXX)` literals — they're outside the theme palette on purpose so the visual stays stable across light/dark/purple/indigo (semantic colour). Reuse the same set product / order detail uses:
+
+| Token | bg | fg | Use |
+|---|---|---|---|
+| Purple | `0xFFF1ECFB` | `0xFF8B5CF6` | Category / channel / variants / card-payment |
+| Blue | `0xFFE7F1FB` | `0xFF3B82F6` | Brand / created-at / bank-transfer / inventory |
+| Green | `0xFFE6F7F0` | `0xFF10B981` | Sell-price / completed / paid / cash / money |
+| Slate | `0xFFEFF1F4` | `0xFF64748B` | Neutral / unit / draft / "other" |
+| Amber | `0xFFFEF6E5` | `0xFFD97706` | Export-price / pending / partial / discount |
+| Red | `0xFFFCE7E7` | `0xFFDC2626` | Cancelled / unpaid / destructive empty state |
+
+Status mapping for order entries (mirror this for any similar status-bearing entity):
+
+- `draft` → slate
+- `pending` → amber
+- `completed` → green
+- `cancelled` → red
+- `paid` → green / `partial` → amber / `unpaid` → red
+
+## ⭐ Format conventions
+
+- **Money:** `NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0)`. Use lower-case `đ`, not `₫` — matches `product_detail_screen.dart`'s `_vnd`.
+- **Date (long):** `DateFormat('dd/MM/yyyy HH:mm').format(dt.toLocal())` — header / detail surfaces.
+- **Date (short):** `DateFormat('dd/MM HH:mm').format(dt.toLocal())` — list-row meta.
+- **Date (calendar only):** `DateFormat('dd/MM/yyyy')` — picker triggers, lot tables.
+- **Plural counts:** use the existing ARB-generated method when one exists (`l.orderItemsCount(n)`). Vietnamese is no-plural so the function returns the same string for any count — that's fine.
+- **Border radius:** 8 (tabs/chips), 12 (buttons/inputs/picker triggers), 18 (cards/sheets/sections — NOT 16; the 18 radius is canonical in this project), 999 (badges/pills).
+- **Typography scale on detail screens:** 32 px w800 (hero metric) · 22 px w700 (product hero name) · 17 px w700 (app-bar title) · 15 px w700/w800 (row title / value) · 14 px w800 (section header inside `_CreateSection`) · 13 px w500/w600/w700 (subtitle / muted meta) · 12 px w600 (caption / variant) · 11 px w800 (badge label) · 10 px w800 (badge label "Bắt buộc").
+- **`Card` widget is BANNED on content screens.** Use the rounded `surfaceElev` containers above. Material `Card` introduces a shadow that fights the flat aesthetic.
+
+## ⭐ Pre-flight checklist before writing any UI code
+
+1. Open the matching archetype reference file (see table above). Skim its build method.
+2. Open `lib/app/theme/kuru_colors.dart`. Verify the colour tokens you intend to use exist.
+3. Confirm the widget you intend to use isn't auth/glass by checking it lives under `lib/design/core/` (not `lib/design/widgets/`).
+4. After every edit run `flutter analyze`. Exit 0 or the change is not done.
 
 ## Conventions you MUST follow (analyzer trip-wires)
 

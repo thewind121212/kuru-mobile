@@ -9,6 +9,7 @@ import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/data/product_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/data/variant_attribute_repository.dart';
 import 'package:kuru_mobile/features/catalog/products/data/warehouse_repository.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_container_lot.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_page.dart';
@@ -117,6 +118,13 @@ final productByIdProvider = FutureProvider.family<ProductDetail, String>((
   final repo = ref.watch(productRepositoryProvider);
   return repo.getById(id).unwrap();
 });
+
+final productContainerLotsProvider =
+    FutureProvider.family<List<ProductContainerLot>, String>((ref, productId) {
+      ref.watch(currentOrgIdProvider);
+      final repo = ref.watch(productRepositoryProvider);
+      return repo.getContainerLots(productId: productId).unwrap();
+    });
 
 final canWriteProductsProvider = Provider<bool>((ref) {
   final permsAsync = ref.watch(myPermissionsProvider);

@@ -298,6 +298,169 @@ class AppLocalizationsVi extends AppLocalizations {
   String get posComingSoon => 'Thu ngân sắp ra mắt';
 
   @override
+  String get posTitle => 'Thu ngân';
+
+  @override
+  String get posSubtitle => 'Bắt đầu bán nhanh từ điện thoại.';
+
+  @override
+  String get posHeroMetric => 'Bán hàng nhanh';
+
+  @override
+  String get posHeroMeta =>
+      'Tạo đơn, nhận thanh toán và ghi nhận tồn kho từ cùng một luồng.';
+
+  @override
+  String get posPrimaryAction => 'Tạo đơn bán';
+
+  @override
+  String get posSectionStart => 'Bắt đầu';
+
+  @override
+  String get posQuickOrder => 'Đơn bán nhanh';
+
+  @override
+  String get posQuickOrderMeta => 'Tạo đơn mới từ giỏ hàng';
+
+  @override
+  String get posScanBarcode => 'Quét mã vạch';
+
+  @override
+  String get posScanBarcodeMeta => 'Luồng quét sản phẩm sẽ nối vào POS sau';
+
+  @override
+  String get posScanComingSoon =>
+      'Quét mã vạch trong POS sẽ được nối ở bước tiếp theo';
+
+  @override
+  String get posSectionManage => 'Quản lý';
+
+  @override
+  String get posViewOrders => 'Xem đơn hàng';
+
+  @override
+  String get posViewOrdersMeta => 'Mở danh sách đơn đã tạo';
+
+  @override
+  String get posPayment => 'Thanh toán';
+
+  @override
+  String get posSuccess => 'Hoàn tất';
+
+  @override
+  String get posSearchLabel => 'Tìm bằng tên';
+
+  @override
+  String get posSearchHint => 'Nhập tên sản phẩm';
+
+  @override
+  String get posScanPrimary => 'Quét sản phẩm';
+
+  @override
+  String get posBranchLabel => 'Chi nhánh';
+
+  @override
+  String get posBranchLoading => 'Đang tải chi nhánh';
+
+  @override
+  String get posBranchMissing => 'Chưa có chi nhánh bán hàng';
+
+  @override
+  String get posBranchRequired => 'Chọn chi nhánh trước khi thu tiền';
+
+  @override
+  String get posBranchPickerTitle => 'Chọn chi nhánh bán hàng';
+
+  @override
+  String get posScanHint => 'Hướng camera vào mã vạch sản phẩm';
+
+  @override
+  String get posBarcodeAdded => 'Đã thêm sản phẩm từ mã vạch';
+
+  @override
+  String get posEmptySearch => 'Bấm nút Quét sản phẩm bên dưới';
+
+  @override
+  String get posEmptySearchMeta =>
+      'Hoặc nhập tên sản phẩm nếu không quét được mã.';
+
+  @override
+  String get posNoProducts => 'Không tìm thấy sản phẩm phù hợp';
+
+  @override
+  String get posCart => 'Giỏ hàng';
+
+  @override
+  String get posCartHint => 'Thêm ít nhất một sản phẩm để thanh toán.';
+
+  @override
+  String get posEmptyCart => 'Giỏ hàng đang trống';
+
+  @override
+  String get posClearCart => 'Xóa giỏ';
+
+  @override
+  String get posRemoveLine => 'Xóa dòng hàng';
+
+  @override
+  String get posAdjustLineTitle => 'Chỉnh dòng hàng';
+
+  @override
+  String get posAdjustQty => 'Số lượng';
+
+  @override
+  String get posAdjustUnitPrice => 'Giá bán';
+
+  @override
+  String get posLineTotal => 'Thành tiền';
+
+  @override
+  String get posSaveLine => 'Cập nhật';
+
+  @override
+  String get posViewProductDetail => 'Xem chi tiết sản phẩm';
+
+  @override
+  String get posTotal => 'Tổng tiền';
+
+  @override
+  String get posCharge => 'Thu tiền';
+
+  @override
+  String get posAmountReceived => 'Tiền khách đưa';
+
+  @override
+  String get posChange => 'Tiền thối';
+
+  @override
+  String get posRemaining => 'Còn thiếu';
+
+  @override
+  String get posConfirmPayment => 'Xác nhận thanh toán';
+
+  @override
+  String get posPaymentNote => 'Đơn sẽ được tạo và ghi nhận thanh toán ngay.';
+
+  @override
+  String get posPaymentReference => 'Nội dung chuyển khoản';
+
+  @override
+  String get posPaymentFailed => 'Không thể tạo đơn thanh toán';
+
+  @override
+  String get posSuccessTitle => 'Thanh toán thành công';
+
+  @override
+  String get posSuccessBody =>
+      'Đơn bán đã được tạo và giỏ hàng đã được làm mới.';
+
+  @override
+  String get posNewSale => 'Đơn mới';
+
+  @override
+  String get posViewOrder => 'Xem đơn vừa tạo';
+
+  @override
   String get settingsPlaceholder => 'Cài đặt sắp ra mắt';
 
   @override
@@ -591,4 +754,360 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get brandActionDelete => 'Xóa';
+
+  @override
+  String get navOrders => 'Đơn hàng';
+
+  @override
+  String get orderListTitle => 'Đơn hàng';
+
+  @override
+  String get orderListSearchHint => 'Tìm theo mã đơn hoặc khách';
+
+  @override
+  String get orderListEmptyAll => 'Chưa có đơn hàng nào';
+
+  @override
+  String get orderListEmptyFiltered => 'Không có đơn phù hợp bộ lọc';
+
+  @override
+  String get orderListEmptyCta => 'Tạo đơn đầu tiên';
+
+  @override
+  String get orderListEmptyBody => 'Tạo đơn đầu tiên để bắt đầu.';
+
+  @override
+  String get orderListNewOrder => 'Đơn mới';
+
+  @override
+  String get orderListLoading => 'Đang tải…';
+
+  @override
+  String orderListLoadError(String error) {
+    return 'Không tải được đơn: $error';
+  }
+
+  @override
+  String get orderListOrderUnit => 'đơn hàng';
+
+  @override
+  String orderListPaymentFilterChip(String status) {
+    return 'TT: $status';
+  }
+
+  @override
+  String orderListChannelFilterChip(String channel) {
+    return 'Kênh: $channel';
+  }
+
+  @override
+  String orderListFromDateChip(String date) {
+    return 'Từ $date';
+  }
+
+  @override
+  String orderListToDateChip(String date) {
+    return 'Đến $date';
+  }
+
+  @override
+  String get orderListClearFilters => 'Xóa lọc';
+
+  @override
+  String get orderListFilterTitle => 'Bộ lọc';
+
+  @override
+  String get orderListFilterApply => 'Áp dụng';
+
+  @override
+  String get orderListFilterReset => 'Đặt lại';
+
+  @override
+  String get orderListFilterPaymentStatus => 'Trạng thái thanh toán';
+
+  @override
+  String get orderListFilterSaleChannel => 'Kênh bán';
+
+  @override
+  String get orderListFilterFromDate => 'Từ ngày';
+
+  @override
+  String get orderListFilterToDate => 'Đến ngày';
+
+  @override
+  String get orderStatusDraft => 'Nháp';
+
+  @override
+  String get orderStatusPending => 'Chờ xử lý';
+
+  @override
+  String get orderStatusCompleted => 'Hoàn tất';
+
+  @override
+  String get orderStatusCancelled => 'Đã hủy';
+
+  @override
+  String get orderStatusAll => 'Tất cả';
+
+  @override
+  String get orderPaymentStatusUnpaid => 'Chưa thanh toán';
+
+  @override
+  String get orderPaymentStatusPartial => 'Thanh toán một phần';
+
+  @override
+  String get orderPaymentStatusPaid => 'Đã thanh toán';
+
+  @override
+  String get orderPaymentMethodCash => 'Tiền mặt';
+
+  @override
+  String get orderPaymentMethodBankTransfer => 'Chuyển khoản';
+
+  @override
+  String get orderPaymentMethodCard => 'Thẻ';
+
+  @override
+  String get orderPaymentMethodOther => 'Khác';
+
+  @override
+  String get orderSaleChannelShop => 'Cửa hàng';
+
+  @override
+  String get orderSaleChannelEcommerce => 'Thương mại điện tử';
+
+  @override
+  String get orderWalkIn => 'Khách lẻ';
+
+  @override
+  String get orderNoCustomer => 'Không có khách hàng';
+
+  @override
+  String orderItemsCount(int count) {
+    return '$count món';
+  }
+
+  @override
+  String get orderDetailTitle => 'Chi tiết đơn';
+
+  @override
+  String get orderDetailNotFound => 'Không tìm thấy đơn hàng';
+
+  @override
+  String get orderDetailSubtotal => 'Tạm tính';
+
+  @override
+  String get orderDetailDiscount => 'Giảm giá';
+
+  @override
+  String get orderDetailTax => 'Thuế';
+
+  @override
+  String get orderDetailTotal => 'Tổng cộng';
+
+  @override
+  String get orderDetailPaid => 'Đã trả';
+
+  @override
+  String get orderDetailChange => 'Tiền thừa';
+
+  @override
+  String get orderDetailCustomer => 'Khách hàng';
+
+  @override
+  String get orderDetailNote => 'Ghi chú';
+
+  @override
+  String get orderDetailItems => 'Sản phẩm';
+
+  @override
+  String get orderDetailPayments => 'Thanh toán';
+
+  @override
+  String get orderDetailAddPayment => 'Thêm thanh toán';
+
+  @override
+  String get orderDetailMarkCompleted => 'Đánh dấu hoàn tất';
+
+  @override
+  String get orderDetailCancel => 'Hủy đơn';
+
+  @override
+  String get orderDetailVoid => 'Hủy bỏ (Void)';
+
+  @override
+  String get orderDetailCancelDialogTitle => 'Hủy đơn hàng?';
+
+  @override
+  String get orderDetailCancelReasonHint => 'Lý do hủy';
+
+  @override
+  String get orderDetailVoidDialogTitle => 'Hủy bỏ đơn hàng?';
+
+  @override
+  String get orderDetailVoidDialogBody =>
+      'Đơn đã hoàn tất sẽ được đánh dấu hủy bỏ. Không thể hoàn tác.';
+
+  @override
+  String get orderDetailMarkCompletedDialogTitle => 'Đánh dấu hoàn tất?';
+
+  @override
+  String get orderDetailUpdated => 'Đã cập nhật đơn hàng';
+
+  @override
+  String get orderCreateTitle => 'Đơn mới';
+
+  @override
+  String get orderCreateEmptyCta => 'Thêm sản phẩm';
+
+  @override
+  String get orderCreateAddMore => 'Thêm sản phẩm khác';
+
+  @override
+  String get orderCreateClearCart => 'Xóa giỏ hàng';
+
+  @override
+  String get orderCreateDiscardDialogTitle => 'Bỏ giỏ hàng?';
+
+  @override
+  String get orderCreateDiscardDialogBody =>
+      'Bạn sẽ mất các sản phẩm đang chọn.';
+
+  @override
+  String get orderCreateDiscardConfirm => 'Bỏ';
+
+  @override
+  String get orderCreateKeepEditing => 'Tiếp tục';
+
+  @override
+  String get orderCreateCustomerName => 'Tên khách hàng';
+
+  @override
+  String get orderCreateCustomerPhone => 'Số điện thoại';
+
+  @override
+  String get orderCreateNote => 'Ghi chú';
+
+  @override
+  String get orderCreateOrderDiscount => 'Giảm giá đơn';
+
+  @override
+  String get orderCreateManualTax => 'Thuế (%)';
+
+  @override
+  String get orderCreateDiscountTypeNone => 'Không';
+
+  @override
+  String get orderCreateDiscountTypePercentage => 'Phần trăm';
+
+  @override
+  String get orderCreateDiscountTypeFixed => 'Cố định';
+
+  @override
+  String get orderCreateSaveDraft => 'Lưu nháp';
+
+  @override
+  String get orderCreatePay => 'Thanh toán';
+
+  @override
+  String get orderCreateSavedDraft => 'Đã lưu đơn nháp';
+
+  @override
+  String get orderCreatePaid => 'Đã thanh toán';
+
+  @override
+  String get addLineSheetTitle => 'Thêm sản phẩm';
+
+  @override
+  String get addLineSheetEditTitle => 'Sửa sản phẩm';
+
+  @override
+  String get addLineSheetSearchHint => 'Tìm sản phẩm';
+
+  @override
+  String get addLineSheetEmpty => 'Nhập tên để tìm sản phẩm';
+
+  @override
+  String get addLineSheetVariantPick => 'Chọn phân loại';
+
+  @override
+  String get addLineSheetQty => 'Số lượng';
+
+  @override
+  String get addLineSheetUnitPrice => 'Đơn giá';
+
+  @override
+  String get addLineSheetLineDiscount => 'Giảm giá dòng';
+
+  @override
+  String get addLineSheetAdd => 'Thêm vào đơn';
+
+  @override
+  String get addLineSheetUpdate => 'Cập nhật';
+
+  @override
+  String get orderPaymentSheetTitle => 'Thanh toán';
+
+  @override
+  String get orderPaymentSheetMethod => 'Hình thức';
+
+  @override
+  String get orderPaymentSheetAmount => 'Số tiền';
+
+  @override
+  String get orderPaymentSheetReference => 'Mã tham chiếu';
+
+  @override
+  String get orderPaymentSheetNote => 'Ghi chú';
+
+  @override
+  String get orderPaymentSheetConfirm => 'Xác nhận';
+
+  @override
+  String get commonRequiredBadge => 'Bắt buộc';
+
+  @override
+  String get commonActions => 'Tác vụ';
+
+  @override
+  String get commonName => 'Tên';
+
+  @override
+  String get commonPhone => 'SĐT';
+
+  @override
+  String get commonStore => 'Cửa hàng';
+
+  @override
+  String get orderDetailSectionInfo => 'Thông tin đơn';
+
+  @override
+  String get orderDetailFieldCreatedAt => 'Tạo lúc';
+
+  @override
+  String get orderDetailFieldChannel => 'Kênh bán';
+
+  @override
+  String get orderDetailSectionSummary => 'Tổng kết';
+
+  @override
+  String get orderDetailPaymentsEmpty => 'Chưa có thanh toán';
+
+  @override
+  String get orderCreateCartEmptyTitle => 'Chưa có sản phẩm trong giỏ';
+
+  @override
+  String get orderCreateCustomerNameHint => 'VD: Anh Nam';
+
+  @override
+  String get orderCreatePhoneHint => '0xxxxxxxxx';
+
+  @override
+  String get orderCreateNoteHint => 'Ghi chú thêm cho đơn hàng';
+
+  @override
+  String get orderCreateManualTaxHint => 'VD: 8';
+
+  @override
+  String get orderCreatePercentHint => '0–100';
 }

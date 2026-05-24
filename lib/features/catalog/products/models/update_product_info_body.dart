@@ -15,6 +15,7 @@ class UpdateProductInfoBody {
     this.exportPrice,
     this.importPrice,
     this.demandStock,
+    this.imageUrl,
   });
 
   final String productId;
@@ -30,6 +31,7 @@ class UpdateProductInfoBody {
   final JsonOptional<num>? exportPrice;
   final JsonOptional<num>? importPrice;
   final JsonOptional<num>? demandStock;
+  final JsonOptional<String>? imageUrl;
 
   Map<String, dynamic> toJson() {
     final m = <String, dynamic>{'productId': productId};
@@ -45,6 +47,7 @@ class UpdateProductInfoBody {
     JsonOptional.writeIfPresent(m, 'exportPrice', exportPrice);
     JsonOptional.writeIfPresent(m, 'importPrice', importPrice);
     JsonOptional.writeIfPresent(m, 'demandStock', demandStock);
+    JsonOptional.writeIfPresent(m, 'imageUrl', imageUrl);
     return m;
   }
 }

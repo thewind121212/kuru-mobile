@@ -632,6 +632,324 @@ abstract class AppLocalizations {
   /// **'Thu ngân sắp ra mắt'**
   String get posComingSoon;
 
+  /// No description provided for @posTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu ngân'**
+  String get posTitle;
+
+  /// No description provided for @posSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu bán nhanh từ điện thoại.'**
+  String get posSubtitle;
+
+  /// No description provided for @posHeroMetric.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bán hàng nhanh'**
+  String get posHeroMetric;
+
+  /// No description provided for @posHeroMeta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn, nhận thanh toán và ghi nhận tồn kho từ cùng một luồng.'**
+  String get posHeroMeta;
+
+  /// No description provided for @posPrimaryAction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn bán'**
+  String get posPrimaryAction;
+
+  /// No description provided for @posSectionStart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt đầu'**
+  String get posSectionStart;
+
+  /// No description provided for @posQuickOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn bán nhanh'**
+  String get posQuickOrder;
+
+  /// No description provided for @posQuickOrderMeta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn mới từ giỏ hàng'**
+  String get posQuickOrderMeta;
+
+  /// No description provided for @posScanBarcode.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã vạch'**
+  String get posScanBarcode;
+
+  /// No description provided for @posScanBarcodeMeta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Luồng quét sản phẩm sẽ nối vào POS sau'**
+  String get posScanBarcodeMeta;
+
+  /// No description provided for @posScanComingSoon.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét mã vạch trong POS sẽ được nối ở bước tiếp theo'**
+  String get posScanComingSoon;
+
+  /// No description provided for @posSectionManage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý'**
+  String get posSectionManage;
+
+  /// No description provided for @posViewOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem đơn hàng'**
+  String get posViewOrders;
+
+  /// No description provided for @posViewOrdersMeta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở danh sách đơn đã tạo'**
+  String get posViewOrdersMeta;
+
+  /// No description provided for @posPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán'**
+  String get posPayment;
+
+  /// No description provided for @posSuccess.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất'**
+  String get posSuccess;
+
+  /// No description provided for @posSearchLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm bằng tên'**
+  String get posSearchLabel;
+
+  /// No description provided for @posSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập tên sản phẩm'**
+  String get posSearchHint;
+
+  /// No description provided for @posScanPrimary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quét sản phẩm'**
+  String get posScanPrimary;
+
+  /// No description provided for @posBranchLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi nhánh'**
+  String get posBranchLabel;
+
+  /// No description provided for @posBranchLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải chi nhánh'**
+  String get posBranchLoading;
+
+  /// No description provided for @posBranchMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có chi nhánh bán hàng'**
+  String get posBranchMissing;
+
+  /// No description provided for @posBranchRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn chi nhánh trước khi thu tiền'**
+  String get posBranchRequired;
+
+  /// No description provided for @posBranchPickerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn chi nhánh bán hàng'**
+  String get posBranchPickerTitle;
+
+  /// No description provided for @posScanHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hướng camera vào mã vạch sản phẩm'**
+  String get posScanHint;
+
+  /// No description provided for @posBarcodeAdded.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thêm sản phẩm từ mã vạch'**
+  String get posBarcodeAdded;
+
+  /// No description provided for @posEmptySearch.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm nút Quét sản phẩm bên dưới'**
+  String get posEmptySearch;
+
+  /// No description provided for @posEmptySearchMeta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoặc nhập tên sản phẩm nếu không quét được mã.'**
+  String get posEmptySearchMeta;
+
+  /// No description provided for @posNoProducts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy sản phẩm phù hợp'**
+  String get posNoProducts;
+
+  /// No description provided for @posCart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giỏ hàng'**
+  String get posCart;
+
+  /// No description provided for @posCartHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm ít nhất một sản phẩm để thanh toán.'**
+  String get posCartHint;
+
+  /// No description provided for @posEmptyCart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giỏ hàng đang trống'**
+  String get posEmptyCart;
+
+  /// No description provided for @posClearCart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa giỏ'**
+  String get posClearCart;
+
+  /// No description provided for @posRemoveLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa dòng hàng'**
+  String get posRemoveLine;
+
+  /// No description provided for @posAdjustLineTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chỉnh dòng hàng'**
+  String get posAdjustLineTitle;
+
+  /// No description provided for @posAdjustQty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số lượng'**
+  String get posAdjustQty;
+
+  /// No description provided for @posAdjustUnitPrice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá bán'**
+  String get posAdjustUnitPrice;
+
+  /// No description provided for @posLineTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thành tiền'**
+  String get posLineTotal;
+
+  /// No description provided for @posSaveLine.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật'**
+  String get posSaveLine;
+
+  /// No description provided for @posViewProductDetail.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem chi tiết sản phẩm'**
+  String get posViewProductDetail;
+
+  /// No description provided for @posTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng tiền'**
+  String get posTotal;
+
+  /// No description provided for @posCharge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu tiền'**
+  String get posCharge;
+
+  /// No description provided for @posAmountReceived.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền khách đưa'**
+  String get posAmountReceived;
+
+  /// No description provided for @posChange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền thối'**
+  String get posChange;
+
+  /// No description provided for @posRemaining.
+  ///
+  /// In vi, this message translates to:
+  /// **'Còn thiếu'**
+  String get posRemaining;
+
+  /// No description provided for @posConfirmPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận thanh toán'**
+  String get posConfirmPayment;
+
+  /// No description provided for @posPaymentNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn sẽ được tạo và ghi nhận thanh toán ngay.'**
+  String get posPaymentNote;
+
+  /// No description provided for @posPaymentReference.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nội dung chuyển khoản'**
+  String get posPaymentReference;
+
+  /// No description provided for @posPaymentFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể tạo đơn thanh toán'**
+  String get posPaymentFailed;
+
+  /// No description provided for @posSuccessTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán thành công'**
+  String get posSuccessTitle;
+
+  /// No description provided for @posSuccessBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn bán đã được tạo và giỏ hàng đã được làm mới.'**
+  String get posSuccessBody;
+
+  /// No description provided for @posNewSale.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn mới'**
+  String get posNewSale;
+
+  /// No description provided for @posViewOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xem đơn vừa tạo'**
+  String get posViewOrder;
+
   /// No description provided for @settingsPlaceholder.
   ///
   /// In vi, this message translates to:
@@ -1129,6 +1447,690 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'Xóa'**
   String get brandActionDelete;
+
+  /// No description provided for @navOrders.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng'**
+  String get navOrders;
+
+  /// No description provided for @orderListTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn hàng'**
+  String get orderListTitle;
+
+  /// No description provided for @orderListSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm theo mã đơn hoặc khách'**
+  String get orderListSearchHint;
+
+  /// No description provided for @orderListEmptyAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có đơn hàng nào'**
+  String get orderListEmptyAll;
+
+  /// No description provided for @orderListEmptyFiltered.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có đơn phù hợp bộ lọc'**
+  String get orderListEmptyFiltered;
+
+  /// No description provided for @orderListEmptyCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn đầu tiên'**
+  String get orderListEmptyCta;
+
+  /// No description provided for @orderListEmptyBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn đầu tiên để bắt đầu.'**
+  String get orderListEmptyBody;
+
+  /// No description provided for @orderListNewOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn mới'**
+  String get orderListNewOrder;
+
+  /// No description provided for @orderListLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải…'**
+  String get orderListLoading;
+
+  /// No description provided for @orderListLoadError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tải được đơn: {error}'**
+  String orderListLoadError(String error);
+
+  /// No description provided for @orderListOrderUnit.
+  ///
+  /// In vi, this message translates to:
+  /// **'đơn hàng'**
+  String get orderListOrderUnit;
+
+  /// No description provided for @orderListPaymentFilterChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'TT: {status}'**
+  String orderListPaymentFilterChip(String status);
+
+  /// No description provided for @orderListChannelFilterChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kênh: {channel}'**
+  String orderListChannelFilterChip(String channel);
+
+  /// No description provided for @orderListFromDateChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ {date}'**
+  String orderListFromDateChip(String date);
+
+  /// No description provided for @orderListToDateChip.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến {date}'**
+  String orderListToDateChip(String date);
+
+  /// No description provided for @orderListClearFilters.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa lọc'**
+  String get orderListClearFilters;
+
+  /// No description provided for @orderListFilterTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bộ lọc'**
+  String get orderListFilterTitle;
+
+  /// No description provided for @orderListFilterApply.
+  ///
+  /// In vi, this message translates to:
+  /// **'Áp dụng'**
+  String get orderListFilterApply;
+
+  /// No description provided for @orderListFilterReset.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại'**
+  String get orderListFilterReset;
+
+  /// No description provided for @orderListFilterPaymentStatus.
+  ///
+  /// In vi, this message translates to:
+  /// **'Trạng thái thanh toán'**
+  String get orderListFilterPaymentStatus;
+
+  /// No description provided for @orderListFilterSaleChannel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kênh bán'**
+  String get orderListFilterSaleChannel;
+
+  /// No description provided for @orderListFilterFromDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Từ ngày'**
+  String get orderListFilterFromDate;
+
+  /// No description provided for @orderListFilterToDate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đến ngày'**
+  String get orderListFilterToDate;
+
+  /// No description provided for @orderStatusDraft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nháp'**
+  String get orderStatusDraft;
+
+  /// No description provided for @orderStatusPending.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chờ xử lý'**
+  String get orderStatusPending;
+
+  /// No description provided for @orderStatusCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hoàn tất'**
+  String get orderStatusCompleted;
+
+  /// No description provided for @orderStatusCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy'**
+  String get orderStatusCancelled;
+
+  /// No description provided for @orderStatusAll.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tất cả'**
+  String get orderStatusAll;
+
+  /// No description provided for @orderPaymentStatusUnpaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa thanh toán'**
+  String get orderPaymentStatusUnpaid;
+
+  /// No description provided for @orderPaymentStatusPartial.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán một phần'**
+  String get orderPaymentStatusPartial;
+
+  /// No description provided for @orderPaymentStatusPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán'**
+  String get orderPaymentStatusPaid;
+
+  /// No description provided for @orderPaymentMethodCash.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền mặt'**
+  String get orderPaymentMethodCash;
+
+  /// No description provided for @orderPaymentMethodBankTransfer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chuyển khoản'**
+  String get orderPaymentMethodBankTransfer;
+
+  /// No description provided for @orderPaymentMethodCard.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thẻ'**
+  String get orderPaymentMethodCard;
+
+  /// No description provided for @orderPaymentMethodOther.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khác'**
+  String get orderPaymentMethodOther;
+
+  /// No description provided for @orderSaleChannelShop.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa hàng'**
+  String get orderSaleChannelShop;
+
+  /// No description provided for @orderSaleChannelEcommerce.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thương mại điện tử'**
+  String get orderSaleChannelEcommerce;
+
+  /// No description provided for @orderWalkIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách lẻ'**
+  String get orderWalkIn;
+
+  /// No description provided for @orderNoCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không có khách hàng'**
+  String get orderNoCustomer;
+
+  /// No description provided for @orderItemsCount.
+  ///
+  /// In vi, this message translates to:
+  /// **'{count} món'**
+  String orderItemsCount(int count);
+
+  /// No description provided for @orderDetailTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi tiết đơn'**
+  String get orderDetailTitle;
+
+  /// No description provided for @orderDetailNotFound.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không tìm thấy đơn hàng'**
+  String get orderDetailNotFound;
+
+  /// No description provided for @orderDetailSubtotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạm tính'**
+  String get orderDetailSubtotal;
+
+  /// No description provided for @orderDetailDiscount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm giá'**
+  String get orderDetailDiscount;
+
+  /// No description provided for @orderDetailTax.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế'**
+  String get orderDetailTax;
+
+  /// No description provided for @orderDetailTotal.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng cộng'**
+  String get orderDetailTotal;
+
+  /// No description provided for @orderDetailPaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã trả'**
+  String get orderDetailPaid;
+
+  /// No description provided for @orderDetailChange.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiền thừa'**
+  String get orderDetailChange;
+
+  /// No description provided for @orderDetailCustomer.
+  ///
+  /// In vi, this message translates to:
+  /// **'Khách hàng'**
+  String get orderDetailCustomer;
+
+  /// No description provided for @orderDetailNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú'**
+  String get orderDetailNote;
+
+  /// No description provided for @orderDetailItems.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sản phẩm'**
+  String get orderDetailItems;
+
+  /// No description provided for @orderDetailPayments.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán'**
+  String get orderDetailPayments;
+
+  /// No description provided for @orderDetailAddPayment.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm thanh toán'**
+  String get orderDetailAddPayment;
+
+  /// No description provided for @orderDetailMarkCompleted.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu hoàn tất'**
+  String get orderDetailMarkCompleted;
+
+  /// No description provided for @orderDetailCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy đơn'**
+  String get orderDetailCancel;
+
+  /// No description provided for @orderDetailVoid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy bỏ (Void)'**
+  String get orderDetailVoid;
+
+  /// No description provided for @orderDetailCancelDialogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy đơn hàng?'**
+  String get orderDetailCancelDialogTitle;
+
+  /// No description provided for @orderDetailCancelReasonHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lý do hủy'**
+  String get orderDetailCancelReasonHint;
+
+  /// No description provided for @orderDetailVoidDialogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy bỏ đơn hàng?'**
+  String get orderDetailVoidDialogTitle;
+
+  /// No description provided for @orderDetailVoidDialogBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn đã hoàn tất sẽ được đánh dấu hủy bỏ. Không thể hoàn tác.'**
+  String get orderDetailVoidDialogBody;
+
+  /// No description provided for @orderDetailMarkCompletedDialogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đánh dấu hoàn tất?'**
+  String get orderDetailMarkCompletedDialogTitle;
+
+  /// No description provided for @orderDetailUpdated.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã cập nhật đơn hàng'**
+  String get orderDetailUpdated;
+
+  /// No description provided for @orderCreateTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn mới'**
+  String get orderCreateTitle;
+
+  /// No description provided for @orderCreateEmptyCta.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm sản phẩm'**
+  String get orderCreateEmptyCta;
+
+  /// No description provided for @orderCreateAddMore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm sản phẩm khác'**
+  String get orderCreateAddMore;
+
+  /// No description provided for @orderCreateClearCart.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xóa giỏ hàng'**
+  String get orderCreateClearCart;
+
+  /// No description provided for @orderCreateDiscardDialogTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ giỏ hàng?'**
+  String get orderCreateDiscardDialogTitle;
+
+  /// No description provided for @orderCreateDiscardDialogBody.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bạn sẽ mất các sản phẩm đang chọn.'**
+  String get orderCreateDiscardDialogBody;
+
+  /// No description provided for @orderCreateDiscardConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bỏ'**
+  String get orderCreateDiscardConfirm;
+
+  /// No description provided for @orderCreateKeepEditing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếp tục'**
+  String get orderCreateKeepEditing;
+
+  /// No description provided for @orderCreateCustomerName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên khách hàng'**
+  String get orderCreateCustomerName;
+
+  /// No description provided for @orderCreateCustomerPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số điện thoại'**
+  String get orderCreateCustomerPhone;
+
+  /// No description provided for @orderCreateNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú'**
+  String get orderCreateNote;
+
+  /// No description provided for @orderCreateOrderDiscount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm giá đơn'**
+  String get orderCreateOrderDiscount;
+
+  /// No description provided for @orderCreateManualTax.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thuế (%)'**
+  String get orderCreateManualTax;
+
+  /// No description provided for @orderCreateDiscountTypeNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không'**
+  String get orderCreateDiscountTypeNone;
+
+  /// No description provided for @orderCreateDiscountTypePercentage.
+  ///
+  /// In vi, this message translates to:
+  /// **'Phần trăm'**
+  String get orderCreateDiscountTypePercentage;
+
+  /// No description provided for @orderCreateDiscountTypeFixed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cố định'**
+  String get orderCreateDiscountTypeFixed;
+
+  /// No description provided for @orderCreateSaveDraft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Lưu nháp'**
+  String get orderCreateSaveDraft;
+
+  /// No description provided for @orderCreatePay.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán'**
+  String get orderCreatePay;
+
+  /// No description provided for @orderCreateSavedDraft.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã lưu đơn nháp'**
+  String get orderCreateSavedDraft;
+
+  /// No description provided for @orderCreatePaid.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã thanh toán'**
+  String get orderCreatePaid;
+
+  /// No description provided for @addLineSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm sản phẩm'**
+  String get addLineSheetTitle;
+
+  /// No description provided for @addLineSheetEditTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sửa sản phẩm'**
+  String get addLineSheetEditTitle;
+
+  /// No description provided for @addLineSheetSearchHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tìm sản phẩm'**
+  String get addLineSheetSearchHint;
+
+  /// No description provided for @addLineSheetEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập tên để tìm sản phẩm'**
+  String get addLineSheetEmpty;
+
+  /// No description provided for @addLineSheetVariantPick.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn phân loại'**
+  String get addLineSheetVariantPick;
+
+  /// No description provided for @addLineSheetQty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số lượng'**
+  String get addLineSheetQty;
+
+  /// No description provided for @addLineSheetUnitPrice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn giá'**
+  String get addLineSheetUnitPrice;
+
+  /// No description provided for @addLineSheetLineDiscount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm giá dòng'**
+  String get addLineSheetLineDiscount;
+
+  /// No description provided for @addLineSheetAdd.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thêm vào đơn'**
+  String get addLineSheetAdd;
+
+  /// No description provided for @addLineSheetUpdate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cập nhật'**
+  String get addLineSheetUpdate;
+
+  /// No description provided for @orderPaymentSheetTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thanh toán'**
+  String get orderPaymentSheetTitle;
+
+  /// No description provided for @orderPaymentSheetMethod.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hình thức'**
+  String get orderPaymentSheetMethod;
+
+  /// No description provided for @orderPaymentSheetAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền'**
+  String get orderPaymentSheetAmount;
+
+  /// No description provided for @orderPaymentSheetReference.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã tham chiếu'**
+  String get orderPaymentSheetReference;
+
+  /// No description provided for @orderPaymentSheetNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú'**
+  String get orderPaymentSheetNote;
+
+  /// No description provided for @orderPaymentSheetConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận'**
+  String get orderPaymentSheetConfirm;
+
+  /// No description provided for @commonRequiredBadge.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bắt buộc'**
+  String get commonRequiredBadge;
+
+  /// No description provided for @commonActions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tác vụ'**
+  String get commonActions;
+
+  /// No description provided for @commonName.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tên'**
+  String get commonName;
+
+  /// No description provided for @commonPhone.
+  ///
+  /// In vi, this message translates to:
+  /// **'SĐT'**
+  String get commonPhone;
+
+  /// No description provided for @commonStore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Cửa hàng'**
+  String get commonStore;
+
+  /// No description provided for @orderDetailSectionInfo.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thông tin đơn'**
+  String get orderDetailSectionInfo;
+
+  /// No description provided for @orderDetailFieldCreatedAt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo lúc'**
+  String get orderDetailFieldCreatedAt;
+
+  /// No description provided for @orderDetailFieldChannel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Kênh bán'**
+  String get orderDetailFieldChannel;
+
+  /// No description provided for @orderDetailSectionSummary.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tổng kết'**
+  String get orderDetailSectionSummary;
+
+  /// No description provided for @orderDetailPaymentsEmpty.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có thanh toán'**
+  String get orderDetailPaymentsEmpty;
+
+  /// No description provided for @orderCreateCartEmptyTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có sản phẩm trong giỏ'**
+  String get orderCreateCartEmptyTitle;
+
+  /// No description provided for @orderCreateCustomerNameHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: Anh Nam'**
+  String get orderCreateCustomerNameHint;
+
+  /// No description provided for @orderCreatePhoneHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'0xxxxxxxxx'**
+  String get orderCreatePhoneHint;
+
+  /// No description provided for @orderCreateNoteHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi chú thêm cho đơn hàng'**
+  String get orderCreateNoteHint;
+
+  /// No description provided for @orderCreateManualTaxHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'VD: 8'**
+  String get orderCreateManualTaxHint;
+
+  /// No description provided for @orderCreatePercentHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'0–100'**
+  String get orderCreatePercentHint;
 }
 
 class _AppLocalizationsDelegate

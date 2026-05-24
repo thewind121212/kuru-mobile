@@ -302,6 +302,170 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posComingSoon => 'POS coming soon';
 
   @override
+  String get posTitle => 'POS';
+
+  @override
+  String get posSubtitle => 'Start a sale from your phone.';
+
+  @override
+  String get posHeroMetric => 'Quick selling';
+
+  @override
+  String get posHeroMeta =>
+      'Create orders, receive payment, and record inventory from one flow.';
+
+  @override
+  String get posPrimaryAction => 'Create sale';
+
+  @override
+  String get posSectionStart => 'Start';
+
+  @override
+  String get posQuickOrder => 'Quick sale';
+
+  @override
+  String get posQuickOrderMeta => 'Create a new order from a cart';
+
+  @override
+  String get posScanBarcode => 'Scan barcode';
+
+  @override
+  String get posScanBarcodeMeta => 'Product scanning will connect to POS next';
+
+  @override
+  String get posScanComingSoon =>
+      'POS barcode scanning will be connected in the next step';
+
+  @override
+  String get posSectionManage => 'Manage';
+
+  @override
+  String get posViewOrders => 'View orders';
+
+  @override
+  String get posViewOrdersMeta => 'Open the orders you have created';
+
+  @override
+  String get posPayment => 'Payment';
+
+  @override
+  String get posSuccess => 'Done';
+
+  @override
+  String get posSearchLabel => 'Search by name';
+
+  @override
+  String get posSearchHint => 'Enter product name';
+
+  @override
+  String get posScanPrimary => 'Scan product';
+
+  @override
+  String get posBranchLabel => 'Branch';
+
+  @override
+  String get posBranchLoading => 'Loading branch';
+
+  @override
+  String get posBranchMissing => 'No selling branch found';
+
+  @override
+  String get posBranchRequired => 'Select a branch before charging';
+
+  @override
+  String get posBranchPickerTitle => 'Select selling branch';
+
+  @override
+  String get posScanHint => 'Point the camera at the product barcode';
+
+  @override
+  String get posBarcodeAdded => 'Product added from barcode';
+
+  @override
+  String get posEmptySearch => 'Tap Scan product below';
+
+  @override
+  String get posEmptySearchMeta =>
+      'Or enter a product name when scanning is not available.';
+
+  @override
+  String get posNoProducts => 'No matching products found';
+
+  @override
+  String get posCart => 'Cart';
+
+  @override
+  String get posCartHint => 'Add at least one product to take payment.';
+
+  @override
+  String get posEmptyCart => 'Cart is empty';
+
+  @override
+  String get posClearCart => 'Clear cart';
+
+  @override
+  String get posRemoveLine => 'Remove line';
+
+  @override
+  String get posAdjustLineTitle => 'Adjust line';
+
+  @override
+  String get posAdjustQty => 'Quantity';
+
+  @override
+  String get posAdjustUnitPrice => 'Sell price';
+
+  @override
+  String get posLineTotal => 'Line total';
+
+  @override
+  String get posSaveLine => 'Update';
+
+  @override
+  String get posViewProductDetail => 'View product detail';
+
+  @override
+  String get posTotal => 'Total';
+
+  @override
+  String get posCharge => 'Charge';
+
+  @override
+  String get posAmountReceived => 'Amount received';
+
+  @override
+  String get posChange => 'Change';
+
+  @override
+  String get posRemaining => 'Remaining';
+
+  @override
+  String get posConfirmPayment => 'Confirm payment';
+
+  @override
+  String get posPaymentNote =>
+      'The order will be created and paid immediately.';
+
+  @override
+  String get posPaymentReference => 'Transfer reference';
+
+  @override
+  String get posPaymentFailed => 'Could not create paid order';
+
+  @override
+  String get posSuccessTitle => 'Payment complete';
+
+  @override
+  String get posSuccessBody =>
+      'The sale order was created and the cart has been reset.';
+
+  @override
+  String get posNewSale => 'New sale';
+
+  @override
+  String get posViewOrder => 'View created order';
+
+  @override
   String get settingsPlaceholder => 'Settings coming soon';
 
   @override
@@ -612,4 +776,360 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get brandActionDelete => 'Delete';
+
+  @override
+  String get navOrders => 'Orders';
+
+  @override
+  String get orderListTitle => 'Orders';
+
+  @override
+  String get orderListSearchHint => 'Search by order # or customer';
+
+  @override
+  String get orderListEmptyAll => 'No orders yet';
+
+  @override
+  String get orderListEmptyFiltered => 'No orders match your filters';
+
+  @override
+  String get orderListEmptyCta => 'Create first order';
+
+  @override
+  String get orderListEmptyBody => 'Create your first order to get started.';
+
+  @override
+  String get orderListNewOrder => 'New order';
+
+  @override
+  String get orderListLoading => 'Loading…';
+
+  @override
+  String orderListLoadError(String error) {
+    return 'Could not load orders: $error';
+  }
+
+  @override
+  String get orderListOrderUnit => 'orders';
+
+  @override
+  String orderListPaymentFilterChip(String status) {
+    return 'Payment: $status';
+  }
+
+  @override
+  String orderListChannelFilterChip(String channel) {
+    return 'Channel: $channel';
+  }
+
+  @override
+  String orderListFromDateChip(String date) {
+    return 'From $date';
+  }
+
+  @override
+  String orderListToDateChip(String date) {
+    return 'To $date';
+  }
+
+  @override
+  String get orderListClearFilters => 'Clear filters';
+
+  @override
+  String get orderListFilterTitle => 'Filters';
+
+  @override
+  String get orderListFilterApply => 'Apply';
+
+  @override
+  String get orderListFilterReset => 'Reset';
+
+  @override
+  String get orderListFilterPaymentStatus => 'Payment status';
+
+  @override
+  String get orderListFilterSaleChannel => 'Sales channel';
+
+  @override
+  String get orderListFilterFromDate => 'From';
+
+  @override
+  String get orderListFilterToDate => 'To';
+
+  @override
+  String get orderStatusDraft => 'Draft';
+
+  @override
+  String get orderStatusPending => 'Pending';
+
+  @override
+  String get orderStatusCompleted => 'Completed';
+
+  @override
+  String get orderStatusCancelled => 'Cancelled';
+
+  @override
+  String get orderStatusAll => 'All';
+
+  @override
+  String get orderPaymentStatusUnpaid => 'Unpaid';
+
+  @override
+  String get orderPaymentStatusPartial => 'Partial';
+
+  @override
+  String get orderPaymentStatusPaid => 'Paid';
+
+  @override
+  String get orderPaymentMethodCash => 'Cash';
+
+  @override
+  String get orderPaymentMethodBankTransfer => 'Bank transfer';
+
+  @override
+  String get orderPaymentMethodCard => 'Card';
+
+  @override
+  String get orderPaymentMethodOther => 'Other';
+
+  @override
+  String get orderSaleChannelShop => 'Shop';
+
+  @override
+  String get orderSaleChannelEcommerce => 'E-commerce';
+
+  @override
+  String get orderWalkIn => 'Walk-in';
+
+  @override
+  String get orderNoCustomer => 'No customer';
+
+  @override
+  String orderItemsCount(int count) {
+    return '$count items';
+  }
+
+  @override
+  String get orderDetailTitle => 'Order details';
+
+  @override
+  String get orderDetailNotFound => 'Order not found';
+
+  @override
+  String get orderDetailSubtotal => 'Subtotal';
+
+  @override
+  String get orderDetailDiscount => 'Discount';
+
+  @override
+  String get orderDetailTax => 'Tax';
+
+  @override
+  String get orderDetailTotal => 'Total';
+
+  @override
+  String get orderDetailPaid => 'Paid';
+
+  @override
+  String get orderDetailChange => 'Change';
+
+  @override
+  String get orderDetailCustomer => 'Customer';
+
+  @override
+  String get orderDetailNote => 'Note';
+
+  @override
+  String get orderDetailItems => 'Items';
+
+  @override
+  String get orderDetailPayments => 'Payments';
+
+  @override
+  String get orderDetailAddPayment => 'Add payment';
+
+  @override
+  String get orderDetailMarkCompleted => 'Mark completed';
+
+  @override
+  String get orderDetailCancel => 'Cancel order';
+
+  @override
+  String get orderDetailVoid => 'Void';
+
+  @override
+  String get orderDetailCancelDialogTitle => 'Cancel order?';
+
+  @override
+  String get orderDetailCancelReasonHint => 'Reason';
+
+  @override
+  String get orderDetailVoidDialogTitle => 'Void this order?';
+
+  @override
+  String get orderDetailVoidDialogBody =>
+      'A completed order will be marked as voided. This cannot be undone.';
+
+  @override
+  String get orderDetailMarkCompletedDialogTitle => 'Mark as completed?';
+
+  @override
+  String get orderDetailUpdated => 'Order updated';
+
+  @override
+  String get orderCreateTitle => 'New order';
+
+  @override
+  String get orderCreateEmptyCta => 'Add product';
+
+  @override
+  String get orderCreateAddMore => 'Add another product';
+
+  @override
+  String get orderCreateClearCart => 'Clear cart';
+
+  @override
+  String get orderCreateDiscardDialogTitle => 'Discard cart?';
+
+  @override
+  String get orderCreateDiscardDialogBody =>
+      'You\'ll lose the items you\'ve added.';
+
+  @override
+  String get orderCreateDiscardConfirm => 'Discard';
+
+  @override
+  String get orderCreateKeepEditing => 'Keep editing';
+
+  @override
+  String get orderCreateCustomerName => 'Customer name';
+
+  @override
+  String get orderCreateCustomerPhone => 'Phone';
+
+  @override
+  String get orderCreateNote => 'Note';
+
+  @override
+  String get orderCreateOrderDiscount => 'Order discount';
+
+  @override
+  String get orderCreateManualTax => 'Tax (%)';
+
+  @override
+  String get orderCreateDiscountTypeNone => 'None';
+
+  @override
+  String get orderCreateDiscountTypePercentage => 'Percent';
+
+  @override
+  String get orderCreateDiscountTypeFixed => 'Fixed';
+
+  @override
+  String get orderCreateSaveDraft => 'Save as draft';
+
+  @override
+  String get orderCreatePay => 'Pay';
+
+  @override
+  String get orderCreateSavedDraft => 'Draft saved';
+
+  @override
+  String get orderCreatePaid => 'Payment received';
+
+  @override
+  String get addLineSheetTitle => 'Add product';
+
+  @override
+  String get addLineSheetEditTitle => 'Edit product';
+
+  @override
+  String get addLineSheetSearchHint => 'Search products';
+
+  @override
+  String get addLineSheetEmpty => 'Type to search products';
+
+  @override
+  String get addLineSheetVariantPick => 'Choose variant';
+
+  @override
+  String get addLineSheetQty => 'Quantity';
+
+  @override
+  String get addLineSheetUnitPrice => 'Unit price';
+
+  @override
+  String get addLineSheetLineDiscount => 'Line discount';
+
+  @override
+  String get addLineSheetAdd => 'Add to order';
+
+  @override
+  String get addLineSheetUpdate => 'Update';
+
+  @override
+  String get orderPaymentSheetTitle => 'Payment';
+
+  @override
+  String get orderPaymentSheetMethod => 'Method';
+
+  @override
+  String get orderPaymentSheetAmount => 'Amount';
+
+  @override
+  String get orderPaymentSheetReference => 'Reference';
+
+  @override
+  String get orderPaymentSheetNote => 'Note';
+
+  @override
+  String get orderPaymentSheetConfirm => 'Confirm';
+
+  @override
+  String get commonRequiredBadge => 'Required';
+
+  @override
+  String get commonActions => 'Actions';
+
+  @override
+  String get commonName => 'Name';
+
+  @override
+  String get commonPhone => 'Phone';
+
+  @override
+  String get commonStore => 'Store';
+
+  @override
+  String get orderDetailSectionInfo => 'Order info';
+
+  @override
+  String get orderDetailFieldCreatedAt => 'Created at';
+
+  @override
+  String get orderDetailFieldChannel => 'Sale channel';
+
+  @override
+  String get orderDetailSectionSummary => 'Summary';
+
+  @override
+  String get orderDetailPaymentsEmpty => 'No payments yet';
+
+  @override
+  String get orderCreateCartEmptyTitle => 'Cart is empty';
+
+  @override
+  String get orderCreateCustomerNameHint => 'e.g. Mr. Nam';
+
+  @override
+  String get orderCreatePhoneHint => '0xxxxxxxxx';
+
+  @override
+  String get orderCreateNoteHint => 'Add notes for this order';
+
+  @override
+  String get orderCreateManualTaxHint => 'e.g. 8';
+
+  @override
+  String get orderCreatePercentHint => '0–100';
 }
