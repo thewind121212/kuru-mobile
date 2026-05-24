@@ -21,6 +21,8 @@ class KCurrencyField extends StatelessWidget {
     required this.value,
     required this.onChanged,
     this.errorText,
+    this.saleReferenceValue,
+    this.salePercents = const <int>[],
     this.suffix = 'đ',
     super.key,
   });
@@ -29,6 +31,8 @@ class KCurrencyField extends StatelessWidget {
   final int? value;
   final ValueChanged<int?> onChanged;
   final String? errorText;
+  final int? saleReferenceValue;
+  final List<int> salePercents;
   final String suffix;
 
   static final _vnFormatter = NumberFormat('#,###', 'vi_VN');
@@ -47,6 +51,8 @@ class KCurrencyField extends StatelessWidget {
         label: label,
         suffix: suffix,
         initialValue: value ?? 0,
+        saleReferenceValue: saleReferenceValue,
+        salePercents: salePercents,
       ),
     );
     if (picked != null && picked != value) {
@@ -166,11 +172,15 @@ class _CurrencySheetBody extends StatefulWidget {
     required this.label,
     required this.suffix,
     required this.initialValue,
+    required this.saleReferenceValue,
+    required this.salePercents,
   });
 
   final String label;
   final String suffix;
   final int initialValue;
+  final int? saleReferenceValue;
+  final List<int> salePercents;
 
   @override
   State<_CurrencySheetBody> createState() => _CurrencySheetBodyState();
@@ -189,6 +199,10 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
   }
 
   int get _digitCount => _value == 0 ? 1 : _value.toString().length;
+  bool get _canReduce =>
+      widget.saleReferenceValue != null &&
+      widget.saleReferenceValue! > 0 &&
+      widget.salePercents.isNotEmpty;
 
   void _appendDigit(int digit) {
     if (_digitCount >= _maxDigits) return;
@@ -221,6 +235,18 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     });
   }
 
+  void _reduceBy(int percent) {
+    final reference = widget.saleReferenceValue;
+    if (reference == null || reference <= 0) return;
+    setState(() {
+      _value = _priceAfterReduction(reference, percent);
+    });
+  }
+
+  static int _priceAfterReduction(int basePrice, int percent) {
+    return (basePrice * (100 - percent) / 100).round();
+  }
+
   void _commit() {
     if (_value <= 0) return;
     Navigator.of(context).pop<int?>(_value);
@@ -237,6 +263,8 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     // Fill ~90% of the screen height so the pad sits comfortably above the
     // home indicator on iOS without the sheet feeling cramped.
     final sheetHeight = media.size.height * 0.9;
+    final isCompact = media.size.height < 700;
+    final heroHeight = isCompact ? 72.0 : 128.0;
     final canCommit = _value > 0;
     final canMultiply = _value > 0;
 
@@ -244,29 +272,38 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
       top: false,
       child: SizedBox(
         height: sheetHeight,
-        child: Column(
-          children: [
-            _buildTopBar(c),
-            Text(
-              widget.label,
-              style: TextStyle(
-                color: c.textMuted,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildTopBar(c),
+              Text(
+                widget.label,
+                style: TextStyle(
+                  color: c.textMuted,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(child: Center(child: _buildHero(c))),
-            _buildChips(c, canMultiply: canMultiply),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: _buildCommitButton(c, enabled: canCommit),
-            ),
-            const SizedBox(height: 12),
-            _buildPad(c),
-            const SizedBox(height: 8),
-          ],
+              const SizedBox(height: 8),
+              SizedBox(
+                height: heroHeight,
+                child: Center(child: _buildHero(c)),
+              ),
+              if (_canReduce) ...[
+                _buildSaleChips(c),
+                const SizedBox(height: 12),
+              ],
+              _buildChips(c, canMultiply: canMultiply),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: _buildCommitButton(c, enabled: canCommit),
+              ),
+              const SizedBox(height: 12),
+              _buildPad(c, keyHeight: isCompact ? 52 : 64),
+              const SizedBox(height: 8),
+            ],
+          ),
         ),
       ),
     );
@@ -311,7 +348,7 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
                 color: c.primary,
                 fontSize: 50,
                 fontWeight: FontWeight.w700,
-                letterSpacing: -1,
+                letterSpacing: 0,
               ),
             ),
           ),
@@ -326,6 +363,39 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildSaleChips(KuruColors c) {
+    final reference = widget.saleReferenceValue!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Giảm từ giá gốc ${_vnFormatter.format(reference)}${widget.suffix}',
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final percent in widget.salePercents)
+                _SaleChip(
+                  label: 'Giảm $percent%',
+                  selected: _value == _priceAfterReduction(reference, percent),
+                  onTap: () => _reduceBy(percent),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -376,10 +446,11 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     );
   }
 
-  Widget _buildPad(KuruColors c) {
+  Widget _buildPad(KuruColors c, {required double keyHeight}) {
     Widget digit(int d) => _PadKey(
       key: ValueKey('padKey-$d'),
       label: '$d',
+      height: keyHeight,
       onTap: () => _appendDigit(d),
     );
 
@@ -412,10 +483,18 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
             children: [
               Expanded(child: digit(0)),
               Expanded(
-                child: _PadKey(label: '000', onTap: _appendTripleZero),
+                child: _PadKey(
+                  label: '000',
+                  height: keyHeight,
+                  onTap: _appendTripleZero,
+                ),
               ),
               Expanded(
-                child: _PadKey(icon: TablerIcons.backspace, onTap: _backspace),
+                child: _PadKey(
+                  icon: TablerIcons.backspace,
+                  height: keyHeight,
+                  onTap: _backspace,
+                ),
               ),
             ],
           ),
@@ -425,16 +504,69 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
   }
 }
 
+class _SaleChip extends StatelessWidget {
+  const _SaleChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    final fg = selected ? c.danger : c.textSecondary;
+    final bg = selected ? c.dangerSoft : c.surfaceHover;
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(999),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          alignment: Alignment.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(TablerIcons.discount_2, size: 16, color: fg),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: fg,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Single tile on the number pad. Either a label (digit / "000") or an
 /// icon (backspace). Indigo on white, no border, ripple on tap.
 class _PadKey extends StatelessWidget {
-  const _PadKey({required this.onTap, super.key, this.label, this.icon})
-    : assert(
-        label != null || icon != null,
-        '_PadKey requires either label or icon',
-      );
+  const _PadKey({
+    required this.onTap,
+    required this.height,
+    super.key,
+    this.label,
+    this.icon,
+  }) : assert(
+         label != null || icon != null,
+         '_PadKey requires either label or icon',
+       );
 
   final VoidCallback onTap;
+  final double height;
   final String? label;
   final IconData? icon;
 
@@ -442,7 +574,7 @@ class _PadKey extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = kuruColors(context);
     return SizedBox(
-      height: 64,
+      height: height,
       child: Material(
         color: Colors.transparent,
         child: InkWell(

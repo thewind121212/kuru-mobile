@@ -18,7 +18,7 @@ class OrderCartTotals with _$OrderCartTotals {
   }) = _OrderCartTotals;
 }
 
-double _lineDiscountAmount(OrderLineItem item) {
+double computeLineDiscountAmount(OrderLineItem item) {
   final base = item.qty * item.unitPrice;
   if (item.discountType == null || item.discountValue == null) return 0;
   switch (item.discountType!) {
@@ -26,17 +26,25 @@ double _lineDiscountAmount(OrderLineItem item) {
       final pct = item.discountValue!.clamp(0, 100);
       return base * pct / 100;
     case DiscountType.fixed:
-      return math.min(item.discountValue!, base).clamp(0, base);
+      return math.min(item.discountValue!, base).clamp(0, base).toDouble();
   }
 }
 
-double _lineTotal(OrderLineItem item) {
+double computeLineTotal(OrderLineItem item) {
   final base = item.qty * item.unitPrice;
-  return math.max(0, base - _lineDiscountAmount(item));
+  return math.max(0, base - computeLineDiscountAmount(item));
+}
+
+double computeLineSaleUnitPrice(OrderLineItem item) {
+  if (item.qty <= 0) return math.max(0, item.unitPrice);
+  return computeLineTotal(item) / item.qty;
 }
 
 OrderCartTotals computeOrderCartTotals(OrderCartDraft draft) {
-  final subtotal = draft.items.fold<double>(0, (s, it) => s + _lineTotal(it));
+  final subtotal = draft.items.fold<double>(
+    0,
+    (s, it) => s + computeLineTotal(it),
+  );
 
   double orderDiscount = 0;
   if (draft.discountType != null && draft.discountValue != null) {

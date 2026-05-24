@@ -76,6 +76,23 @@ void main() {
       expect(t.total, 0);
     });
 
+    test(
+      'line fixed discount keeps base unit price and computes sale unit',
+      () {
+        final item = line(
+          qty: 2,
+          unitPrice: 100000,
+          discountType: DiscountType.fixed,
+          discountValue: 20000,
+        );
+
+        expect(item.unitPrice, 100000);
+        expect(computeLineDiscountAmount(item), 20000);
+        expect(computeLineSaleUnitPrice(item), 90000);
+        expect(computeLineTotal(item), 180000);
+      },
+    );
+
     test('order percentage discount applies after line discounts', () {
       final t = computeOrderCartTotals(
         OrderCartDraft(

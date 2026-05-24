@@ -18,6 +18,7 @@ import 'package:kuru_mobile/core/network/api_exception.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/core/network/json_optional.dart';
 import 'package:kuru_mobile/design/core/input/k_currency_field.dart';
+import 'package:kuru_mobile/design/core/input/k_sale_price_field.dart';
 import 'package:kuru_mobile/design/core/input/k_text_field.dart';
 import 'package:kuru_mobile/design/core/input/k_textarea.dart';
 import 'package:kuru_mobile/design/core/modal/k_action_sheet.dart';
@@ -1206,9 +1207,12 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                     icon: TablerIcons.coin,
                     required: true,
                     children: [
-                      KCurrencyField(
+                      KSalePriceField(
                         label: 'Giá bán',
                         value: _sellPrice,
+                        referenceValue: widget.initial == null
+                            ? null
+                            : _baselineSellPrice,
                         errorText: _priceError,
                         onChanged: (v) {
                           setState(() {

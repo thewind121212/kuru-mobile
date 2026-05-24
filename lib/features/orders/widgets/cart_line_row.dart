@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:kuru_mobile/features/orders/models/order_cart_totals.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 
 class CartLineRow extends StatelessWidget {
@@ -23,11 +24,13 @@ class CartLineRow extends StatelessWidget {
       symbol: '₫',
       decimalDigits: 0,
     );
-    final lineTotal = item.qty * item.unitPrice;
+    final lineTotal = computeLineTotal(item);
+    final saleUnitPrice = computeLineSaleUnitPrice(item);
+    final hasDiscount = computeLineDiscountAmount(item) > 0;
     final qtyStr = item.qty.toStringAsFixed(
       item.qty.truncateToDouble() == item.qty ? 0 : 2,
     );
-    final unitFmt = money.format(item.unitPrice);
+    final unitFmt = money.format(hasDiscount ? saleUnitPrice : item.unitPrice);
     final totalFmt = money.format(lineTotal);
     final lineSummary = '$qtyStr × $unitFmt = $totalFmt';
     return Dismissible(
