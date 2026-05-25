@@ -416,6 +416,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posAdjustUnitPrice => 'Sell price';
 
   @override
+  String get posBaseUnitPrice => 'Original price';
+
+  @override
+  String get posUnitReduction => 'Reduction';
+
+  @override
+  String get posReductionAmount => 'Reduction amount';
+
+  @override
+  String get posNoReduction => 'No reduction';
+
+  @override
+  String get posReductionPrompt => 'Tap to reduce';
+
+  @override
+  String get posResetReduction => 'Reset';
+
+  @override
   String get posLineTotal => 'Line total';
 
   @override

@@ -412,6 +412,24 @@ class AppLocalizationsVi extends AppLocalizations {
   String get posAdjustUnitPrice => 'Giá bán';
 
   @override
+  String get posBaseUnitPrice => 'Giá gốc';
+
+  @override
+  String get posUnitReduction => 'Giảm giá';
+
+  @override
+  String get posReductionAmount => 'Số tiền giảm';
+
+  @override
+  String get posNoReduction => 'Không giảm';
+
+  @override
+  String get posReductionPrompt => 'Bấm để giảm';
+
+  @override
+  String get posResetReduction => 'Đặt lại';
+
+  @override
   String get posLineTotal => 'Thành tiền';
 
   @override

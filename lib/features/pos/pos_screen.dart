@@ -14,7 +14,7 @@ import 'package:kuru_mobile/core/env/env.dart';
 import 'package:kuru_mobile/core/feedback/k_notify.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
-import 'package:kuru_mobile/design/core/input/k_sale_price_field.dart';
+import 'package:kuru_mobile/design/core/input/k_currency_field.dart';
 import 'package:kuru_mobile/design/core/scanner/k_barcode_scanner_sheet.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
@@ -1188,13 +1188,13 @@ class _CartLineSheet extends StatefulWidget {
 
 class _CartLineSheetState extends State<_CartLineSheet> {
   late final TextEditingController _qty;
-  late int? _salePrice;
+  late int _unitReduction;
 
   @override
   void initState() {
     super.initState();
     _qty = TextEditingController(text: _formatNumberInput(widget.item.qty));
-    _salePrice = computeLineSaleUnitPrice(widget.item).round();
+    _unitReduction = _initialUnitReduction();
     _qty.addListener(_refresh);
   }
 
@@ -1216,21 +1216,23 @@ class _CartLineSheetState extends State<_CartLineSheet> {
     return value;
   }
 
-  double? get _parsedSalePrice {
-    final value = _salePrice?.toDouble();
-    if (value == null || value < 0) return null;
-    return value;
+  int get _baseUnitPrice => math.max(0, widget.item.unitPrice.round());
+
+  int get _saleUnitPrice => math.max(0, _baseUnitPrice - _unitReduction);
+
+  int _initialUnitReduction() {
+    if (widget.item.qty <= 0) return 0;
+    final discount = computeLineDiscountAmount(widget.item);
+    return _clampReduction((discount / widget.item.qty).round());
   }
 
-  bool get _isSalePriceTooHigh {
-    final value = _parsedSalePrice;
-    return value != null && value > widget.item.unitPrice;
+  int _clampReduction(int value) {
+    return math.min(_baseUnitPrice, math.max(0, value));
   }
 
-  bool get _canSave =>
-      _parsedQty != null && _parsedSalePrice != null && !_isSalePriceTooHigh;
+  bool get _canSave => _parsedQty != null;
 
-  double get _lineTotal => (_parsedQty ?? 0) * (_parsedSalePrice ?? 0);
+  double get _lineTotal => (_parsedQty ?? 0) * _saleUnitPrice;
 
   void _stepQty(double delta) {
     final current = _parsedQty ?? widget.item.qty;
@@ -1240,12 +1242,8 @@ class _CartLineSheetState extends State<_CartLineSheet> {
 
   void _save() {
     final qty = _parsedQty;
-    final salePrice = _parsedSalePrice;
-    if (qty == null || salePrice == null || _isSalePriceTooHigh) return;
-    final discount = math.max<double>(
-      0,
-      (widget.item.unitPrice - salePrice) * qty,
-    );
+    if (qty == null) return;
+    final discount = _unitReduction * qty;
     widget.onSave(
       widget.item.copyWith(
         qty: qty,
@@ -1390,12 +1388,13 @@ class _CartLineSheetState extends State<_CartLineSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              KSalePriceField(
-                label: l.posAdjustUnitPrice,
-                value: _salePrice,
-                referenceValue: widget.item.unitPrice.round(),
-                errorText: _isSalePriceTooHigh ? 'Không cao hơn giá gốc' : null,
-                onChanged: (value) => setState(() => _salePrice = value),
+              _LineReductionEditor(
+                baseUnitPrice: _baseUnitPrice,
+                unitReduction: _unitReduction,
+                format: widget.format,
+                onChanged: (value) {
+                  setState(() => _unitReduction = _clampReduction(value));
+                },
               ),
               const SizedBox(height: 12),
               _LineTotalBand(
@@ -1467,6 +1466,113 @@ class _SheetStepButton extends StatelessWidget {
         fixedSize: const Size.square(52),
         padding: EdgeInsets.zero,
       ),
+    );
+  }
+}
+
+class _LineReductionEditor extends StatelessWidget {
+  const _LineReductionEditor({
+    required this.baseUnitPrice,
+    required this.unitReduction,
+    required this.format,
+    required this.onChanged,
+  });
+
+  final int baseUnitPrice;
+  final int unitReduction;
+  final String Function(double amount) format;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.surfaceElev,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.borderSoft),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _PriceFactRow(
+            label: l.posBaseUnitPrice,
+            value: format(baseUnitPrice.toDouble()),
+            icon: TablerIcons.lock,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 0.5, color: c.borderSoft),
+          ),
+          Text(
+            l.posUnitReduction,
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          KCurrencyField(
+            label: l.posReductionAmount,
+            value: unitReduction,
+            allowZero: true,
+            shrinkWrapSheet: true,
+            previewBaseValue: baseUnitPrice,
+            previewZeroText: l.posReductionPrompt,
+            reductionReferenceValue: baseUnitPrice,
+            reductionPercents: const [1, 5, 10],
+            hideChevron: true,
+            hideMultipliers: true,
+            resetText: l.posResetReduction,
+            onReset: () => onChanged(0),
+            onChanged: (value) => onChanged(value ?? 0),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PriceFactRow extends StatelessWidget {
+  const _PriceFactRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Row(
+      children: [
+        Icon(icon, color: c.textPrimary, size: 17),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
     );
   }
 }

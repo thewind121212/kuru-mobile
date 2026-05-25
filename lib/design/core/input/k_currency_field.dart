@@ -23,7 +23,18 @@ class KCurrencyField extends StatelessWidget {
     this.errorText,
     this.saleReferenceValue,
     this.salePercents = const <int>[],
+    this.reductionReferenceValue,
+    this.reductionPercents = const <int>[],
     this.suffix = 'đ',
+    this.allowZero = false,
+    this.shrinkWrapSheet = false,
+    this.previewBaseValue,
+    this.previewZeroText,
+    this.hideChevron = false,
+    this.hideMultipliers = false,
+    this.showPreviewInSheet = true,
+    this.resetText,
+    this.onReset,
     super.key,
   });
 
@@ -33,7 +44,18 @@ class KCurrencyField extends StatelessWidget {
   final String? errorText;
   final int? saleReferenceValue;
   final List<int> salePercents;
+  final int? reductionReferenceValue;
+  final List<int> reductionPercents;
   final String suffix;
+  final bool allowZero;
+  final bool shrinkWrapSheet;
+  final int? previewBaseValue;
+  final String? previewZeroText;
+  final bool hideChevron;
+  final bool hideMultipliers;
+  final bool showPreviewInSheet;
+  final String? resetText;
+  final VoidCallback? onReset;
 
   static final _vnFormatter = NumberFormat('#,###', 'vi_VN');
 
@@ -42,7 +64,7 @@ class KCurrencyField extends StatelessWidget {
     final picked = await showModalBottomSheet<int?>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: c.pageBg,
+      backgroundColor: c.surfaceElev,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
@@ -53,6 +75,14 @@ class KCurrencyField extends StatelessWidget {
         initialValue: value ?? 0,
         saleReferenceValue: saleReferenceValue,
         salePercents: salePercents,
+        reductionReferenceValue: reductionReferenceValue,
+        reductionPercents: reductionPercents,
+        allowZero: allowZero,
+        shrinkWrap: shrinkWrapSheet,
+        previewBaseValue: previewBaseValue,
+        previewZeroText: previewZeroText,
+        hideMultipliers: hideMultipliers,
+        showPreview: showPreviewInSheet,
       ),
     );
     if (picked != null && picked != value) {
@@ -65,10 +95,17 @@ class KCurrencyField extends StatelessWidget {
     final c = kuruColors(context);
     final hasError = errorText != null;
     final borderWidth = hasError ? 1.5 : 1.0;
-    final showPlaceholder = value == null;
+    final showPreview = previewBaseValue != null;
+    final showPlaceholder = value == null && !showPreview;
     final shownText = showPlaceholder
         ? 'Nhập số tiền'
         : _vnFormatter.format(value);
+    final previewBase = previewBaseValue;
+    final previewReduction = value ?? 0;
+    final previewResult = previewBase == null
+        ? null
+        : _previewResult(previewBase, previewReduction);
+    final showReset = showPreview && previewReduction > 0 && onReset != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,14 +126,14 @@ class KCurrencyField extends StatelessWidget {
                   width: borderWidth,
                 ),
               ),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
                           label,
                           style: TextStyle(
                             color: hasError ? c.danger : c.textMuted,
@@ -105,38 +142,87 @@ class KCurrencyField extends StatelessWidget {
                             letterSpacing: 0.5,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.baseline,
-                          textBaseline: TextBaseline.alphabetic,
-                          children: [
-                            Text(
-                              shownText,
-                              style: TextStyle(
-                                color: showPlaceholder
-                                    ? c.textMuted
-                                    : c.textPrimary,
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            if (!showPlaceholder) ...[
-                              const SizedBox(width: 4),
-                              Text(
-                                suffix,
-                                style: TextStyle(
-                                  color: c.textMuted,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ],
-                          ],
+                      ),
+                      if (showPreview && previewReduction > 0)
+                        Text(
+                          _previewPercentText(
+                                previewBase ?? 0,
+                                previewReduction,
+                              ) ??
+                              '',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: c.success,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                          ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
-                  Icon(TablerIcons.chevron_down, size: 18, color: c.textMuted),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: previewBase != null && previewResult != null
+                            ? _CurrencyPreviewRow(
+                                baseValue: _vnFormatter.format(previewBase),
+                                resultValue: previewReduction == 0
+                                    ? (previewZeroText ?? '0')
+                                    : _vnFormatter.format(previewResult),
+                                hasReduction: previewReduction > 0,
+                                suffix: suffix,
+                              )
+                            : Row(
+                                crossAxisAlignment: CrossAxisAlignment.baseline,
+                                textBaseline: TextBaseline.alphabetic,
+                                children: [
+                                  Text(
+                                    shownText,
+                                    style: TextStyle(
+                                      color: showPlaceholder
+                                          ? c.textMuted
+                                          : c.textPrimary,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  if (!showPlaceholder) ...[
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      suffix,
+                                      style: TextStyle(
+                                        color: c.textMuted,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                      ),
+                      if (showReset) ...[
+                        const SizedBox(width: 8),
+                        IconButton(
+                          onPressed: onReset,
+                          tooltip: resetText ?? 'Reset',
+                          icon: const Icon(TablerIcons.restore, size: 18),
+                          style: IconButton.styleFrom(
+                            foregroundColor: c.textMuted,
+                            minimumSize: const Size.square(34),
+                            fixedSize: const Size.square(34),
+                            padding: EdgeInsets.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                        ),
+                      ] else if (!hideChevron)
+                        Icon(
+                          TablerIcons.chevron_down,
+                          size: 18,
+                          color: c.textMuted,
+                        ),
+                    ],
+                  ),
                 ],
               ),
             ),
@@ -162,6 +248,126 @@ class KCurrencyField extends StatelessWidget {
       ],
     );
   }
+
+  static int _previewResult(int base, int reduction) {
+    final result = base - reduction;
+    if (result < 0) return 0;
+    if (result > base) return base;
+    return result;
+  }
+
+  static String? _previewPercentText(int base, int reduction) {
+    if (base <= 0 || reduction <= 0) return null;
+    final raw = reduction / base * 100;
+    final capped = raw > 100 ? 100.0 : raw;
+    if (capped < 1) return 'Giảm <1%';
+    final value = capped.round();
+    return 'Giảm $value%';
+  }
+}
+
+class _CurrencyPreviewRow extends StatelessWidget {
+  const _CurrencyPreviewRow({
+    required this.baseValue,
+    required this.resultValue,
+    required this.hasReduction,
+    required this.suffix,
+  });
+
+  final String baseValue;
+  final String resultValue;
+  final bool hasReduction;
+  final String suffix;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _CurrencyPreviewCell(
+                value: '$baseValue$suffix',
+                color: c.textMuted,
+                decoration: hasReduction ? TextDecoration.lineThrough : null,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Icon(
+                TablerIcons.arrow_right,
+                color: c.textMuted,
+                size: 15,
+              ),
+            ),
+            Expanded(
+              child: _CurrencyPreviewCell(
+                value: hasReduction ? '$resultValue$suffix' : resultValue,
+                color: hasReduction ? c.success : c.accent700,
+                alignment: hasReduction
+                    ? Alignment.centerRight
+                    : Alignment.center,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _CurrencyPreviewCell extends StatelessWidget {
+  const _CurrencyPreviewCell({
+    required this.value,
+    required this.color,
+    this.alignment = Alignment.centerLeft,
+    this.decoration,
+  });
+
+  final String value;
+  final Color color;
+  final Alignment alignment;
+  final TextDecoration? decoration;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      height: 38,
+      alignment: alignment,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: c.pageBg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: c.borderSoft),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: alignment == Alignment.centerRight
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        children: [
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: alignment == Alignment.centerRight
+                ? TextAlign.right
+                : TextAlign.left,
+            style: TextStyle(
+              color: color,
+              fontSize: 13,
+              fontWeight: FontWeight.w900,
+              decoration: decoration,
+              decorationColor: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 /// Stateful bottom-sheet body: holds the working int and renders the hero
@@ -174,6 +380,14 @@ class _CurrencySheetBody extends StatefulWidget {
     required this.initialValue,
     required this.saleReferenceValue,
     required this.salePercents,
+    required this.reductionReferenceValue,
+    required this.reductionPercents,
+    required this.allowZero,
+    required this.shrinkWrap,
+    required this.previewBaseValue,
+    required this.previewZeroText,
+    required this.hideMultipliers,
+    required this.showPreview,
   });
 
   final String label;
@@ -181,6 +395,14 @@ class _CurrencySheetBody extends StatefulWidget {
   final int initialValue;
   final int? saleReferenceValue;
   final List<int> salePercents;
+  final int? reductionReferenceValue;
+  final List<int> reductionPercents;
+  final bool allowZero;
+  final bool shrinkWrap;
+  final int? previewBaseValue;
+  final String? previewZeroText;
+  final bool hideMultipliers;
+  final bool showPreview;
 
   @override
   State<_CurrencySheetBody> createState() => _CurrencySheetBodyState();
@@ -199,10 +421,15 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
   }
 
   int get _digitCount => _value == 0 ? 1 : _value.toString().length;
+  bool get _usesReductionPercents =>
+      widget.reductionReferenceValue != null &&
+      widget.reductionReferenceValue! > 0 &&
+      widget.reductionPercents.isNotEmpty;
   bool get _canReduce =>
-      widget.saleReferenceValue != null &&
-      widget.saleReferenceValue! > 0 &&
-      widget.salePercents.isNotEmpty;
+      _usesReductionPercents ||
+      (widget.saleReferenceValue != null &&
+          widget.saleReferenceValue! > 0 &&
+          widget.salePercents.isNotEmpty);
 
   void _appendDigit(int digit) {
     if (_digitCount >= _maxDigits) return;
@@ -236,6 +463,13 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
   }
 
   void _reduceBy(int percent) {
+    if (_usesReductionPercents) {
+      final reference = widget.reductionReferenceValue!;
+      setState(() {
+        _value = _reductionAmountForPercent(reference, percent);
+      });
+      return;
+    }
     final reference = widget.saleReferenceValue;
     if (reference == null || reference <= 0) return;
     setState(() {
@@ -247,8 +481,12 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     return (basePrice * (100 - percent) / 100).round();
   }
 
+  static int _reductionAmountForPercent(int basePrice, int percent) {
+    return (basePrice * percent / 100).round();
+  }
+
   void _commit() {
-    if (_value <= 0) return;
+    if (!widget.allowZero && _value <= 0) return;
     Navigator.of(context).pop<int?>(_value);
   }
 
@@ -262,50 +500,58 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     final media = MediaQuery.of(context);
     // Fill ~90% of the screen height so the pad sits comfortably above the
     // home indicator on iOS without the sheet feeling cramped.
-    final sheetHeight = media.size.height * 0.9;
     final isCompact = media.size.height < 700;
     final heroHeight = isCompact ? 72.0 : 128.0;
-    final canCommit = _value > 0;
+    final canCommit = widget.allowZero ? _value >= 0 : _value > 0;
     final canMultiply = _value > 0;
+    final content = SingleChildScrollView(
+      child: Column(
+        children: [
+          _buildTopBar(c),
+          Text(
+            widget.label,
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: heroHeight,
+            child: Center(child: _buildHero(c)),
+          ),
+          if (widget.showPreview && widget.previewBaseValue != null) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: _buildPreview(c),
+            ),
+            const SizedBox(height: 12),
+          ],
+          if (!widget.hideMultipliers) ...[
+            _buildChips(c, canMultiply: canMultiply),
+            const SizedBox(height: 12),
+          ],
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: _buildCommitButton(c, enabled: canCommit),
+          ),
+          const SizedBox(height: 12),
+          if (_canReduce) ...[_buildSaleChips(c), const SizedBox(height: 12)],
+          _buildPad(c, keyHeight: isCompact ? 52 : 64),
+          const SizedBox(height: 8),
+        ],
+      ),
+    );
 
     return SafeArea(
       top: false,
-      child: SizedBox(
-        height: sheetHeight,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              _buildTopBar(c),
-              Text(
-                widget.label,
-                style: TextStyle(
-                  color: c.textMuted,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: heroHeight,
-                child: Center(child: _buildHero(c)),
-              ),
-              if (_canReduce) ...[
-                _buildSaleChips(c),
-                const SizedBox(height: 12),
-              ],
-              _buildChips(c, canMultiply: canMultiply),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: _buildCommitButton(c, enabled: canCommit),
-              ),
-              const SizedBox(height: 12),
-              _buildPad(c, keyHeight: isCompact ? 52 : 64),
-              const SizedBox(height: 8),
-            ],
-          ),
-        ),
-      ),
+      child: widget.shrinkWrap
+          ? ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: media.size.height * 0.9),
+              child: content,
+            )
+          : SizedBox(height: media.size.height * 0.9, child: content),
     );
   }
 
@@ -366,8 +612,41 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     );
   }
 
+  Widget _buildPreview(KuruColors c) {
+    final base = widget.previewBaseValue!;
+    final result = _previewResult(base, _value);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: c.surfaceElev,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.borderSoft),
+      ),
+      child: _CurrencyPreviewRow(
+        baseValue: _vnFormatter.format(base),
+        resultValue: _value == 0
+            ? (widget.previewZeroText ?? '0')
+            : _vnFormatter.format(result),
+        hasReduction: _value > 0,
+        suffix: widget.suffix,
+      ),
+    );
+  }
+
+  static int _previewResult(int base, int reduction) {
+    final result = base - reduction;
+    if (result < 0) return 0;
+    if (result > base) return base;
+    return result;
+  }
+
   Widget _buildSaleChips(KuruColors c) {
-    final reference = widget.saleReferenceValue!;
+    final reference = _usesReductionPercents
+        ? widget.reductionReferenceValue!
+        : widget.saleReferenceValue!;
+    final percents = _usesReductionPercents
+        ? widget.reductionPercents
+        : widget.salePercents;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -382,16 +661,22 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
             ),
           ),
           const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
+          Row(
             children: [
-              for (final percent in widget.salePercents)
-                _SaleChip(
-                  label: 'Giảm $percent%',
-                  selected: _value == _priceAfterReduction(reference, percent),
-                  onTap: () => _reduceBy(percent),
+              for (var i = 0; i < percents.length; i++) ...[
+                if (i > 0) const SizedBox(width: 6),
+                Expanded(
+                  child: _SaleChip(
+                    label: 'Giảm ${percents[i]}%',
+                    selected:
+                        _value ==
+                        (_usesReductionPercents
+                            ? _reductionAmountForPercent(reference, percents[i])
+                            : _priceAfterReduction(reference, percents[i])),
+                    onTap: () => _reduceBy(percents[i]),
+                  ),
                 ),
+              ],
             ],
           ),
         ],
@@ -527,20 +812,24 @@ class _SaleChip extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(999),
         child: Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
           alignment: Alignment.center,
           child: Row(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(TablerIcons.discount_2, size: 16, color: fg),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  color: fg,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
+              Icon(TablerIcons.discount_2, size: 14, color: fg),
+              const SizedBox(width: 4),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: fg,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ),
             ],

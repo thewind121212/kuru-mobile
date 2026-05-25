@@ -8,7 +8,6 @@ import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
-import 'package:kuru_mobile/design/core/input/k_sale_price_field.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/orders/data/order_repository.dart';
@@ -173,8 +172,13 @@ void main() {
     expect(find.text('Chỉnh dòng hàng'), findsOneWidget);
     expect(find.text('Cập nhật'), findsOneWidget);
     expect(find.byTooltip('Xem chi tiết sản phẩm'), findsOneWidget);
-    expect(find.byType(KSalePriceField), findsOneWidget);
-    expect(find.text('Giảm 10%'), findsNothing);
+    expect(find.text('Giá gốc'), findsOneWidget);
+    expect(find.text('Giảm giá'), findsOneWidget);
+    expect(find.text('Số tiền giảm'), findsOneWidget);
+    expect(find.text('Bấm để giảm'), findsOneWidget);
+    expect(find.text('+5%'), findsNothing);
+    expect(find.text('+10%'), findsNothing);
+    expect(find.text('+1%'), findsNothing);
   });
 
   testWidgets('bank transfer payment renders generated VietQR details', (
