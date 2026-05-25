@@ -167,6 +167,44 @@ void main() {
 
       expect(heroText(tester), '40.000');
     });
+
+    testWidgets('reduction percent chips set amount from reference price', (
+      tester,
+    ) async {
+      final received = <int?>[];
+      await tester.pumpWidget(
+        wrap(
+          KCurrencyField(
+            label: 'Số tiền giảm',
+            value: 0,
+            allowZero: true,
+            previewBaseValue: 100000,
+            previewZeroText: 'Bấm để giảm',
+            reductionReferenceValue: 100000,
+            reductionPercents: const [1, 5, 10],
+            hideMultipliers: true,
+            onChanged: received.add,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.byType(KCurrencyField));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      await tester.tap(find.text('Giảm 5%'));
+      await tester.pump();
+      expect(heroText(tester), '-5.000');
+      expect(find.byKey(const ValueKey('currencyReductionPercent')), findsOne);
+      expect(find.text('Giảm 6%'), findsOneWidget);
+      expect(find.text('Giảm 10%'), findsOneWidget);
+      expect(find.text('Giảm 15%'), findsOneWidget);
+
+      await tester.tap(find.text('Lưu'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(received, equals([5000]));
+    });
   });
 
   group('KCurrencyField commit / cancel', () {

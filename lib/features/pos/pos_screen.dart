@@ -21,10 +21,13 @@ import 'package:kuru_mobile/features/catalog/products/models/product_summary.dar
 import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/orders/data/order_repository.dart';
+import 'package:kuru_mobile/features/orders/models/discount_type.dart';
+import 'package:kuru_mobile/features/orders/models/order_cart_totals.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment_method.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 import 'package:kuru_mobile/features/pos/data/pos_barcode_repository.dart';
+import 'package:kuru_mobile/features/pos/data/pos_payment_qr_repository.dart';
 import 'package:kuru_mobile/features/pos/providers/pos_branch_provider.dart';
 import 'package:lottie/lottie.dart';
 
@@ -61,6 +64,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   bool _barcodeLoading = false;
   String? _completedOrderId;
   String? _paymentRef;
+  PosPaymentQr? _paymentQr;
+  bool _paymentQrLoading = false;
+  String? _paymentQrError;
 
   @override
   void initState() {
@@ -152,6 +158,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       _method = OrderPaymentMethod.cash;
       _amount.text = NumberFormat('#').format(totals.total);
       _paymentRef = null;
+      _paymentQr = null;
+      _paymentQrLoading = false;
+      _paymentQrError = null;
       _view = _PosView.payment;
     });
   }
@@ -165,8 +174,45 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       }
       if (method == OrderPaymentMethod.bankTransfer) {
         _paymentRef ??= _generatePaymentReference();
+        _paymentQr = null;
+        _paymentQrError = null;
+      } else {
+        _paymentQr = null;
+        _paymentQrLoading = false;
+        _paymentQrError = null;
       }
     });
+    if (method == OrderPaymentMethod.bankTransfer) {
+      _loadPaymentQr(totals.total);
+    }
+  }
+
+  Future<void> _loadPaymentQr(double amount) async {
+    final orgId = ref.read(currentOrgIdProvider);
+    final refNumber = _paymentRef;
+    if (orgId == null || refNumber == null || refNumber.isEmpty) return;
+    setState(() {
+      _paymentQrLoading = true;
+      _paymentQrError = null;
+    });
+    final result = await ref
+        .read(posPaymentQrRepositoryProvider)
+        .generate(orgId: orgId, refNumber: refNumber, amount: amount);
+    if (!mounted || _paymentRef != refNumber) return;
+    switch (result) {
+      case ApiSuccess<PosPaymentQr>(:final data):
+        setState(() {
+          _paymentQr = data;
+          _paymentQrLoading = false;
+        });
+      case ApiFailure<PosPaymentQr>(:final err):
+        setState(() {
+          _paymentQr = null;
+          _paymentQrLoading = false;
+          _paymentQrError = err.message;
+        });
+        KNotify.warning(context, err.message);
+    }
   }
 
   double _paymentAmount() {
@@ -235,6 +281,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     setState(() {
       _completedOrderId = null;
       _paymentRef = null;
+      _paymentQr = null;
+      _paymentQrLoading = false;
+      _paymentQrError = null;
       _search.clear();
       _amount.clear();
       _view = _PosView.sale;
@@ -295,9 +344,14 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             method: _method,
             amount: _amount,
             paymentRef: _paymentRef,
+            paymentQr: _paymentQr,
+            paymentQrLoading: _paymentQrLoading,
+            paymentQrError: _paymentQrError,
             submitting: _submitting,
             onMethodChanged: _setMethod,
             onSubmit: _submitPayment,
+            onRetryQr: () =>
+                _loadPaymentQr(ref.read(orderCartTotalsProvider).total),
             onAmountChanged: () => setState(() {}),
             format: _format,
           ),
@@ -857,6 +911,7 @@ class _CartPanel extends ConsumerWidget {
     int index,
     OrderLineItem item,
   ) async {
+    final c = kuruColors(context);
     final detailPath = _productDetailPath(
       item.productId,
       variantId: item.variantId,
@@ -866,6 +921,7 @@ class _CartPanel extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      backgroundColor: c.surfaceElev,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.9,
       ),
@@ -929,6 +985,7 @@ class _CartPanel extends ConsumerWidget {
                 if (cart.items.isNotEmpty)
                   TextButton(
                     onPressed: notifier.clear,
+                    style: TextButton.styleFrom(foregroundColor: c.danger),
                     child: Text(l.posClearCart),
                   ),
               ],
@@ -983,7 +1040,11 @@ class _CartRow extends StatelessWidget {
     final qty = item.qty == item.qty.truncate()
         ? item.qty.toStringAsFixed(0)
         : item.qty.toStringAsFixed(2);
-    final lineTotal = item.qty * item.unitPrice;
+    final lineTotal = computeLineTotal(item);
+    final saleUnitPrice = computeLineSaleUnitPrice(item);
+    final lineDiscount = computeLineDiscountAmount(item);
+    final hasDiscount = lineDiscount > 0;
+    final shownUnitPrice = hasDiscount ? saleUnitPrice : item.unitPrice;
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1027,13 +1088,25 @@ class _CartRow extends StatelessWidget {
                     ],
                     const SizedBox(height: 3),
                     Text(
-                      '$qty x ${format(item.unitPrice)}',
+                      '$qty x ${format(shownUnitPrice)}',
                       style: TextStyle(
                         color: c.textMuted,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (hasDiscount) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        'Giá gốc ${format(item.unitPrice)}',
+                        style: TextStyle(
+                          color: c.textMuted,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.lineThrough,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -1049,6 +1122,17 @@ class _CartRow extends StatelessWidget {
                       fontWeight: FontWeight.w900,
                     ),
                   ),
+                  if (hasDiscount) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      '-${format(lineDiscount)}',
+                      style: TextStyle(
+                        color: c.danger,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 5),
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -1106,13 +1190,13 @@ class _CartLineSheet extends StatefulWidget {
 
 class _CartLineSheetState extends State<_CartLineSheet> {
   late final TextEditingController _qty;
-  late int? _price;
+  late int _unitReduction;
 
   @override
   void initState() {
     super.initState();
     _qty = TextEditingController(text: _formatNumberInput(widget.item.qty));
-    _price = widget.item.unitPrice.round();
+    _unitReduction = _initialUnitReduction();
     _qty.addListener(_refresh);
   }
 
@@ -1134,15 +1218,23 @@ class _CartLineSheetState extends State<_CartLineSheet> {
     return value;
   }
 
-  double? get _parsedPrice {
-    final value = _price?.toDouble();
-    if (value == null || value < 0) return null;
-    return value;
+  int get _baseUnitPrice => math.max(0, widget.item.unitPrice.round());
+
+  int get _saleUnitPrice => math.max(0, _baseUnitPrice - _unitReduction);
+
+  int _initialUnitReduction() {
+    if (widget.item.qty <= 0) return 0;
+    final discount = computeLineDiscountAmount(widget.item);
+    return _clampReduction((discount / widget.item.qty).round());
   }
 
-  bool get _canSave => _parsedQty != null && _parsedPrice != null;
+  int _clampReduction(int value) {
+    return math.min(_baseUnitPrice, math.max(0, value));
+  }
 
-  double get _lineTotal => (_parsedQty ?? 0) * (_parsedPrice ?? 0);
+  bool get _canSave => _parsedQty != null;
+
+  double get _lineTotal => (_parsedQty ?? 0) * _saleUnitPrice;
 
   void _stepQty(double delta) {
     final current = _parsedQty ?? widget.item.qty;
@@ -1152,9 +1244,16 @@ class _CartLineSheetState extends State<_CartLineSheet> {
 
   void _save() {
     final qty = _parsedQty;
-    final price = _parsedPrice;
-    if (qty == null || price == null) return;
-    widget.onSave(widget.item.copyWith(qty: qty, unitPrice: price));
+    if (qty == null) return;
+    final discount = _unitReduction * qty;
+    widget.onSave(
+      widget.item.copyWith(
+        qty: qty,
+        unitPrice: widget.item.unitPrice,
+        discountType: discount > 0 ? DiscountType.fixed : null,
+        discountValue: discount > 0 ? discount : null,
+      ),
+    );
   }
 
   @override
@@ -1198,7 +1297,7 @@ class _CartLineSheetState extends State<_CartLineSheet> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: c.pageBg,
+                  color: c.surfaceElev,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: c.borderSoft),
                 ),
@@ -1291,10 +1390,13 @@ class _CartLineSheetState extends State<_CartLineSheet> {
                 ],
               ),
               const SizedBox(height: 12),
-              KCurrencyField(
-                label: l.posAdjustUnitPrice,
-                value: _price,
-                onChanged: (value) => setState(() => _price = value),
+              _LineReductionEditor(
+                baseUnitPrice: _baseUnitPrice,
+                unitReduction: _unitReduction,
+                format: widget.format,
+                onChanged: (value) {
+                  setState(() => _unitReduction = _clampReduction(value));
+                },
               ),
               const SizedBox(height: 12),
               _LineTotalBand(
@@ -1366,6 +1468,113 @@ class _SheetStepButton extends StatelessWidget {
         fixedSize: const Size.square(52),
         padding: EdgeInsets.zero,
       ),
+    );
+  }
+}
+
+class _LineReductionEditor extends StatelessWidget {
+  const _LineReductionEditor({
+    required this.baseUnitPrice,
+    required this.unitReduction,
+    required this.format,
+    required this.onChanged,
+  });
+
+  final int baseUnitPrice;
+  final int unitReduction;
+  final String Function(double amount) format;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: c.surfaceElev,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.borderSoft),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _PriceFactRow(
+            label: l.posBaseUnitPrice,
+            value: format(baseUnitPrice.toDouble()),
+            icon: TablerIcons.lock,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Divider(height: 1, thickness: 0.5, color: c.borderSoft),
+          ),
+          Text(
+            l.posUnitReduction,
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          KCurrencyField(
+            label: l.posReductionAmount,
+            value: unitReduction,
+            allowZero: true,
+            shrinkWrapSheet: true,
+            previewBaseValue: baseUnitPrice,
+            previewZeroText: l.posReductionPrompt,
+            reductionReferenceValue: baseUnitPrice,
+            reductionPercents: const [1, 5, 10],
+            hideChevron: true,
+            hideMultipliers: true,
+            resetText: l.posResetReduction,
+            onReset: () => onChanged(0),
+            onChanged: (value) => onChanged(value ?? 0),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PriceFactRow extends StatelessWidget {
+  const _PriceFactRow({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Row(
+      children: [
+        Icon(icon, color: c.textPrimary, size: 17),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            color: c.textPrimary,
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1682,9 +1891,13 @@ class _PaymentView extends ConsumerWidget {
     required this.method,
     required this.amount,
     required this.paymentRef,
+    required this.paymentQr,
+    required this.paymentQrLoading,
+    required this.paymentQrError,
     required this.submitting,
     required this.onMethodChanged,
     required this.onSubmit,
+    required this.onRetryQr,
     required this.onAmountChanged,
     required this.format,
   });
@@ -1692,9 +1905,13 @@ class _PaymentView extends ConsumerWidget {
   final OrderPaymentMethod method;
   final TextEditingController amount;
   final String? paymentRef;
+  final PosPaymentQr? paymentQr;
+  final bool paymentQrLoading;
+  final String? paymentQrError;
   final bool submitting;
   final ValueChanged<OrderPaymentMethod> onMethodChanged;
   final VoidCallback onSubmit;
+  final VoidCallback onRetryQr;
   final VoidCallback onAmountChanged;
   final String Function(double amount) format;
 
@@ -1756,7 +1973,15 @@ class _PaymentView extends ConsumerWidget {
           ],
         ] else if (method == OrderPaymentMethod.bankTransfer &&
             paymentRef != null) ...[
-          _ReferenceBox(reference: paymentRef!),
+          _ReferenceBox(
+            reference: paymentRef!,
+            qr: paymentQr,
+            loading: paymentQrLoading,
+            error: paymentQrError,
+            amount: totals.total,
+            format: format,
+            onRetry: onRetryQr,
+          ),
         ],
         const SizedBox(height: 24),
         FilledButton.icon(
@@ -2070,9 +2295,23 @@ class _PaymentInfoRow extends StatelessWidget {
 }
 
 class _ReferenceBox extends StatelessWidget {
-  const _ReferenceBox({required this.reference});
+  const _ReferenceBox({
+    required this.reference,
+    required this.qr,
+    required this.loading,
+    required this.error,
+    required this.amount,
+    required this.format,
+    required this.onRetry,
+  });
 
   final String reference;
+  final PosPaymentQr? qr;
+  final bool loading;
+  final String? error;
+  final double amount;
+  final String Function(double amount) format;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -2085,32 +2324,155 @@ class _ReferenceBox extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: c.borderSoft),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(TablerIcons.qrcode, color: c.accent600),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          if (loading)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 28),
+              child: Column(
+                children: [
+                  CircularProgressIndicator(color: c.accent600),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Đang tạo VietQR...',
+                    style: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (qr != null && qr!.qrUrl.isNotEmpty)
+            Column(
               children: [
-                Text(
-                  l.posPaymentReference,
-                  style: TextStyle(
-                    color: c.textMuted,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: ColoredBox(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Image.network(
+                          qr!.qrUrl,
+                          key: const ValueKey('pos-vietqr-image'),
+                          width: 240,
+                          height: 240,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => SizedBox(
+                            width: 240,
+                            height: 240,
+                            child: Icon(
+                              TablerIcons.qrcode,
+                              color: c.textMuted,
+                              size: 52,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  reference,
-                  style: TextStyle(
-                    color: c.textPrimary,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
+                const SizedBox(height: 14),
+                _QrInfoRow(label: 'Ngân hàng', value: qr!.bankCode),
+                _QrInfoRow(label: 'Số tài khoản', value: qr!.accountNumber),
+                _QrInfoRow(label: 'Chủ tài khoản', value: qr!.accountName),
+                _QrInfoRow(label: 'Nội dung', value: qr!.memo),
+                _QrInfoRow(label: l.posTotal, value: format(amount)),
               ],
+            )
+          else
+            Row(
+              children: [
+                Icon(TablerIcons.qrcode, color: c.accent600),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    error ?? 'Không tạo được VietQR.',
+                    style: TextStyle(
+                      color: error == null ? c.textMuted : c.danger,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                TextButton(onPressed: onRetry, child: const Text('Thử lại')),
+              ],
+            ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Icon(TablerIcons.receipt, color: c.accent600, size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.posPaymentReference,
+                      style: TextStyle(
+                        color: c.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      reference,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QrInfoRow extends StatelessWidget {
+  const _QrInfoRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 104,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
             ),
           ),
         ],

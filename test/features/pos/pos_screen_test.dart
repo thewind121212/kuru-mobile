@@ -14,6 +14,7 @@ import 'package:kuru_mobile/features/orders/data/order_repository.dart';
 import 'package:kuru_mobile/features/orders/models/order_cart_draft.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
+import 'package:kuru_mobile/features/pos/data/pos_payment_qr_repository.dart';
 import 'package:kuru_mobile/features/pos/pos_screen.dart';
 import 'package:kuru_mobile/main.dart' show sharedPrefsProvider;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -171,6 +172,79 @@ void main() {
     expect(find.text('Chỉnh dòng hàng'), findsOneWidget);
     expect(find.text('Cập nhật'), findsOneWidget);
     expect(find.byTooltip('Xem chi tiết sản phẩm'), findsOneWidget);
+    expect(find.text('Giá gốc'), findsOneWidget);
+    expect(find.text('Giảm giá'), findsOneWidget);
+    expect(find.text('Số tiền giảm'), findsOneWidget);
+    expect(find.text('Bấm để giảm'), findsOneWidget);
+    expect(find.text('+5%'), findsNothing);
+    expect(find.text('+10%'), findsNothing);
+    expect(find.text('+1%'), findsNothing);
+  });
+
+  testWidgets('bank transfer payment renders generated VietQR details', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final prefs = await SharedPreferences.getInstance();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        currentOrgIdProvider.overrideWithValue('org_test'),
+        posPaymentQrRepositoryProvider.overrideWithValue(_FakeQrRepository()),
+        productWarehouseOptionsProvider.overrideWith((ref) async {
+          return const [
+            ProductWarehouseOption(
+              warehouseId: 'branch-1',
+              name: 'Cửa hàng chính',
+            ),
+          ];
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container
+        .read(orderCartProvider.notifier)
+        .addLine(
+          const OrderLineItem(
+            productId: 'p1',
+            productName: 'Cà phê sữa',
+            baseUnitCode: 'ly',
+            qty: 1,
+            unitPrice: 25000,
+          ),
+        );
+
+    final router = GoRouter(
+      initialLocation: '/pos',
+      routes: [GoRoute(path: '/pos', builder: (_, __) => const PosScreen())],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+          locale: const Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('Thu tiền'));
+    await tester.pump();
+    await tester.tap(find.text('Chuyển khoản'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byKey(const ValueKey('pos-vietqr-image')), findsOneWidget);
+    expect(find.text('VCB'), findsOneWidget);
+    expect(find.text('123456789'), findsOneWidget);
+    expect(find.text('KURUODH250524ABC123'), findsOneWidget);
   });
 }
 
@@ -191,5 +265,28 @@ class _FakeOrderRepository extends OrderRepository {
     expect(draft.items.single.productName, 'Cà phê sữa');
     expect(payment?.amount, 50000);
     return ApiResult.success('order_pos_1');
+  }
+}
+
+class _FakeQrRepository extends PosPaymentQrRepository {
+  _FakeQrRepository() : super(Dio());
+
+  @override
+  Future<ApiResult<PosPaymentQr>> generate({
+    required String orgId,
+    required String refNumber,
+    required double amount,
+  }) async {
+    expect(orgId, 'org_test');
+    expect(amount, 25000);
+    return ApiResult.success(
+      const PosPaymentQr(
+        qrUrl: 'https://example.com/vietqr.png',
+        memo: 'KURUODH250524ABC123',
+        bankCode: 'VCB',
+        accountNumber: '123456789',
+        accountName: 'Kuru Test',
+      ),
+    );
   }
 }

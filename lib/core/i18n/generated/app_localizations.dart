@@ -854,6 +854,42 @@ abstract class AppLocalizations {
   /// **'Giá bán'**
   String get posAdjustUnitPrice;
 
+  /// No description provided for @posBaseUnitPrice.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giá gốc'**
+  String get posBaseUnitPrice;
+
+  /// No description provided for @posUnitReduction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giảm giá'**
+  String get posUnitReduction;
+
+  /// No description provided for @posReductionAmount.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số tiền giảm'**
+  String get posReductionAmount;
+
+  /// No description provided for @posNoReduction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không giảm'**
+  String get posNoReduction;
+
+  /// No description provided for @posReductionPrompt.
+  ///
+  /// In vi, this message translates to:
+  /// **'Bấm để giảm'**
+  String get posReductionPrompt;
+
+  /// No description provided for @posResetReduction.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đặt lại'**
+  String get posResetReduction;
+
   /// No description provided for @posLineTotal.
   ///
   /// In vi, this message translates to:
