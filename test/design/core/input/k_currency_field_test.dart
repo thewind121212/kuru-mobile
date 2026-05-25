@@ -194,7 +194,7 @@ void main() {
 
       await tester.tap(find.text('Giảm 5%'));
       await tester.pump();
-      expect(heroText(tester), '5.000');
+      expect(heroText(tester), '-5.000');
 
       await tester.tap(find.text('Lưu'));
       await tester.pump();

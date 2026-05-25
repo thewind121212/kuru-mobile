@@ -106,6 +106,8 @@ class KCurrencyField extends StatelessWidget {
         ? null
         : _previewResult(previewBase, previewReduction);
     final showReset = showPreview && previewReduction > 0 && onReset != null;
+    final isReductionInput =
+        reductionReferenceValue != null && reductionReferenceValue! > 0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -145,15 +147,17 @@ class KCurrencyField extends StatelessWidget {
                       ),
                       if (showPreview && previewReduction > 0)
                         Text(
-                          _previewPercentText(
-                                previewBase ?? 0,
-                                previewReduction,
-                              ) ??
-                              '',
+                          isReductionInput
+                              ? '-${_vnFormatter.format(previewReduction)}$suffix'
+                              : (_previewPercentText(
+                                      previewBase ?? 0,
+                                      previewReduction,
+                                    ) ??
+                                    ''),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: c.success,
+                            color: isReductionInput ? c.danger : c.success,
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
                           ),
@@ -291,6 +295,7 @@ class _CurrencyPreviewRow extends StatelessWidget {
               child: _CurrencyPreviewCell(
                 value: '$baseValue$suffix',
                 color: c.textMuted,
+                alignment: Alignment.center,
                 decoration: hasReduction ? TextDecoration.lineThrough : null,
               ),
             ),
@@ -306,9 +311,7 @@ class _CurrencyPreviewRow extends StatelessWidget {
               child: _CurrencyPreviewCell(
                 value: hasReduction ? '$resultValue$suffix' : resultValue,
                 color: hasReduction ? c.success : c.accent700,
-                alignment: hasReduction
-                    ? Alignment.centerRight
-                    : Alignment.center,
+                alignment: Alignment.center,
               ),
             ),
           ],
@@ -345,17 +348,13 @@ class _CurrencyPreviewCell extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: alignment == Alignment.centerRight
-            ? CrossAxisAlignment.end
-            : CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            textAlign: alignment == Alignment.centerRight
-                ? TextAlign.right
-                : TextAlign.left,
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: color,
               fontSize: 13,
@@ -575,7 +574,13 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
   Widget _buildHero(KuruColors c) {
     final formatted = _vnFormatter.format(_value);
     // Show "0" explicitly when empty.
-    final display = _value == 0 ? '0' : formatted;
+    final isReduction = _usesReductionPercents && _value > 0;
+    final display = _value == 0
+        ? '0'
+        : isReduction
+        ? '-$formatted'
+        : formatted;
+    final heroColor = isReduction ? c.danger : c.primary;
     // Two separate Text widgets sharing the alphabetic baseline gives us
     // RichText-style superscript visuals AND a flat widget tree the test
     // harness can locate via find.text(...).
@@ -591,7 +596,7 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
               display,
               key: const ValueKey('currencyHero'),
               style: TextStyle(
-                color: c.primary,
+                color: heroColor,
                 fontSize: 50,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0,
@@ -603,7 +608,7 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
         Text(
           widget.suffix,
           style: TextStyle(
-            color: c.primary,
+            color: heroColor,
             fontSize: 24,
             fontWeight: FontWeight.w500,
           ),
