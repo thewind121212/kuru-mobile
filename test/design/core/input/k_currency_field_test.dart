@@ -195,6 +195,10 @@ void main() {
       await tester.tap(find.text('Giảm 5%'));
       await tester.pump();
       expect(heroText(tester), '-5.000');
+      expect(find.byKey(const ValueKey('currencyReductionPercent')), findsOne);
+      expect(find.text('Giảm 6%'), findsOneWidget);
+      expect(find.text('Giảm 10%'), findsOneWidget);
+      expect(find.text('Giảm 15%'), findsOneWidget);
 
       await tester.tap(find.text('Lưu'));
       await tester.pump();

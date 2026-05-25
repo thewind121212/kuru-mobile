@@ -108,6 +108,7 @@ class KCurrencyField extends StatelessWidget {
     final showReset = showPreview && previewReduction > 0 && onReset != null;
     final isReductionInput =
         reductionReferenceValue != null && reductionReferenceValue! > 0;
+    final reductionText = '-${_vnFormatter.format(previewReduction)}$suffix';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,7 +149,7 @@ class KCurrencyField extends StatelessWidget {
                       if (showPreview && previewReduction > 0)
                         Text(
                           isReductionInput
-                              ? '-${_vnFormatter.format(previewReduction)}$suffix'
+                              ? reductionText
                               : (_previewPercentText(
                                       previewBase ?? 0,
                                       previewReduction,
@@ -342,13 +343,12 @@ class _CurrencyPreviewCell extends StatelessWidget {
       alignment: alignment,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: c.pageBg,
+        color: c.surfaceElev,
         borderRadius: BorderRadius.circular(10),
         border: Border.all(color: c.borderSoft),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             value,
@@ -429,6 +429,21 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
       (widget.saleReferenceValue != null &&
           widget.saleReferenceValue! > 0 &&
           widget.salePercents.isNotEmpty);
+  double get _currentReductionPercent {
+    final reference = widget.reductionReferenceValue;
+    if (reference == null || reference <= 0 || _value <= 0) return 0;
+    final percent = _value / reference * 100;
+    return percent.clamp(0, 100).toDouble();
+  }
+
+  String _formatPercent(double percent) {
+    if (percent <= 0) return '0%';
+    final rounded = double.parse(percent.toStringAsFixed(1));
+    if (rounded == rounded.roundToDouble()) {
+      return '${rounded.toInt()}%';
+    }
+    return '${rounded.toStringAsFixed(1)}%';
+  }
 
   void _appendDigit(int digit) {
     if (_digitCount >= _maxDigits) return;
@@ -464,8 +479,11 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
   void _reduceBy(int percent) {
     if (_usesReductionPercents) {
       final reference = widget.reductionReferenceValue!;
+      final targetPercent = (_currentReductionPercent + percent)
+          .clamp(0, 100)
+          .toDouble();
       setState(() {
-        _value = _reductionAmountForPercent(reference, percent);
+        _value = _reductionAmountForPercent(reference, targetPercent);
       });
       return;
     }
@@ -480,7 +498,7 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     return (basePrice * (100 - percent) / 100).round();
   }
 
-  static int _reductionAmountForPercent(int basePrice, int percent) {
+  static int _reductionAmountForPercent(num basePrice, num percent) {
     return (basePrice * percent / 100).round();
   }
 
@@ -520,6 +538,10 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
             height: heroHeight,
             child: Center(child: _buildHero(c)),
           ),
+          if (_usesReductionPercents) ...[
+            const SizedBox(height: 4),
+            _buildCurrentReductionPercent(c),
+          ],
           if (widget.showPreview && widget.previewBaseValue != null) ...[
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -551,6 +573,19 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
               child: content,
             )
           : SizedBox(height: media.size.height * 0.9, child: content),
+    );
+  }
+
+  Widget _buildCurrentReductionPercent(KuruColors c) {
+    final percent = _formatPercent(_currentReductionPercent);
+    return Text(
+      'Giảm $percent',
+      key: const ValueKey('currencyReductionPercent'),
+      style: TextStyle(
+        color: _value > 0 ? c.danger : c.textMuted,
+        fontSize: 13,
+        fontWeight: FontWeight.w900,
+      ),
     );
   }
 
@@ -652,6 +687,13 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
     final percents = _usesReductionPercents
         ? widget.reductionPercents
         : widget.salePercents;
+    final currentPercent = _currentReductionPercent;
+    String chipLabel(int percent) {
+      if (!_usesReductionPercents) return 'Giảm $percent%';
+      final target = (currentPercent + percent).clamp(0, 100).toDouble();
+      return 'Giảm ${_formatPercent(target)}';
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -672,11 +714,16 @@ class _CurrencySheetBodyState extends State<_CurrencySheetBody> {
                 if (i > 0) const SizedBox(width: 6),
                 Expanded(
                   child: _SaleChip(
-                    label: 'Giảm ${percents[i]}%',
+                    label: chipLabel(percents[i]),
                     selected:
                         _value ==
                         (_usesReductionPercents
-                            ? _reductionAmountForPercent(reference, percents[i])
+                            ? _reductionAmountForPercent(
+                                reference,
+                                (currentPercent + percents[i])
+                                    .clamp(0, 100)
+                                    .toDouble(),
+                              )
                             : _priceAfterReduction(reference, percents[i])),
                     onTap: () => _reduceBy(percents[i]),
                   ),

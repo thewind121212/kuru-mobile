@@ -911,6 +911,7 @@ class _CartPanel extends ConsumerWidget {
     int index,
     OrderLineItem item,
   ) async {
+    final c = kuruColors(context);
     final detailPath = _productDetailPath(
       item.productId,
       variantId: item.variantId,
@@ -920,6 +921,7 @@ class _CartPanel extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       showDragHandle: true,
+      backgroundColor: c.surfaceElev,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.sizeOf(context).height * 0.9,
       ),
@@ -1295,7 +1297,7 @@ class _CartLineSheetState extends State<_CartLineSheet> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: c.pageBg,
+                  color: c.surfaceElev,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: c.borderSoft),
                 ),
