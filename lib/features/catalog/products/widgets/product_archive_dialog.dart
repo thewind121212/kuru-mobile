@@ -28,7 +28,7 @@ Future<bool?> showProductArchiveDialog(
     context: context,
     title: 'Ngừng kinh doanh sản phẩm?',
     subtitle:
-        'Sản phẩm sẽ bị ẩn khỏi bán hàng và danh mục. '
+        'Sản phẩm sẽ bị ẩn khỏi bán hàng và nhóm sản phẩm. '
         'Lịch sử nhập xuất kho và mua hàng được giữ nguyên.',
     confirmLabel: 'Ngừng kinh doanh',
     onConfirm: () async {

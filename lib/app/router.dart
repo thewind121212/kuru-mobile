@@ -13,7 +13,12 @@ import 'package:kuru_mobile/features/catalog/products/product_form_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/product_variant_detail_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/products_list_screen.dart';
 import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
+import 'package:kuru_mobile/features/expenses/expense_list_screen.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
+import 'package:kuru_mobile/features/imports/import_create_screen.dart';
+import 'package:kuru_mobile/features/imports/import_detail_screen.dart';
+import 'package:kuru_mobile/features/imports/import_list_screen.dart';
+import 'package:kuru_mobile/features/ledger/ledger_launcher_screen.dart';
 import 'package:kuru_mobile/features/login/login_screen.dart';
 import 'package:kuru_mobile/features/main_shell/main_shell.dart';
 import 'package:kuru_mobile/features/onboarding/onboarding_screen.dart';
@@ -102,6 +107,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, state) =>
             OrderDetailScreen(orderId: state.pathParameters['id']!),
       ),
+      GoRoute(
+        path: '/import/create',
+        builder: (_, __) => const ImportCreateScreen(),
+      ),
+      GoRoute(
+        path: '/import/:id',
+        builder: (_, state) =>
+            ImportDetailScreen(entryId: state.pathParameters['id']!),
+      ),
       GoRoute(path: '/pos', builder: (_, __) => const PosScreen()),
 
       // Top-level alias for opening a product detail from outside the catalog
@@ -109,6 +123,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       // `/catalog/products/<id>` from the orders branch causes a Navigator
       // key-reservation collision because the same path is already
       // registered under the catalog StatefulShellBranch.
+      GoRoute(
+        path: '/products/create',
+        builder: (_, __) => const ProductFormScreen(),
+      ),
       GoRoute(
         path: '/products/:id/variants/:variantId',
         pageBuilder: (_, state) {
@@ -122,6 +140,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+      GoRoute(
+        path: '/products/:id/edit',
+        builder: (_, state) =>
+            ProductFormScreen(initial: state.extra as ProductDetail?),
       ),
       GoRoute(
         path: '/products/:id',
@@ -138,7 +161,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-
       // Authenticated shell — bottom-nav with four branches.
       StatefulShellRoute.indexedStack(
         builder: (context, state, navShell) => MainShell(
@@ -214,12 +236,24 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // Branch 2: Orders
+          // Branch 2: Ledger
           StatefulShellBranch(
             routes: [
               GoRoute(
+                path: '/ledger',
+                builder: (_, __) => const LedgerLauncherScreen(),
+              ),
+              GoRoute(
                 path: '/orders',
                 builder: (_, __) => const OrderListScreen(),
+              ),
+              GoRoute(
+                path: '/expenses',
+                builder: (_, __) => const ExpenseListScreen(),
+              ),
+              GoRoute(
+                path: '/import',
+                builder: (_, __) => const ImportListScreen(),
               ),
             ],
           ),
@@ -292,7 +326,10 @@ String? _routeForBootstrap(
   const authedShellPrefixes = [
     '/home',
     '/catalog',
+    '/ledger',
     '/orders',
+    '/expenses',
+    '/import',
     '/pos',
     '/products',
     '/settings',

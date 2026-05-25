@@ -33,6 +33,11 @@ final _vnd = NumberFormat.currency(
 );
 final _date = DateFormat('dd/MM/yyyy');
 
+String _productRouteBase(BuildContext context) {
+  final path = GoRouterState.of(context).uri.path;
+  return path.startsWith('/products') ? '/products' : '/catalog/products';
+}
+
 /// Pushed detail screen for a single product — hero image + 5 grouped
 /// info sections (Phân loại / Giá / Tồn kho / Thống kê / Mô tả).
 ///
@@ -120,7 +125,7 @@ class ProductDetailScreen extends ConsumerWidget {
     switch (picked) {
       case 'edit':
         await context.push(
-          '/catalog/products/${detail.id}/edit',
+          '${_productRouteBase(context)}/${detail.id}/edit',
           extra: detail,
         );
       case 'reactivate':
@@ -242,7 +247,7 @@ class _Body extends ConsumerWidget {
                 leadingIcon: TablerIcons.folder,
                 iconBackground: const Color(0xFFF1ECFB),
                 iconColor: const Color(0xFF8B5CF6),
-                label: 'Danh mục',
+                label: 'Nhóm sản phẩm',
                 trailingText: catName ?? '—',
                 showChevron: false,
               ),
@@ -297,7 +302,7 @@ class _Body extends ConsumerWidget {
                     importPriceText: fmtPrice(variant.importPrice),
                     exportPriceText: fmtPrice(variant.exportPrice),
                     onTap: () => context.push(
-                      '/catalog/products/${detail.id}/variants/${variant.id}',
+                      '${_productRouteBase(context)}/${detail.id}/variants/${variant.id}',
                       extra: detail,
                     ),
                   ),
@@ -1297,7 +1302,7 @@ Future<void> _openVariantStockSheet(
       onVariantTap: (variant) {
         Navigator.of(sheetContext).pop();
         context.push(
-          '/catalog/products/${detail.id}/variants/${variant.id}',
+          '${_productRouteBase(context)}/${detail.id}/variants/${variant.id}',
           extra: detail,
         );
       },

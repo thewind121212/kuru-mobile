@@ -6,12 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 
-/// Landing screen for the Catalog bottom-nav branch.
-///
-/// Groups the product list with the metadata screens that shape it:
-/// Categories and Brands.
-class CatalogLauncherScreen extends StatelessWidget {
-  const CatalogLauncherScreen({super.key});
+class LedgerLauncherScreen extends StatelessWidget {
+  const LedgerLauncherScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +26,7 @@ class CatalogLauncherScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    l.catalogHubTitle,
+                    l.navLedger,
                     style: TextStyle(
                       color: c.textPrimary,
                       fontSize: 32,
@@ -40,7 +36,7 @@ class CatalogLauncherScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    l.catalogHubSubtitle,
+                    l.ledgerHubSubtitle,
                     style: TextStyle(
                       color: c.textMuted,
                       fontSize: 14,
@@ -54,38 +50,38 @@ class CatalogLauncherScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Column(
                 children: [
-                  _LauncherCard(
-                    icon: TablerIcons.package,
-                    iconBg: const Color(0xFFEEF0FF),
-                    iconFg: const Color(0xFF6366F1),
-                    title: l.catalogHubProductsTitle,
-                    subtitle: l.catalogHubProductsSub,
+                  _LedgerCard(
+                    icon: TablerIcons.receipt,
+                    iconBg: const Color(0xFFEAF7EF),
+                    iconFg: const Color(0xFF16834A),
+                    title: l.navOrders,
+                    subtitle: l.ledgerOrdersSub,
                     height: 128,
-                    onTap: () => context.go('/catalog/products'),
+                    onTap: () => context.go('/orders'),
                   ),
                   const SizedBox(height: 12),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
-                        child: _LauncherCard(
-                          icon: TablerIcons.category_2,
-                          iconBg: const Color(0xFFE7F7EF),
-                          iconFg: const Color(0xFF059669),
-                          title: l.catalogHubCategoriesTitle,
-                          subtitle: l.catalogHubCategoriesSub,
-                          onTap: () => context.go('/catalog/categories'),
+                        child: _LedgerCard(
+                          icon: TablerIcons.cash_banknote_off,
+                          iconBg: const Color(0xFFEEF0FF),
+                          iconFg: const Color(0xFF6366F1),
+                          title: l.navExpenses,
+                          subtitle: l.ledgerExpensesSub,
+                          onTap: () => context.go('/expenses'),
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: _LauncherCard(
-                          icon: TablerIcons.tags,
+                        child: _LedgerCard(
+                          icon: TablerIcons.package_import,
                           iconBg: const Color(0xFFFFF1E8),
                           iconFg: const Color(0xFFEA580C),
-                          title: l.catalogHubBrandsTitle,
-                          subtitle: l.catalogHubBrandsSub,
-                          onTap: () => context.go('/catalog/brands'),
+                          title: l.navImport,
+                          subtitle: l.ledgerImportSub,
+                          onTap: () => context.go('/import'),
                         ),
                       ),
                     ],
@@ -100,15 +96,15 @@ class CatalogLauncherScreen extends StatelessWidget {
   }
 }
 
-class _LauncherCard extends StatelessWidget {
-  const _LauncherCard({
+class _LedgerCard extends StatelessWidget {
+  const _LedgerCard({
     required this.icon,
     required this.iconBg,
     required this.iconFg,
     required this.title,
     required this.subtitle,
+    required this.onTap,
     this.height = 156,
-    this.onTap,
   });
 
   final IconData icon;
@@ -116,8 +112,8 @@ class _LauncherCard extends StatelessWidget {
   final Color iconFg;
   final String title;
   final String subtitle;
+  final VoidCallback onTap;
   final double height;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {

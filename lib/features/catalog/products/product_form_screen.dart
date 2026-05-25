@@ -37,6 +37,11 @@ import 'package:kuru_mobile/features/catalog/products/models/update_product_info
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/category_brand_picker_sheet.dart';
 
+String _productRouteBase(BuildContext context) {
+  final path = GoRouterState.of(context).uri.path;
+  return path.startsWith('/products') ? '/products' : '/catalog/products';
+}
+
 class ProductFormScreen extends ConsumerStatefulWidget {
   const ProductFormScreen({this.initial, super.key});
 
@@ -384,7 +389,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     final cats = ref.read(categoryOverviewProvider).valueOrNull ?? const [];
     final picked = await showCategoryBrandPickerSheet(
       context: context,
-      title: 'Chọn danh mục',
+      title: 'Chọn nhóm sản phẩm',
       items: [
         for (final cat_gen.CategoryResponse c in cats)
           PickerItem(id: c.categoryId ?? '', name: c.name ?? ''),
@@ -604,7 +609,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           ref.invalidate(productListProvider);
           if (!mounted) return;
           KNotify.success(context, 'Đã tạo sản phẩm');
-          context.replace('/catalog/products/$newProductId');
+          context.replace('${_productRouteBase(context)}/$newProductId');
         case ApiFailure<String>(:final err):
           _handleError(err);
       }
@@ -1173,7 +1178,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
                       ),
                       const SizedBox(height: 12),
                       _PickerTriggerRow(
-                        label: 'Danh mục',
+                        label: 'Nhóm sản phẩm',
                         valueText: _categoryName,
                         icon: TablerIcons.folder,
                         onTap: _pickCategory,

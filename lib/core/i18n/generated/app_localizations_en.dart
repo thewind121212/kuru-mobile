@@ -290,10 +290,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navHome => 'Home';
 
   @override
-  String get navCatalog => 'Catalog';
+  String get navCatalog => 'Catalogue';
+
+  @override
+  String get navLedger => 'Cashflow';
+
+  @override
+  String get navExpenses => 'Expenses';
+
+  @override
+  String get navImport => 'Imports';
+
+  @override
+  String get navProducts => 'Products';
 
   @override
   String get navSettings => 'Settings';
+
+  @override
+  String get ledgerOrdersSub => 'Track sales orders and payments';
+
+  @override
+  String get ledgerExpensesSub => 'Record purchasing and operating costs';
+
+  @override
+  String get ledgerImportSub => 'Receive stock and record purchase cost';
+
+  @override
+  String get ledgerHubSubtitle =>
+      'Track money in, money out, and purchase costs.';
 
   @override
   String get posOpenTooltip => 'Open POS';
@@ -678,7 +703,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryDetailNoSubcategories => 'No subcategories yet';
 
   @override
-  String get catalogHubTitle => 'Catalog';
+  String get catalogHubTitle => 'Catalogue';
+
+  @override
+  String get catalogHubSubtitle =>
+      'Manage products, categories, and brands in one place.';
+
+  @override
+  String get catalogHubProductsTitle => 'Products';
+
+  @override
+  String get catalogHubProductsSub => 'Manage stock items and sale details';
 
   @override
   String get catalogHubCategoriesTitle => 'Categories';
