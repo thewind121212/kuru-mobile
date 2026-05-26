@@ -20,6 +20,7 @@ import 'package:kuru_mobile/features/catalog/products/models/product_list_filter
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
+import 'package:kuru_mobile/features/main_shell/kuru_bottom_nav.dart';
 import 'package:kuru_mobile/features/orders/data/order_repository.dart';
 import 'package:kuru_mobile/features/orders/models/discount_type.dart';
 import 'package:kuru_mobile/features/orders/models/order_cart_totals.dart';
@@ -331,6 +332,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       ),
       body: SafeArea(
         top: false,
+        bottom: false,
         child: switch (_view) {
           _PosView.sale => _SaleView(
             search: _search,
@@ -565,7 +567,7 @@ class _BranchChip extends StatelessWidget {
           ),
           child: Row(
             children: [
-              Icon(TablerIcons.building_store, color: c.accent600, size: 18),
+              Icon(TablerIcons.building_store, color: c.accent600, size: 31),
               const SizedBox(width: 8),
               Text(
                 l.posBranchLabel,
@@ -625,7 +627,7 @@ class _BranchPickerRow extends StatelessWidget {
               Icon(
                 TablerIcons.building_store,
                 color: selected ? c.accent700 : c.textMuted,
-                size: 20,
+                size: 31,
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1726,161 +1728,99 @@ class _PosBottomDock extends StatelessWidget {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final c = kuruColors(context);
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
-    return SizedBox(
-      height: 118 + bottomInset,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            top: 34,
-            bottom: 0,
-            child: Container(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 12 + bottomInset),
-              decoration: BoxDecoration(
-                color: c.surfaceElev,
-                border: Border(top: BorderSide(color: c.borderSoft)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 24,
-                    offset: const Offset(0, -8),
-                  ),
-                ],
-              ),
-              child: Row(
+    return KuruBottomBarFrame(
+      action: _ScanPrimaryGlyph(loading: barcodeLoading),
+      actionTooltip: l.posScanPrimary,
+      onActionPressed: barcodeLoading
+          ? null
+          : () async {
+              final value = await showKBarcodeScannerSheet(
+                context,
+                title: l.posScanBarcode,
+                hint: l.posScanHint,
+              );
+              if (value != null && value.isNotEmpty) onScan(value);
+            },
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 12, 22, 12),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          l.posTotal,
-                          style: TextStyle(
-                            color: c.textMuted,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            format(total),
-                            maxLines: 1,
-                            style: TextStyle(
-                              color: c.textPrimary,
-                              fontSize: 21,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
+                  Text(
+                    l.posTotal,
+                    style: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  const SizedBox(width: 100),
-                  FilledButton(
-                    onPressed: itemCount == 0 ? null : onCharge,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(104, 50),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
+                  const SizedBox(height: 2),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
                     child: Text(
-                      l.posCharge,
-                      style: const TextStyle(fontWeight: FontWeight.w900),
+                      format(total),
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 21,
+                        fontWeight: FontWeight.w900,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-          ),
-          Positioned(
-            top: 0,
-            child: _ScanPrimaryButton(loading: barcodeLoading, onScan: onScan),
-          ),
-        ],
+            const SizedBox(width: 86),
+            FilledButton(
+              onPressed: itemCount == 0 ? null : onCharge,
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(104, 48),
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: Text(
+                l.posCharge,
+                style: const TextStyle(fontWeight: FontWeight.w900),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _ScanPrimaryButton extends StatelessWidget {
-  const _ScanPrimaryButton({required this.loading, required this.onScan});
+class _ScanPrimaryGlyph extends StatelessWidget {
+  const _ScanPrimaryGlyph({required this.loading});
 
   final bool loading;
-  final ValueChanged<String> onScan;
-
-  Future<void> _open(BuildContext context) async {
-    final l = AppLocalizations.of(context);
-    final value = await showKBarcodeScannerSheet(
-      context,
-      title: l.posScanBarcode,
-      hint: l.posScanHint,
-    );
-    if (value != null && value.isNotEmpty) onScan(value);
-  }
 
   @override
   Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    final c = kuruColors(context);
-    return Semantics(
-      label: l.posScanPrimary,
-      button: true,
-      child: Tooltip(
-        message: l.posScanPrimary,
-        child: Material(
-          color: Colors.transparent,
-          shape: const CircleBorder(),
-          child: InkWell(
-            onTap: loading ? null : () => _open(context),
-            customBorder: const CircleBorder(),
-            child: Ink(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                color: c.accent600,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: loading
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.4,
-                          color: Colors.white,
-                        ),
-                      )
-                    : ColorFiltered(
-                        colorFilter: const ColorFilter.mode(
-                          Colors.white,
-                          BlendMode.srcIn,
-                        ),
-                        child: Lottie.asset(
-                          'assets/lottie/scan.json',
-                          width: 56,
-                          height: 56,
-                          fit: BoxFit.contain,
-                          repeat: true,
-                          errorBuilder: (_, __, ___) => const Icon(
-                            TablerIcons.barcode,
-                            color: Colors.white,
-                            size: 34,
-                          ),
-                        ),
-                      ),
-              ),
-            ),
-          ),
-        ),
+    if (loading) {
+      return const SizedBox(
+        width: 22,
+        height: 22,
+        child: CircularProgressIndicator(strokeWidth: 2.4, color: Colors.white),
+      );
+    }
+    return ColorFiltered(
+      colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+      child: Lottie.asset(
+        'assets/lottie/scan.json',
+        width: 31,
+        height: 31,
+        fit: BoxFit.contain,
+        repeat: true,
+        errorBuilder: (_, __, ___) =>
+            const Icon(TablerIcons.barcode, color: Colors.white, size: 31),
       ),
     );
   }
