@@ -1815,8 +1815,8 @@ class _ScanPrimaryGlyph extends StatelessWidget {
       colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
       child: Lottie.asset(
         'assets/lottie/scan.json',
-        width: 31,
-        height: 31,
+        width: 44,
+        height: 44,
         fit: BoxFit.contain,
         repeat: true,
         errorBuilder: (_, __, ___) =>
