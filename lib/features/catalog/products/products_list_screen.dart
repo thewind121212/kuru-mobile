@@ -18,6 +18,11 @@ import 'package:kuru_mobile/features/catalog/products/widgets/product_card.dart'
 import 'package:kuru_mobile/features/catalog/products/widgets/product_filter_bar.dart';
 import 'package:kuru_mobile/features/catalog/products/widgets/product_filter_sheet.dart';
 
+String _productRouteBase(BuildContext context) {
+  final path = GoRouterState.of(context).uri.path;
+  return path.startsWith('/products') ? '/products' : '/catalog/products';
+}
+
 class ProductsListScreen extends ConsumerStatefulWidget {
   const ProductsListScreen({super.key});
 
@@ -297,7 +302,7 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
   }
 
   Future<void> _createProduct() async {
-    unawaited(context.push('/catalog/products/create'));
+    unawaited(context.push('${_productRouteBase(context)}/create'));
   }
 
   @override
@@ -429,8 +434,9 @@ class _ProductsListScreenState extends ConsumerState<ProductsListScreen> {
                   return _ProductMasonrySliver(
                     items: page.items,
                     hasMore: page.hasMore,
-                    onProductTap: (item) =>
-                        context.push('/catalog/products/${item.id}'),
+                    onProductTap: (item) => context.push(
+                      '${_productRouteBase(context)}/${item.id}',
+                    ),
                   );
                 },
               ),

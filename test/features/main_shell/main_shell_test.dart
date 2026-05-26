@@ -21,12 +21,12 @@ void main() {
       ),
     );
     expect(find.text('Home'), findsOneWidget);
-    expect(find.text('Catalog'), findsOneWidget);
-    expect(find.text('Orders'), findsOneWidget);
+    expect(find.text('Catalogue'), findsOneWidget);
+    expect(find.text('Cashflow'), findsOneWidget);
     expect(find.text('Settings'), findsOneWidget);
     expect(find.byIcon(TablerIcons.home), findsOneWidget);
     expect(find.byIcon(TablerIcons.layout_grid), findsOneWidget);
-    expect(find.byIcon(TablerIcons.receipt), findsOneWidget);
+    expect(find.byIcon(TablerIcons.report_money), findsOneWidget);
     expect(find.byIcon(TablerIcons.settings), findsOneWidget);
     expect(find.text('TAB_BODY'), findsOneWidget);
   });
@@ -45,7 +45,7 @@ void main() {
         ),
       ),
     );
-    await tester.tap(find.text('Catalog'));
+    await tester.tap(find.text('Catalogue'));
     await tester.pump();
     expect(lastTapped, 1);
   });

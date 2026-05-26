@@ -80,11 +80,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
 
-    // Switch to the Catalog tab (index 1 in the bottom nav).
-    await tester.tap(find.text('Catalog'));
+    // Switch to the Catalogue tab (index 1 in the bottom nav).
+    await tester.tap(find.text('Catalogue'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    // Catalog tab now lands on CatalogLauncherScreen. Drill into Categories.
+    // Catalogue tab lands on CatalogLauncherScreen. Drill into Categories.
     await tester.tap(find.text('Categories'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));

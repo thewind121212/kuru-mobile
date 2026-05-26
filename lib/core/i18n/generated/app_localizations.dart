@@ -614,11 +614,59 @@ abstract class AppLocalizations {
   /// **'Danh mục'**
   String get navCatalog;
 
+  /// No description provided for @navLedger.
+  ///
+  /// In vi, this message translates to:
+  /// **'Thu chi'**
+  String get navLedger;
+
+  /// No description provided for @navExpenses.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chi phí'**
+  String get navExpenses;
+
+  /// No description provided for @navImport.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập hàng'**
+  String get navImport;
+
+  /// No description provided for @navProducts.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sản phẩm'**
+  String get navProducts;
+
   /// No description provided for @navSettings.
   ///
   /// In vi, this message translates to:
   /// **'Cài đặt'**
   String get navSettings;
+
+  /// No description provided for @ledgerOrdersSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi đơn bán và thanh toán'**
+  String get ledgerOrdersSub;
+
+  /// No description provided for @ledgerExpensesSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghi lại tiền nhập hàng và vận hành'**
+  String get ledgerExpensesSub;
+
+  /// No description provided for @ledgerImportSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Nhập kho và ghi giá vốn mua hàng'**
+  String get ledgerImportSub;
+
+  /// No description provided for @ledgerHubSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Theo dõi tiền thu, tiền chi và chi phí nhập hàng.'**
+  String get ledgerHubSubtitle;
 
   /// No description provided for @posOpenTooltip.
   ///
@@ -995,37 +1043,37 @@ abstract class AppLocalizations {
   /// No description provided for @categoryTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Danh mục'**
+  /// **'Nhóm sản phẩm'**
   String get categoryTitle;
 
   /// No description provided for @categorySubtitle.
   ///
   /// In vi, this message translates to:
-  /// **'Quản lý phân loại sản phẩm'**
+  /// **'Quản lý nhóm sản phẩm'**
   String get categorySubtitle;
 
   /// No description provided for @categorySearchHint.
   ///
   /// In vi, this message translates to:
-  /// **'Tìm danh mục...'**
+  /// **'Tìm nhóm sản phẩm...'**
   String get categorySearchHint;
 
   /// No description provided for @categoryEmptyTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Chưa có danh mục'**
+  /// **'Chưa có nhóm sản phẩm'**
   String get categoryEmptyTitle;
 
   /// No description provided for @categoryEmptyBody.
   ///
   /// In vi, this message translates to:
-  /// **'Tạo danh mục đầu tiên để sắp xếp sản phẩm.'**
+  /// **'Tạo nhóm sản phẩm đầu tiên để sắp xếp sản phẩm.'**
   String get categoryEmptyBody;
 
   /// No description provided for @categoryEmptyAction.
   ///
   /// In vi, this message translates to:
-  /// **'Tạo danh mục đầu tiên'**
+  /// **'Tạo nhóm sản phẩm đầu tiên'**
   String get categoryEmptyAction;
 
   /// No description provided for @categoryTabMain.
@@ -1043,7 +1091,7 @@ abstract class AppLocalizations {
   /// No description provided for @categorySubCount.
   ///
   /// In vi, this message translates to:
-  /// **'{count, plural, other{{count} danh mục con}}'**
+  /// **'{count, plural, other{{count} nhóm con}}'**
   String categorySubCount(num count);
 
   /// No description provided for @categoryItemCount.
@@ -1055,7 +1103,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryLoadError.
   ///
   /// In vi, this message translates to:
-  /// **'Không tải được danh mục'**
+  /// **'Không tải được nhóm sản phẩm'**
   String get categoryLoadError;
 
   /// No description provided for @categoryLoadRetry.
@@ -1097,25 +1145,25 @@ abstract class AppLocalizations {
   /// No description provided for @categoryTotalCount.
   ///
   /// In vi, this message translates to:
-  /// **'{count, plural, other{{count} danh mục}}'**
+  /// **'{count, plural, other{{count} nhóm sản phẩm}}'**
   String categoryTotalCount(num count);
 
   /// No description provided for @categoryCreateTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Danh mục mới'**
+  /// **'Nhóm sản phẩm mới'**
   String get categoryCreateTitle;
 
   /// No description provided for @categoryCreateSubcategoryTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Danh mục con mới'**
+  /// **'Nhóm sản phẩm con mới'**
   String get categoryCreateSubcategoryTitle;
 
   /// No description provided for @categoryEditTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Sửa danh mục'**
+  /// **'Sửa nhóm sản phẩm'**
   String get categoryEditTitle;
 
   /// No description provided for @categoryFieldName.
@@ -1163,7 +1211,7 @@ abstract class AppLocalizations {
   /// No description provided for @categoryFieldParent.
   ///
   /// In vi, this message translates to:
-  /// **'Danh mục cha'**
+  /// **'Nhóm cha'**
   String get categoryFieldParent;
 
   /// No description provided for @categoryStatusActive.
@@ -1211,13 +1259,13 @@ abstract class AppLocalizations {
   /// No description provided for @categoryActionAddSubcategory.
   ///
   /// In vi, this message translates to:
-  /// **'Thêm danh mục con'**
+  /// **'Thêm nhóm con'**
   String get categoryActionAddSubcategory;
 
   /// No description provided for @categoryDeleteConfirmTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Xoá danh mục?'**
+  /// **'Xoá nhóm sản phẩm?'**
   String get categoryDeleteConfirmTitle;
 
   /// No description provided for @categoryDeleteConfirmBody.
@@ -1235,13 +1283,13 @@ abstract class AppLocalizations {
   /// No description provided for @categoryNotifySaved.
   ///
   /// In vi, this message translates to:
-  /// **'Đã lưu danh mục'**
+  /// **'Đã lưu nhóm sản phẩm'**
   String get categoryNotifySaved;
 
   /// No description provided for @categoryNotifyDeleted.
   ///
   /// In vi, this message translates to:
-  /// **'Đã xoá danh mục'**
+  /// **'Đã xoá nhóm sản phẩm'**
   String get categoryNotifyDeleted;
 
   /// No description provided for @categoryNotifyNetwork.
@@ -1277,25 +1325,43 @@ abstract class AppLocalizations {
   /// No description provided for @categoryDetailSubcategoriesHeader.
   ///
   /// In vi, this message translates to:
-  /// **'{count, plural, other{Danh mục con ({count})}}'**
+  /// **'{count, plural, other{Nhóm con ({count})}}'**
   String categoryDetailSubcategoriesHeader(num count);
 
   /// No description provided for @categoryDetailNoSubcategories.
   ///
   /// In vi, this message translates to:
-  /// **'Chưa có danh mục con'**
+  /// **'Chưa có nhóm con'**
   String get categoryDetailNoSubcategories;
 
   /// No description provided for @catalogHubTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Danh mục sản phẩm'**
+  /// **'Danh mục'**
   String get catalogHubTitle;
+
+  /// No description provided for @catalogHubSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý sản phẩm, nhóm sản phẩm và thương hiệu trong một chỗ.'**
+  String get catalogHubSubtitle;
+
+  /// No description provided for @catalogHubProductsTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sản phẩm'**
+  String get catalogHubProductsTitle;
+
+  /// No description provided for @catalogHubProductsSub.
+  ///
+  /// In vi, this message translates to:
+  /// **'Quản lý hàng hóa và thông tin bán'**
+  String get catalogHubProductsSub;
 
   /// No description provided for @catalogHubCategoriesTitle.
   ///
   /// In vi, this message translates to:
-  /// **'Danh mục'**
+  /// **'Nhóm sản phẩm'**
   String get catalogHubCategoriesTitle;
 
   /// No description provided for @catalogHubCategoriesSub.

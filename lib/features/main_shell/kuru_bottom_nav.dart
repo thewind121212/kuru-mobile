@@ -13,19 +13,15 @@ class KuruBottomNavItem {
   final String label;
 }
 
-/// Floating liquid-glass bottom nav matching the iOS 26 reference design.
+/// Floating liquid-glass bottom nav.
 ///
 /// - Pill floats with 16px side margins + 12px bottom margin from the
 ///   safe-area edge. Uses [BackdropFilter] for a Gaussian blur of the
 ///   content behind it; the Scaffold must set `extendBody: true` for
 ///   the blur to have anything to sample.
-/// - Icon-only tabs. The active tab gets a soft accent-tinted pill behind
-///   its icon (Material 3 indicator style, but smaller and glass-friendly).
-///   Labels are kept in [KuruBottomNavItem] for tooltips/semantics but
-///   never painted.
-/// - Optional trailing `+` action button rendered as a SEPARATE floating
-///   accent circle (not docked inside the pill) — preserves the visual
-///   separation in the reference screenshot.
+/// - Four regular tabs sit around an optional centered action slot. The
+///   action is rendered inside the pill, not over a reserved hole, so the
+///   center reads as one intentional control.
 class KuruBottomNav extends StatelessWidget {
   const KuruBottomNav({
     required this.tabs,
@@ -47,7 +43,7 @@ class KuruBottomNav extends StatelessWidget {
   // Tunables. Icon + label needs more vertical room than an icon-only bar.
   static const double _pillHeight = 68;
   static const double _pillRadius = 32;
-  static const double _actionSize = 56;
+  static const double _actionSize = 48;
   static const double _sideMargin = 16;
   // Total clearance from the screen bottom edge to the pill. iOS reserves
   // ~34dp for the home indicator via MediaQuery.viewPadding.bottom; that
@@ -55,7 +51,6 @@ class KuruBottomNav extends StatelessWidget {
   // above the indicator line. 12dp is a tight visual gap that still
   // clears the indicator's interactive zone.
   static const double _bottomGap = 12;
-  static const double _gapBeforeAction = 10;
   static const double _blurSigma = 20;
 
   @override
@@ -67,24 +62,16 @@ class KuruBottomNav extends StatelessWidget {
         _sideMargin,
         _bottomGap,
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _GlassPill(
-              tabs: tabs,
-              currentIndex: currentIndex,
-              onTabChanged: onTabChanged,
-            ),
-          ),
-          if (actionIcon != null) ...[
-            const SizedBox(width: _gapBeforeAction),
-            _ActionCircle(
-              icon: actionIcon!,
-              tooltip: actionTooltip,
-              onPressed: onActionPressed,
-            ),
-          ],
-        ],
+      child: SizedBox(
+        height: _pillHeight,
+        child: _GlassPill(
+          tabs: tabs,
+          currentIndex: currentIndex,
+          onTabChanged: onTabChanged,
+          actionIcon: actionIcon,
+          actionTooltip: actionTooltip,
+          onActionPressed: onActionPressed,
+        ),
       ),
     );
   }
@@ -95,15 +82,23 @@ class _GlassPill extends StatelessWidget {
     required this.tabs,
     required this.currentIndex,
     required this.onTabChanged,
+    this.actionIcon,
+    this.actionTooltip,
+    this.onActionPressed,
   });
 
   final List<KuruBottomNavItem> tabs;
   final int currentIndex;
   final ValueChanged<int> onTabChanged;
+  final IconData? actionIcon;
+  final String? actionTooltip;
+  final VoidCallback? onActionPressed;
 
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
+    final splitIndex = tabs.length ~/ 2;
+    final hasAction = actionIcon != null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     // The fill is the theme's surfaceElev tinted with alpha — gives the
     // backdrop blur a tone to layer over (pure transparent + blur reads
@@ -136,7 +131,15 @@ class _GlassPill extends StatelessWidget {
             height: KuruBottomNav._pillHeight,
             child: Row(
               children: [
-                for (var i = 0; i < tabs.length; i++)
+                for (var i = 0; i < tabs.length; i++) ...[
+                  if (i == splitIndex && hasAction)
+                    Expanded(
+                      child: _ActionSlot(
+                        icon: actionIcon!,
+                        tooltip: actionTooltip,
+                        onPressed: onActionPressed,
+                      ),
+                    ),
                   Expanded(
                     child: _Tab(
                       item: tabs[i],
@@ -144,6 +147,7 @@ class _GlassPill extends StatelessWidget {
                       onTap: () => onTabChanged(i),
                     ),
                   ),
+                ],
               ],
             ),
           ),
@@ -201,6 +205,32 @@ class _Tab extends StatelessWidget {
   }
 }
 
+class _ActionSlot extends StatelessWidget {
+  const _ActionSlot({
+    required this.icon,
+    required this.onPressed,
+    this.tooltip,
+  });
+
+  final IconData icon;
+  final VoidCallback? onPressed;
+  final String? tooltip;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: KuruBottomNav._pillHeight,
+      child: Center(
+        child: _ActionCircle(
+          icon: icon,
+          tooltip: tooltip,
+          onPressed: onPressed,
+        ),
+      ),
+    );
+  }
+}
+
 class _ActionCircle extends StatelessWidget {
   const _ActionCircle({
     required this.icon,
@@ -225,9 +255,9 @@ class _ActionCircle extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: c.accent600.withValues(alpha: isDark ? 0.4 : 0.32),
-              blurRadius: 14,
-              offset: const Offset(0, 4),
+              color: c.accent600.withValues(alpha: isDark ? 0.22 : 0.16),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),

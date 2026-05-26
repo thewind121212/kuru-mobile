@@ -289,7 +289,32 @@ class AppLocalizationsVi extends AppLocalizations {
   String get navCatalog => 'Danh mục';
 
   @override
+  String get navLedger => 'Thu chi';
+
+  @override
+  String get navExpenses => 'Chi phí';
+
+  @override
+  String get navImport => 'Nhập hàng';
+
+  @override
+  String get navProducts => 'Sản phẩm';
+
+  @override
   String get navSettings => 'Cài đặt';
+
+  @override
+  String get ledgerOrdersSub => 'Theo dõi đơn bán và thanh toán';
+
+  @override
+  String get ledgerExpensesSub => 'Ghi lại tiền nhập hàng và vận hành';
+
+  @override
+  String get ledgerImportSub => 'Nhập kho và ghi giá vốn mua hàng';
+
+  @override
+  String get ledgerHubSubtitle =>
+      'Theo dõi tiền thu, tiền chi và chi phí nhập hàng.';
 
   @override
   String get posOpenTooltip => 'Mở thu ngân';
@@ -482,22 +507,23 @@ class AppLocalizationsVi extends AppLocalizations {
   String get settingsPlaceholder => 'Cài đặt sắp ra mắt';
 
   @override
-  String get categoryTitle => 'Danh mục';
+  String get categoryTitle => 'Nhóm sản phẩm';
 
   @override
-  String get categorySubtitle => 'Quản lý phân loại sản phẩm';
+  String get categorySubtitle => 'Quản lý nhóm sản phẩm';
 
   @override
-  String get categorySearchHint => 'Tìm danh mục...';
+  String get categorySearchHint => 'Tìm nhóm sản phẩm...';
 
   @override
-  String get categoryEmptyTitle => 'Chưa có danh mục';
+  String get categoryEmptyTitle => 'Chưa có nhóm sản phẩm';
 
   @override
-  String get categoryEmptyBody => 'Tạo danh mục đầu tiên để sắp xếp sản phẩm.';
+  String get categoryEmptyBody =>
+      'Tạo nhóm sản phẩm đầu tiên để sắp xếp sản phẩm.';
 
   @override
-  String get categoryEmptyAction => 'Tạo danh mục đầu tiên';
+  String get categoryEmptyAction => 'Tạo nhóm sản phẩm đầu tiên';
 
   @override
   String get categoryTabMain => 'Chính';
@@ -510,7 +536,7 @@ class AppLocalizationsVi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count danh mục con',
+      other: '$count nhóm con',
     );
     return '$_temp0';
   }
@@ -526,7 +552,7 @@ class AppLocalizationsVi extends AppLocalizations {
   }
 
   @override
-  String get categoryLoadError => 'Không tải được danh mục';
+  String get categoryLoadError => 'Không tải được nhóm sản phẩm';
 
   @override
   String get categoryLoadRetry => 'Thử lại';
@@ -558,19 +584,19 @@ class AppLocalizationsVi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count danh mục',
+      other: '$count nhóm sản phẩm',
     );
     return '$_temp0';
   }
 
   @override
-  String get categoryCreateTitle => 'Danh mục mới';
+  String get categoryCreateTitle => 'Nhóm sản phẩm mới';
 
   @override
-  String get categoryCreateSubcategoryTitle => 'Danh mục con mới';
+  String get categoryCreateSubcategoryTitle => 'Nhóm sản phẩm con mới';
 
   @override
-  String get categoryEditTitle => 'Sửa danh mục';
+  String get categoryEditTitle => 'Sửa nhóm sản phẩm';
 
   @override
   String get categoryFieldName => 'Tên';
@@ -594,7 +620,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get categoryFieldColor => 'Màu';
 
   @override
-  String get categoryFieldParent => 'Danh mục cha';
+  String get categoryFieldParent => 'Nhóm cha';
 
   @override
   String get categoryStatusActive => 'Đang hoạt động';
@@ -618,10 +644,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get categoryActionDelete => 'Xoá';
 
   @override
-  String get categoryActionAddSubcategory => 'Thêm danh mục con';
+  String get categoryActionAddSubcategory => 'Thêm nhóm con';
 
   @override
-  String get categoryDeleteConfirmTitle => 'Xoá danh mục?';
+  String get categoryDeleteConfirmTitle => 'Xoá nhóm sản phẩm?';
 
   @override
   String categoryDeleteConfirmBody(Object name) {
@@ -632,10 +658,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get categoryDeleteConfirmCta => 'Xoá';
 
   @override
-  String get categoryNotifySaved => 'Đã lưu danh mục';
+  String get categoryNotifySaved => 'Đã lưu nhóm sản phẩm';
 
   @override
-  String get categoryNotifyDeleted => 'Đã xoá danh mục';
+  String get categoryNotifyDeleted => 'Đã xoá nhóm sản phẩm';
 
   @override
   String get categoryNotifyNetwork => 'Không kết nối được máy chủ. Thử lại.';
@@ -659,19 +685,29 @@ class AppLocalizationsVi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Danh mục con ($count)',
+      other: 'Nhóm con ($count)',
     );
     return '$_temp0';
   }
 
   @override
-  String get categoryDetailNoSubcategories => 'Chưa có danh mục con';
+  String get categoryDetailNoSubcategories => 'Chưa có nhóm con';
 
   @override
-  String get catalogHubTitle => 'Danh mục sản phẩm';
+  String get catalogHubTitle => 'Danh mục';
 
   @override
-  String get catalogHubCategoriesTitle => 'Danh mục';
+  String get catalogHubSubtitle =>
+      'Quản lý sản phẩm, nhóm sản phẩm và thương hiệu trong một chỗ.';
+
+  @override
+  String get catalogHubProductsTitle => 'Sản phẩm';
+
+  @override
+  String get catalogHubProductsSub => 'Quản lý hàng hóa và thông tin bán';
+
+  @override
+  String get catalogHubCategoriesTitle => 'Nhóm sản phẩm';
 
   @override
   String get catalogHubCategoriesSub => 'Tổ chức sản phẩm theo nhóm';

@@ -258,7 +258,7 @@ class _ProductFilterSheetState extends State<_ProductFilterSheet> {
                     ),
                     const SizedBox(height: 14),
                     _OptionSection(
-                      title: 'Danh mục',
+                      title: 'Nhóm sản phẩm',
                       icon: TablerIcons.folder,
                       options: widget.categories,
                       selectedIds: _categoryIds,

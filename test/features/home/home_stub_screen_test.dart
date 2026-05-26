@@ -10,7 +10,7 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
 
 void main() {
-  testWidgets('HomeStubScreen renders authenticated state', (tester) async {
+  testWidgets('HomeStubScreen renders ledger home', (tester) async {
     const user = UserInfo(
       email: 'test@x.com',
       orgInfos: <OrgInfo>[
@@ -23,6 +23,18 @@ void main() {
           appBootstrapProvider.overrideWith(
             (ref) async => const BootstrapAuthed(user),
           ),
+          currentOrgIdProvider.overrideWithValue('o1'),
+          homeLedgerProvider.overrideWith(
+            (ref) async => const HomeLedgerSnapshot(
+              orders: [],
+              totalOrders: 0,
+              salesTotal: 0,
+              collected: 0,
+              receivable: 0,
+              expenses: 0,
+              expenseCount: 0,
+            ),
+          ),
         ],
         child: MaterialApp(
           locale: const Locale('vi'),
@@ -33,11 +45,9 @@ void main() {
         ),
       ),
     );
-    // pumpAndSettle would time out because KPrimaryBtn has a repeating shine
-    // animation.  Two pumps are enough: first resolves the FutureProvider,
-    // second rebuilds the widget tree with the authed state.
     await tester.pump();
     await tester.pump();
-    expect(find.text('Đã đăng nhập'), findsOneWidget);
+    expect(find.text('Sổ cái'), findsOneWidget);
+    expect(find.text('Chưa có giao dịch'), findsOneWidget);
   });
 }
