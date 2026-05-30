@@ -2233,6 +2233,18 @@ abstract class AppLocalizations {
   /// In vi, this message translates to:
   /// **'0–100'**
   String get orderCreatePercentHint;
+
+  /// No description provided for @detailQuantityByStore.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tồn kho theo chi nhánh'**
+  String get detailQuantityByStore;
+
+  /// No description provided for @detailQuantityByStoreSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Số lượng còn lại tại mỗi chi nhánh'**
+  String get detailQuantityByStoreSubtitle;
 }
 
 class _AppLocalizationsDelegate

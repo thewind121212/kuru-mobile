@@ -16,8 +16,10 @@ import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
 import 'package:kuru_mobile/design/core/input/k_currency_field.dart';
 import 'package:kuru_mobile/design/core/scanner/k_barcode_scanner_sheet.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_detail.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_list_filter.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_summary.dart';
+import 'package:kuru_mobile/features/catalog/products/models/product_variant.dart';
 import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_option.dart';
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/main_shell/kuru_bottom_nav.dart';
@@ -59,6 +61,7 @@ class PosScreen extends ConsumerStatefulWidget {
 class _PosScreenState extends ConsumerState<PosScreen> {
   final _search = TextEditingController();
   final _amount = TextEditingController();
+  final _saleScroll = ScrollController();
   _PosView _view = _PosView.sale;
   OrderPaymentMethod _method = OrderPaymentMethod.cash;
   bool _submitting = false;
@@ -82,6 +85,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     _amount.removeListener(_refresh);
     _search.dispose();
     _amount.dispose();
+    _saleScroll.dispose();
     super.dispose();
   }
 
@@ -94,22 +98,129 @@ class _PosScreenState extends ConsumerState<PosScreen> {
 
   String _format(double amount) => _money.format(amount);
 
-  void _addProduct(ProductSummary product, {String? barcode}) {
-    ref
-        .read(orderCartProvider.notifier)
-        .addLine(
-          OrderLineItem(
-            productId: product.id,
-            productName: product.name,
-            imageUrl: product.imageUrl,
-            baseUnitCode: product.baseUnitCode,
-            qty: 1,
-            unitPrice: product.sellPricePerUnit.toDouble(),
-            barcode: barcode,
-          ),
-        );
+  void _addLine(OrderLineItem item) {
+    ref.read(orderCartProvider.notifier).addLine(item);
     _search.clear();
     HapticFeedback.selectionClick();
+    _scrollSaleToCartEnd();
+  }
+
+  void _scrollSaleToCartEnd() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_saleScroll.hasClients) return;
+      final target = _saleScroll.position.maxScrollExtent;
+      _saleScroll.animateTo(
+        target,
+        duration: const Duration(milliseconds: 260),
+        curve: Curves.easeOutCubic,
+      );
+    });
+  }
+
+  Future<void> _addProduct(ProductSummary product, {String? barcode}) async {
+    if (product.variantCount <= 0) {
+      _addLine(
+        OrderLineItem(
+          productId: product.id,
+          productName: product.name,
+          imageUrl: product.imageUrl,
+          baseUnitCode: product.baseUnitCode,
+          qty: 1,
+          unitPrice: product.sellPricePerUnit.toDouble(),
+          barcode: barcode,
+        ),
+      );
+      return;
+    }
+
+    FocusManager.instance.primaryFocus?.unfocus();
+    final result = await ref
+        .read(productRepositoryProvider)
+        .getById(product.id);
+    if (!mounted) return;
+
+    switch (result) {
+      case ApiSuccess<ProductDetail>(:final data):
+        final customVariants = data.variants
+            .where((variant) => !variant.isDefault)
+            .toList();
+        final variants = customVariants.isEmpty
+            ? data.variants
+            : customVariants;
+        if (variants.isEmpty) {
+          _addLine(
+            OrderLineItem(
+              productId: product.id,
+              productName: product.name,
+              imageUrl: product.imageUrl,
+              baseUnitCode: product.baseUnitCode,
+              qty: 1,
+              unitPrice: product.sellPricePerUnit.toDouble(),
+              barcode: barcode,
+            ),
+          );
+          return;
+        }
+
+        if (variants.length == 1) {
+          final selected = variants.single;
+          _addLine(
+            OrderLineItem(
+              productId: data.id,
+              productName: data.name,
+              variantId: selected.id,
+              variantName: selected.name,
+              imageUrl: selected.imageUrl ?? data.imageUrl ?? product.imageUrl,
+              barcode: selected.barcode ?? barcode,
+              baseUnitCode: data.baseUnitCode,
+              qty: 1,
+              unitPrice: (selected.sellPrice ?? data.sellPrice).toDouble(),
+            ),
+          );
+          return;
+        }
+
+        final selected = await _showVariantPicker(data, variants);
+        if (!mounted || selected == null) return;
+        _addLine(
+          OrderLineItem(
+            productId: data.id,
+            productName: data.name,
+            variantId: selected.id,
+            variantName: selected.name,
+            imageUrl: selected.imageUrl ?? data.imageUrl ?? product.imageUrl,
+            barcode: selected.barcode ?? barcode,
+            baseUnitCode: data.baseUnitCode,
+            qty: 1,
+            unitPrice: (selected.sellPrice ?? data.sellPrice).toDouble(),
+          ),
+        );
+      case ApiFailure<ProductDetail>(:final err):
+        KNotify.warning(context, err.message);
+    }
+  }
+
+  Future<ProductVariant?> _showVariantPicker(
+    ProductDetail product,
+    List<ProductVariant> variants,
+  ) {
+    final c = kuruColors(context);
+    return showModalBottomSheet<ProductVariant>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: c.surfaceElev,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.78,
+      ),
+      builder: (sheetContext) {
+        return _ProductVariantPickerSheet(
+          product: product,
+          variants: variants,
+          format: _format,
+        );
+      },
+    );
   }
 
   Future<void> _addBarcode(String barcode) async {
@@ -120,22 +231,19 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     setState(() => _barcodeLoading = false);
     switch (result) {
       case ApiSuccess<PosBarcodeLookup>(:final data):
-        ref
-            .read(orderCartProvider.notifier)
-            .addLine(
-              OrderLineItem(
-                productId: data.productId,
-                productName: data.productName,
-                variantId: data.variantId,
-                variantName: data.variantName,
-                imageUrl: data.variantImageUrl ?? data.imageUrl,
-                barcode: data.barcodeValue,
-                baseUnitCode: data.baseUnitCode,
-                qty: 1,
-                unitPrice: data.uomSellPrice ?? data.sellPrice,
-              ),
-            );
-        _search.clear();
+        _addLine(
+          OrderLineItem(
+            productId: data.productId,
+            productName: data.productName,
+            variantId: data.variantId,
+            variantName: data.variantName,
+            imageUrl: data.variantImageUrl ?? data.imageUrl,
+            barcode: data.barcodeValue,
+            baseUnitCode: data.baseUnitCode,
+            qty: 1,
+            unitPrice: data.uomSellPrice ?? data.sellPrice,
+          ),
+        );
         KNotify.success(context, l.posBarcodeAdded);
       case ApiFailure<PosBarcodeLookup>(:final err):
         _search.text = barcode;
@@ -336,6 +444,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
         child: switch (_view) {
           _PosView.sale => _SaleView(
             search: _search,
+            scrollController: _saleScroll,
             barcodeLoading: _barcodeLoading,
             onScan: _addBarcode,
             onAddProduct: _addProduct,
@@ -370,6 +479,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
 class _SaleView extends ConsumerWidget {
   const _SaleView({
     required this.search,
+    required this.scrollController,
     required this.barcodeLoading,
     required this.onScan,
     required this.onAddProduct,
@@ -378,9 +488,11 @@ class _SaleView extends ConsumerWidget {
   });
 
   final TextEditingController search;
+  final ScrollController scrollController;
   final bool barcodeLoading;
   final ValueChanged<String> onScan;
-  final void Function(ProductSummary product, {String? barcode}) onAddProduct;
+  final Future<void> Function(ProductSummary product, {String? barcode})
+  onAddProduct;
   final VoidCallback onCharge;
   final String Function(double amount) format;
 
@@ -431,6 +543,7 @@ class _SaleView extends ConsumerWidget {
         ),
         Expanded(
           child: ListView(
+            controller: scrollController,
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             children: [
@@ -678,7 +791,7 @@ class _ProductResults extends ConsumerWidget {
   final String query;
   final String? branchId;
   final String Function(double amount) format;
-  final void Function(ProductSummary product, {String? barcode}) onAdd;
+  final Future<void> Function(ProductSummary product, {String? barcode}) onAdd;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -791,6 +904,182 @@ class _ProductRow extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductVariantPickerSheet extends StatelessWidget {
+  const _ProductVariantPickerSheet({
+    required this.product,
+    required this.variants,
+    required this.format,
+  });
+
+  final ProductDetail product;
+  final List<ProductVariant> variants;
+  final String Function(double amount) format;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text(
+              l.addLineSheetVariantPick,
+              style: TextStyle(
+                color: c.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 3),
+            Text(
+              product.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Flexible(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: variants.length,
+                separatorBuilder: (_, __) =>
+                    Divider(height: 1, thickness: 0.5, color: c.borderSoft),
+                itemBuilder: (context, index) {
+                  final variant = variants[index];
+                  final attrs = variant.attributes.values
+                      .where((value) => value.trim().isNotEmpty)
+                      .toList();
+                  return _ProductVariantRow(
+                    variant: variant,
+                    attrs: attrs,
+                    imageUrl: variant.imageUrl ?? product.imageUrl,
+                    price: format(
+                      (variant.sellPrice ?? product.sellPrice).toDouble(),
+                    ),
+                    onTap: () => Navigator.of(context).pop(variant),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ProductVariantRow extends StatelessWidget {
+  const _ProductVariantRow({
+    required this.variant,
+    required this.attrs,
+    required this.imageUrl,
+    required this.price,
+    required this.onTap,
+  });
+
+  final ProductVariant variant;
+  final List<String> attrs;
+  final String? imageUrl;
+  final String price;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 11),
+          child: Row(
+            children: [
+              _ProductThumb(imageUrl: imageUrl, size: 44),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      variant.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    if (attrs.isNotEmpty) ...[
+                      const SizedBox(height: 5),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          for (final attr in attrs.take(4))
+                            _VariantAttrPill(label: attr),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 5),
+                    Text(
+                      price,
+                      style: TextStyle(
+                        color: c.accent700,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 10),
+              Icon(TablerIcons.chevron_right, color: c.textMuted, size: 18),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _VariantAttrPill extends StatelessWidget {
+  const _VariantAttrPill({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: c.accent100,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: c.accent700,
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );
