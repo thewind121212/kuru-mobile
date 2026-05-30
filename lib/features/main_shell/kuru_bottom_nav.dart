@@ -86,6 +86,7 @@ class KuruBottomBarFrame extends StatelessWidget {
   static const double pillHeight = 76;
   static const double pillRadius = 34;
   static const double actionSize = 64;
+  static const double actionProtrusion = actionSize / 2;
   static const double notchRadius = 38;
   static const double notchCenterY = 8;
   static const double sideMargin = 16;
@@ -105,7 +106,7 @@ class KuruBottomBarFrame extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(sideMargin, 0, sideMargin, bottomGap),
       child: SizedBox(
-        height: height,
+        height: hasAction ? height + actionProtrusion : height,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -142,7 +143,7 @@ class KuruBottomBarFrame extends StatelessWidget {
             ),
             if (hasAction)
               Positioned(
-                top: -32,
+                top: 0,
                 left: 0,
                 right: 0,
                 child: Align(

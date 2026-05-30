@@ -417,5 +417,8 @@
   "orderCreatePhoneHint": "0xxxxxxxxx",
   "orderCreateNoteHint": "Ghi chú thêm cho đơn hàng",
   "orderCreateManualTaxHint": "VD: 8",
-  "orderCreatePercentHint": "0–100"
+  "orderCreatePercentHint": "0–100",
+
+  "detailQuantityByStore": "Tồn kho theo chi nhánh",
+  "detailQuantityByStoreSubtitle": "Số lượng còn lại tại mỗi chi nhánh"
 }

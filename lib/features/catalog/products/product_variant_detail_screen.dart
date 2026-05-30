@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/env/env.dart';
@@ -17,7 +18,7 @@ final _vnd = NumberFormat.currency(
   decimalDigits: 0,
 );
 
-class ProductVariantDetailScreen extends ConsumerWidget {
+class ProductVariantDetailScreen extends ConsumerStatefulWidget {
   const ProductVariantDetailScreen({
     required this.productId,
     required this.variantId,
@@ -30,10 +31,36 @@ class ProductVariantDetailScreen extends ConsumerWidget {
   final ProductDetail? initial;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final async = initial == null
-        ? ref.watch(productByIdProvider(productId))
-        : AsyncValue.data(initial!);
+  ConsumerState<ProductVariantDetailScreen> createState() =>
+      _ProductVariantDetailScreenState();
+}
+
+class _ProductVariantDetailScreenState
+    extends ConsumerState<ProductVariantDetailScreen> {
+  bool _redirected = false;
+
+  void _maybeRedirectToBase(ProductDetail detail) {
+    if (_redirected) return;
+    final variant = _findVariant(detail, widget.variantId);
+    if (variant != null && !variant.isDefault) return;
+    _redirected = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) context.replace('/products/${widget.productId}');
+    });
+  }
+
+  ProductVariant? _findVariant(ProductDetail detail, String id) {
+    for (final variant in detail.variants) {
+      if (variant.id == id) return variant;
+    }
+    return null;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final async = widget.initial == null
+        ? ref.watch(productByIdProvider(widget.productId))
+        : AsyncValue.data(widget.initial!);
     final c = kuruColors(context);
 
     return Scaffold(
@@ -45,8 +72,11 @@ class ProductVariantDetailScreen extends ConsumerWidget {
         centerTitle: true,
         title: Text(
           async.maybeWhen(
-            data: (detail) =>
-                _findVariant(detail, variantId)?.name ?? 'Biến thể',
+            data: (detail) {
+              final variant = _findVariant(detail, widget.variantId);
+              if (variant == null || variant.isDefault) return 'Biến thể';
+              return variant.name;
+            },
             orElse: () => 'Biến thể',
           ),
           maxLines: 1,
@@ -62,21 +92,15 @@ class ProductVariantDetailScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('Không tải được: $e')),
         data: (detail) {
-          final variant = _findVariant(detail, variantId);
-          if (variant == null) {
-            return const Center(child: Text('Không tìm thấy biến thể'));
+          final variant = _findVariant(detail, widget.variantId);
+          if (variant == null || variant.isDefault) {
+            _maybeRedirectToBase(detail);
+            return const Center(child: CircularProgressIndicator());
           }
           return _VariantDetailBody(detail: detail, variant: variant);
         },
       ),
     );
-  }
-
-  ProductVariant? _findVariant(ProductDetail detail, String id) {
-    for (final variant in detail.variants) {
-      if (variant.id == id && !variant.isDefault) return variant;
-    }
-    return null;
   }
 }
 
