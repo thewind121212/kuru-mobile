@@ -3,13 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:kuru_mobile/app/theme/kuru_colors.dart';
 import 'package:kuru_mobile/core/network/api_result.dart';
+import 'package:kuru_mobile/design/core/feedback/k_badge.dart';
 import 'package:kuru_mobile/design/core/input/k_currency_field.dart';
 import 'package:kuru_mobile/design/core/input/k_select.dart';
 import 'package:kuru_mobile/design/core/input/k_text_field.dart';
-import 'package:kuru_mobile/design/core/modal/k_confirm_dialog.dart';
 import 'package:kuru_mobile/design/core/modal/k_modal_sheet.dart';
 import 'package:kuru_mobile/features/expenses/models/expense_category.dart';
 import 'package:kuru_mobile/features/expenses/models/expense_entry.dart';
@@ -24,6 +25,10 @@ class ExpenseListScreen extends ConsumerStatefulWidget {
 }
 
 class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
+  static const _expenseTicketWriteEnabled = bool.fromEnvironment(
+    'ENABLE_EXPENSE_TICKETS',
+  );
+
   final _searchCtrl = TextEditingController();
   String? _categoryId;
   DateTimeRange? _dateRange;
@@ -138,7 +143,9 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
                       ),
                     ),
                     FilledButton.icon(
-                      onPressed: _openCreateSheet,
+                      onPressed: _expenseTicketWriteEnabled
+                          ? _openCreateSheet
+                          : null,
                       icon: const Icon(TablerIcons.plus),
                       label: const Text('Thêm'),
                       style: FilledButton.styleFrom(
@@ -227,7 +234,9 @@ class _ExpenseListScreenState extends ConsumerState<ExpenseListScreen> {
               else if (filtered.isEmpty)
                 _ExpenseEmpty(
                   hasQuery: query.isNotEmpty,
-                  onCreate: _openCreateSheet,
+                  onCreate: _expenseTicketWriteEnabled
+                      ? _openCreateSheet
+                      : null,
                 )
               else
                 ...groups.map(
@@ -407,7 +416,12 @@ class _ExpenseTrendCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
-    final bars = groups.take(7).toList().reversed.toList();
+    final bars = groups
+        .where((group) => group.total > 0)
+        .take(7)
+        .toList()
+        .reversed
+        .toList();
     final total = groups.fold<int>(0, (sum, group) => sum + group.total);
     final maxTotal = bars.fold<int>(
       0,
@@ -574,6 +588,9 @@ class _ExpenseDateSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
+    final countLabel = group.hasVoided
+        ? '${group.activeCount}/${group.entries.length} khoản đang tính'
+        : '${group.entries.length} khoản chi';
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -596,7 +613,7 @@ class _ExpenseDateSection extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${group.entries.length} khoản chi',
+                      countLabel,
                       style: TextStyle(color: c.textMuted, fontSize: 12),
                     ),
                   ],
@@ -760,37 +777,30 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
-class _ExpenseRow extends ConsumerWidget {
+class _ExpenseRow extends StatelessWidget {
   const _ExpenseRow({required this.entry, required this.money});
 
   final ExpenseEntry entry;
   final NumberFormat money;
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showKConfirmDialog(
-      context: context,
-      title: 'Xóa khoản chi?',
-      subtitle: entry.title,
-      confirmLabel: 'Xóa',
-      cancelLabel: 'Hủy',
-    );
-    if (confirmed ?? false) {
-      await ref.read(expenseRepositoryProvider).deleteEntry(entry.id).unwrap();
-      ref
-        ..invalidate(expenseEntriesProvider)
-        ..invalidate(expenseSummaryProvider);
-    }
-  }
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final c = kuruColors(context);
     final note = entry.note?.trim();
+    final voidReason = entry.voidReason?.trim();
+    final isVoided = entry.isVoided;
     final subtitle = note == null || note.isEmpty
         ? entry.categoryName
         : '${entry.categoryName} · $note';
+    final secondaryText =
+        isVoided && voidReason != null && voidReason.isNotEmpty
+        ? 'Lý do hủy: $voidReason'
+        : subtitle;
     return InkWell(
-      onLongPress: () => _confirmDelete(context, ref),
+      onTap: entry.id.isEmpty
+          ? null
+          : () => context.push('/expenses/${entry.id}', extra: entry),
+      onLongPress: () {},
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         child: Row(
@@ -799,12 +809,12 @@ class _ExpenseRow extends ConsumerWidget {
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: c.surfaceHover,
+                color: isVoided ? c.dangerSoft : c.surfaceHover,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                TablerIcons.receipt,
-                color: c.textSecondary,
+                isVoided ? TablerIcons.ban : TablerIcons.receipt,
+                color: isVoided ? c.danger : c.textSecondary,
                 size: 20,
               ),
             ),
@@ -813,19 +823,36 @@ class _ExpenseRow extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    entry.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: c.textPrimary,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          entry.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isVoided ? c.textMuted : c.textPrimary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            decoration: isVoided
+                                ? TextDecoration.lineThrough
+                                : null,
+                          ),
+                        ),
+                      ),
+                      if (isVoided) ...[
+                        const SizedBox(width: 6),
+                        const KBadge(
+                          label: 'Đã hủy',
+                          tone: KBadgeTone.danger,
+                          leadingIcon: TablerIcons.ban,
+                        ),
+                      ],
+                    ],
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    subtitle,
+                    secondaryText,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(color: c.textMuted, fontSize: 12),
@@ -834,15 +861,23 @@ class _ExpenseRow extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Text(
-              '-${money.format(entry.amount)}',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: c.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w800,
-              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '-${money.format(entry.amount)}',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isVoided ? c.textMuted : c.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    decoration: isVoided ? TextDecoration.lineThrough : null,
+                  ),
+                ),
+                const SizedBox(height: 7),
+                Icon(TablerIcons.chevron_right, color: c.textMuted, size: 17),
+              ],
             ),
           ],
         ),
@@ -855,7 +890,7 @@ class _ExpenseEmpty extends StatelessWidget {
   const _ExpenseEmpty({required this.hasQuery, required this.onCreate});
 
   final bool hasQuery;
-  final VoidCallback onCreate;
+  final VoidCallback? onCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -882,9 +917,9 @@ class _ExpenseEmpty extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             hasQuery
-                ? 'Thử từ khóa khác hoặc thêm khoản chi mới.'
-                : 'Ghi lại tiền nhập hàng, mặt bằng, vận chuyển '
-                      'và các chi phí khác.',
+                ? 'Thử từ khóa khác hoặc xóa bộ lọc.'
+                : 'Tạo phiếu chi đang tạm tắt; các khoản đã ghi '
+                      'vẫn hiển thị ở đây.',
             textAlign: TextAlign.center,
             style: TextStyle(color: c.textMuted, fontSize: 13),
           ),
@@ -1476,7 +1511,13 @@ class _ExpenseDateGroup {
   final DateTime date;
   final List<ExpenseEntry> entries;
 
-  int get total => entries.fold(0, (sum, entry) => sum + entry.amount);
+  Iterable<ExpenseEntry> get activeEntries =>
+      entries.where((entry) => !entry.isVoided);
+
+  int get activeCount => activeEntries.length;
+  bool get hasVoided => activeCount != entries.length;
+
+  int get total => activeEntries.fold(0, (sum, entry) => sum + entry.amount);
 }
 
 List<_ExpenseDateGroup> _groupEntriesByPaidDate(List<ExpenseEntry> entries) {

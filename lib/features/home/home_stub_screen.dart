@@ -824,8 +824,7 @@ class _ExpenseShortcut extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Ghi nhận tiền nhập hàng, vận chuyển '
-                      'và chi phí vận hành.',
+                      'Xem biểu đồ và danh sách khoản chi đã ghi.',
                       style: TextStyle(fontSize: 12, color: c.textMuted),
                     ),
                   ],

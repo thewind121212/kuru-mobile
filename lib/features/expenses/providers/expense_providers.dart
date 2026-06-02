@@ -34,6 +34,14 @@ final expenseEntriesProvider = FutureProvider<List<ExpenseEntry>>((ref) async {
   return ref.watch(expenseRepositoryProvider).listEntries().unwrap();
 });
 
+final expenseEntryDetailProvider = FutureProvider.family<ExpenseEntry, String>((
+  ref,
+  id,
+) async {
+  ref.watch(currentOrgIdProvider);
+  return ref.watch(expenseRepositoryProvider).getEntryById(id).unwrap();
+});
+
 final expenseSummaryProvider = FutureProvider<ExpenseSummary>((ref) async {
   ref.watch(currentOrgIdProvider);
   final now = DateTime.now();
