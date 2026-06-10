@@ -20,18 +20,41 @@ Map<String, dynamic> _categoryJson() => <String, dynamic>{
   'updatedAt': '2026-05-25T00:00:00.000Z',
 };
 
-Map<String, dynamic> _entryJson() => <String, dynamic>{
-  'id': 'exp-1',
+Map<String, dynamic> _entryJson({
+  String id = 'exp-1',
+  bool isDelete = false,
+  String source = 'MANUAL',
+  String? purchaseEntryId,
+  String? purchaseEntryNumber,
+  Map<String, dynamic>? purchaseEntry,
+  List<Map<String, dynamic>>? linkedPurchaseEntries,
+  String? storeId,
+  String? storeName,
+  String? scope,
+  Object? voidedAt,
+  String? voidReason,
+}) => <String, dynamic>{
+  'id': id,
   'orgId': 'org-1',
   'categoryId': 'cat-1',
   'categoryName': 'Nhập hàng',
   'amount': '120000',
   'paidAt': '2026-05-25T00:00:00.000Z',
-  'isDelete': false,
+  'isDelete': isDelete,
   'createdBy': 'user-1',
   'createdAt': '2026-05-25T00:00:00.000Z',
   'updatedAt': '2026-05-25T00:00:00.000Z',
-  'source': 'MANUAL',
+  'source': source,
+  if (purchaseEntryId != null) 'purchaseEntryId': purchaseEntryId,
+  if (purchaseEntryNumber != null) 'purchaseEntryNumber': purchaseEntryNumber,
+  if (purchaseEntry != null) 'purchaseEntry': purchaseEntry,
+  if (linkedPurchaseEntries != null)
+    'linkedPurchaseEntries': linkedPurchaseEntries,
+  if (storeId != null) 'storeId': storeId,
+  if (storeName != null) 'storeName': storeName,
+  if (scope != null) 'scope': scope,
+  if (voidedAt != null) 'voidedAt': voidedAt,
+  if (voidReason != null) 'voidReason': voidReason,
 };
 
 void main() {
@@ -83,7 +106,15 @@ void main() {
       ),
     ).thenAnswer(
       (_) async => ok(<String, dynamic>{
-        'entries': <dynamic>[_entryJson()],
+        'entries': <dynamic>[
+          _entryJson(),
+          _entryJson(
+            id: 'exp-2',
+            voidedAt: '2026-05-25T01:00:00.000Z',
+            voidReason: 'cancelled import',
+          ),
+          _entryJson(id: 'exp-3', isDelete: true),
+        ],
       }),
     );
 
@@ -91,8 +122,154 @@ void main() {
 
     expect(result, isA<ApiSuccess<List<ExpenseEntry>>>());
     final entries = (result as ApiSuccess<List<ExpenseEntry>>).data;
-    expect(entries.single.categoryName, 'Nhập hàng');
-    expect(entries.single.amount, 120000);
+    expect(entries, hasLength(3));
+    expect(entries.first.categoryName, 'Nhập hàng');
+    expect(entries.first.amount, 120000);
+    expect(entries[1].isVoided, isTrue);
+    expect(entries[1].voidReason, 'cancelled import');
+    expect(entries[2].isVoided, isTrue);
+  });
+
+  test('listEntries parses import purchase references', () async {
+    when(
+      () => dio.get<dynamic>(
+        '/expense/ListExpenseEntries',
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer(
+      (_) async => ok(<String, dynamic>{
+        'entries': <dynamic>[
+          _entryJson(
+            source: 'PURCHASE_ENTRY',
+            purchaseEntryId: 'pe-1',
+            purchaseEntryNumber: 'PE-20260525-0001',
+          ),
+        ],
+      }),
+    );
+
+    final result = await repo.listEntries(limit: 10);
+
+    final entry = (result as ApiSuccess<List<ExpenseEntry>>).data.single;
+    expect(entry.importEntryId, 'pe-1');
+    expect(entry.importEntryNumber, 'PE-20260525-0001');
+    expect(entry.hasImportRef, isTrue);
+    expect(entry.matches('PE-20260525'), isTrue);
+  });
+
+  test(
+    'listEntries parses import branch warehouses from linked purchases',
+    () async {
+      when(
+        () => dio.get<dynamic>(
+          '/expense/ListExpenseEntries',
+          queryParameters: any(named: 'queryParameters'),
+        ),
+      ).thenAnswer(
+        (_) async => ok(<String, dynamic>{
+          'entries': <dynamic>[
+            _entryJson(
+              source: 'PUSHED',
+              linkedPurchaseEntries: <Map<String, dynamic>>[
+                <String, dynamic>{
+                  'id': 'pe-1',
+                  'entryNumber': 'PE-20260525-0001',
+                  'warehouses': <Map<String, dynamic>>[
+                    <String, dynamic>{
+                      'id': '2be35f86-5668-4a29-a45a-c9c268981915',
+                      'name': 'Chi nhánh Quận 1',
+                    },
+                    <String, dynamic>{
+                      'id': '2be35f86-5668-4a29-a45a-c9c268981915',
+                      'name': 'Chi nhánh Quận 1',
+                    },
+                  ],
+                },
+              ],
+            ),
+          ],
+        }),
+      );
+
+      final result = await repo.listEntries(limit: 10);
+
+      final entry = (result as ApiSuccess<List<ExpenseEntry>>).data.single;
+      expect(entry.importEntryId, 'pe-1');
+      expect(entry.importEntryNumber, 'PE-20260525-0001');
+      expect(entry.linkedPurchaseEntries, hasLength(1));
+      expect(entry.linkedImportWarehousesDeduped, hasLength(1));
+      expect(
+        entry.linkedImportWarehousesDeduped.single.name,
+        'Chi nhánh Quận 1',
+      );
+      expect(entry.branchDisplayName, 'Chi nhánh Quận 1');
+      expect(entry.isBranchScoped, isTrue);
+      expect(entry.matches('Quận 1'), isTrue);
+    },
+  );
+
+  test('listEntries parses branch scope by name', () async {
+    when(
+      () => dio.get<dynamic>(
+        '/expense/ListExpenseEntries',
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer(
+      (_) async => ok(<String, dynamic>{
+        'entries': <dynamic>[
+          _entryJson(
+            source: 'PUSH',
+            storeId: '2be35f86-5668-4a29-a45a-c9c268981915',
+            storeName: 'Chi nhánh Quận 1',
+            scope: 'BRANCH',
+          ),
+        ],
+      }),
+    );
+
+    final result = await repo.listEntries(limit: 10);
+
+    final entry = (result as ApiSuccess<List<ExpenseEntry>>).data.single;
+    expect(entry.source, 'PUSH');
+    expect(entry.storeId, '2be35f86-5668-4a29-a45a-c9c268981915');
+    expect(entry.storeName, 'Chi nhánh Quận 1');
+    expect(entry.isBranchScoped, isTrue);
+    expect(entry.branchDisplayName, 'Chi nhánh Quận 1');
+  });
+
+  test('getEntryById fetches one expense detail', () async {
+    when(
+      () => dio.get<dynamic>(
+        '/expense/GetExpenseEntry',
+        queryParameters: any(named: 'queryParameters'),
+      ),
+    ).thenAnswer(
+      (_) async => ok(<String, dynamic>{
+        'entry': _entryJson(
+          source: 'PURCHASE_ENTRY',
+          purchaseEntry: <String, dynamic>{
+            'id': 'pe-1',
+            'entryNumber': 'PE-20260525-0001',
+          },
+        ),
+      }),
+    );
+
+    final result = await repo.getEntryById('exp-1');
+
+    final entry = (result as ApiSuccess<ExpenseEntry>).data;
+    expect(entry.id, 'exp-1');
+    expect(entry.importEntryId, 'pe-1');
+    expect(entry.importEntryNumber, 'PE-20260525-0001');
+    final captured =
+        verify(
+              () => dio.get<dynamic>(
+                '/expense/GetExpenseEntry',
+                queryParameters: captureAny(named: 'queryParameters'),
+              ),
+            ).captured.single
+            as Map<String, dynamic>;
+    expect(captured['id'], 'exp-1');
   });
 
   test('createEntry sends backend request shape', () async {

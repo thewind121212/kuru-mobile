@@ -13,7 +13,9 @@ import 'package:kuru_mobile/features/catalog/products/product_form_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/product_variant_detail_screen.dart';
 import 'package:kuru_mobile/features/catalog/products/products_list_screen.dart';
 import 'package:kuru_mobile/features/create_org/create_org_screen.dart';
+import 'package:kuru_mobile/features/expenses/expense_detail_screen.dart';
 import 'package:kuru_mobile/features/expenses/expense_list_screen.dart';
+import 'package:kuru_mobile/features/expenses/models/expense_entry.dart';
 import 'package:kuru_mobile/features/home/home_stub_screen.dart';
 import 'package:kuru_mobile/features/imports/import_create_screen.dart';
 import 'package:kuru_mobile/features/imports/import_detail_screen.dart';
@@ -115,6 +117,15 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/import/:id',
         builder: (_, state) =>
             ImportDetailScreen(entryId: state.pathParameters['id']!),
+      ),
+      GoRoute(
+        path: '/expenses/:id',
+        builder: (_, state) => ExpenseDetailScreen(
+          entryId: state.pathParameters['id']!,
+          initial: state.extra is ExpenseEntry
+              ? state.extra! as ExpenseEntry
+              : null,
+        ),
       ),
       GoRoute(path: '/pos', builder: (_, __) => const PosScreen()),
 
