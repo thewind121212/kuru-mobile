@@ -10,6 +10,8 @@ import 'package:kuru_mobile/core/auth/org_info.dart';
 import 'package:kuru_mobile/core/auth/user_info.dart';
 import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
 import 'package:kuru_mobile/core/permissions/resolved_permissions.dart';
+import 'package:kuru_mobile/core/profile/profile_providers.dart';
+import 'package:kuru_mobile/core/profile/security_status.dart';
 import 'package:kuru_mobile/features/settings/settings_home_screen.dart';
 
 UserInfo _user() => const UserInfo(
@@ -46,6 +48,9 @@ void main() {
           biometricEnabledProvider.overrideWith((ref) async => false),
           biometricAvailableProvider.overrideWith((ref) async => true),
           currentOrgIdProvider.overrideWithValue('o1'),
+          securityStatusProvider.overrideWith(
+            (ref) async => const SecurityStatus(),
+          ),
         ],
       ),
     );
@@ -67,6 +72,9 @@ void main() {
           biometricEnabledProvider.overrideWith((ref) async => false),
           biometricAvailableProvider.overrideWith((ref) async => true),
           currentOrgIdProvider.overrideWithValue('o1'),
+          securityStatusProvider.overrideWith(
+            (ref) async => const SecurityStatus(),
+          ),
         ],
       ),
     );
