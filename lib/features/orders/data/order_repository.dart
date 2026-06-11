@@ -87,6 +87,7 @@ class OrderRepository {
     required String idempotencyKey,
     required OrderCartDraft draft,
     String? storeId,
+    String? terminalId,
     OrderPaymentInput? payment,
   }) async {
     try {
@@ -115,6 +116,8 @@ class OrderRepository {
       body['saleChannel'] = draft.saleChannel.toWire();
       final trimmedStoreId = trimOrNull(storeId);
       if (trimmedStoreId != null) body['storeId'] = trimmedStoreId;
+      final trimmedTerminalId = trimOrNull(terminalId);
+      if (trimmedTerminalId != null) body['terminalId'] = trimmedTerminalId;
 
       if (payment != null) body['payment'] = payment.toJson();
 

@@ -401,6 +401,117 @@ class AppLocalizationsEn extends AppLocalizations {
   String get posBranchPickerTitle => 'Select selling branch';
 
   @override
+  String get posDisplayLabel => 'Display';
+
+  @override
+  String get posDisplayLoading => 'Loading display';
+
+  @override
+  String get posDisplayMissing => 'No customer display found';
+
+  @override
+  String get posDisplaySelect => 'Select display';
+
+  @override
+  String get posDisplaySelectRequired =>
+      'Select a counter or No display before charging';
+
+  @override
+  String get posDisplayNone => 'No display';
+
+  @override
+  String get posDisplayNoneDesc =>
+      'Do not sync this cart to a customer display';
+
+  @override
+  String get posDisplayDefault => 'Default';
+
+  @override
+  String get posDisplayPickerTitle => 'Select customer display';
+
+  @override
+  String get posDisplayPickerSubtitle =>
+      'The cart will sync to this counter\'s customer display.';
+
+  @override
+  String get posDisplayOnline => 'Online';
+
+  @override
+  String get posDisplayOffline => 'Offline';
+
+  @override
+  String get posDisplayNoScreen => 'No screen paired';
+
+  @override
+  String get posDisplayPair => 'Pair';
+
+  @override
+  String get posDisplayRepair => 'Re-pair';
+
+  @override
+  String get posDisplayPairHint =>
+      'Open the customer display, enter the pair code, then keep it on the sale display page.';
+
+  @override
+  String get posDisplayInUseShort => 'In use by another POS';
+
+  @override
+  String get posDisplayInUse =>
+      'This display is being used by another POS session.';
+
+  @override
+  String get posDisplayTakeOver => 'Take over';
+
+  @override
+  String get posPairTitle => 'Pair customer display';
+
+  @override
+  String get posPairRepairTitle => 'Re-pair customer display';
+
+  @override
+  String get posPairInstructions =>
+      'Generate a pair code, then enter it on the customer display.';
+
+  @override
+  String get posPairRepairInstructions =>
+      'Generate a new pair code, then enter it on the existing customer display.';
+
+  @override
+  String get posPairGenerate => 'Generate pair code';
+
+  @override
+  String get posPairCodeCopy => 'Copy pair code';
+
+  @override
+  String get posPairCopied => 'Code copied';
+
+  @override
+  String get posPairCopyFailed => 'Could not copy code';
+
+  @override
+  String get posPairConnected => 'Display connected';
+
+  @override
+  String get posPairDone => 'Done';
+
+  @override
+  String posPairExpiresIn(String time) {
+    return 'Code expires in $time';
+  }
+
+  @override
+  String get posPairExpired => 'Code expired';
+
+  @override
+  String get posPairCancel => 'Cancel code';
+
+  @override
+  String get posPairCancelled => 'Pair code cancelled';
+
+  @override
+  String get posPairError => 'Could not generate pair code';
+
+  @override
   String get posScanHint => 'Point the camera at the product barcode';
 
   @override

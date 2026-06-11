@@ -397,6 +397,116 @@ class AppLocalizationsVi extends AppLocalizations {
   String get posBranchPickerTitle => 'Chọn chi nhánh bán hàng';
 
   @override
+  String get posDisplayLabel => 'Màn hình';
+
+  @override
+  String get posDisplayLoading => 'Đang tải màn hình';
+
+  @override
+  String get posDisplayMissing => 'Chưa có màn hình khách';
+
+  @override
+  String get posDisplaySelect => 'Chọn màn hình';
+
+  @override
+  String get posDisplaySelectRequired =>
+      'Chọn quầy hoặc Không dùng màn hình trước khi thu tiền';
+
+  @override
+  String get posDisplayNone => 'Không dùng màn hình';
+
+  @override
+  String get posDisplayNoneDesc => 'Không đồng bộ giỏ hàng ra màn hình khách';
+
+  @override
+  String get posDisplayDefault => 'Mặc định';
+
+  @override
+  String get posDisplayPickerTitle => 'Chọn màn hình khách';
+
+  @override
+  String get posDisplayPickerSubtitle =>
+      'Giỏ hàng sẽ được đồng bộ đến màn hình của quầy này.';
+
+  @override
+  String get posDisplayOnline => 'Đang kết nối';
+
+  @override
+  String get posDisplayOffline => 'Mất kết nối';
+
+  @override
+  String get posDisplayNoScreen => 'Chưa ghép màn hình';
+
+  @override
+  String get posDisplayPair => 'Ghép';
+
+  @override
+  String get posDisplayRepair => 'Ghép lại';
+
+  @override
+  String get posDisplayPairHint =>
+      'Mở màn hình khách, nhập mã ghép, rồi giữ màn hình đó ở trang hiển thị bán hàng.';
+
+  @override
+  String get posDisplayInUseShort => 'Đang được POS khác dùng';
+
+  @override
+  String get posDisplayInUse =>
+      'Màn hình này đang được một phiên thu ngân khác sử dụng.';
+
+  @override
+  String get posDisplayTakeOver => 'Tiếp quản';
+
+  @override
+  String get posPairTitle => 'Ghép màn hình khách';
+
+  @override
+  String get posPairRepairTitle => 'Ghép lại màn hình khách';
+
+  @override
+  String get posPairInstructions =>
+      'Tạo mã ghép rồi nhập mã này trên màn hình khách.';
+
+  @override
+  String get posPairRepairInstructions =>
+      'Tạo mã ghép mới rồi nhập mã này trên màn hình khách hiện có.';
+
+  @override
+  String get posPairGenerate => 'Tạo mã ghép';
+
+  @override
+  String get posPairCodeCopy => 'Sao chép mã ghép';
+
+  @override
+  String get posPairCopied => 'Đã sao chép mã';
+
+  @override
+  String get posPairCopyFailed => 'Không thể sao chép mã';
+
+  @override
+  String get posPairConnected => 'Màn hình đã kết nối';
+
+  @override
+  String get posPairDone => 'Xong';
+
+  @override
+  String posPairExpiresIn(String time) {
+    return 'Mã hết hạn sau $time';
+  }
+
+  @override
+  String get posPairExpired => 'Mã đã hết hạn';
+
+  @override
+  String get posPairCancel => 'Hủy mã';
+
+  @override
+  String get posPairCancelled => 'Đã hủy mã ghép';
+
+  @override
+  String get posPairError => 'Không thể tạo mã ghép';
+
+  @override
   String get posScanHint => 'Hướng camera vào mã vạch sản phẩm';
 
   @override
