@@ -1316,7 +1316,7 @@ class _DisplayChip extends StatelessWidget {
       _DisplayPresenceStatus.online => null,
       _DisplayPresenceStatus.offline => l.posDisplayOffline,
       _DisplayPresenceStatus.inUse => l.posDisplayInUseShort,
-      _DisplayPresenceStatus.none => l.posDisplayNoScreen,
+      _DisplayPresenceStatus.none => null,
     };
     final showStatusRow = statusText != null || onTakeOver != null;
     return Material(
@@ -1343,6 +1343,10 @@ class _DisplayChip extends StatelessWidget {
                     color: isInUse
                         ? c.warning
                         : isChecking
+                        ? c.textMuted
+                        : status == _DisplayPresenceStatus.offline
+                        ? c.danger
+                        : status == _DisplayPresenceStatus.none
                         ? c.textMuted
                         : c.accent600,
                     size: 28,
@@ -1564,7 +1568,11 @@ class _DisplayPickerTerminalRow extends StatelessWidget {
             children: [
               Icon(
                 TablerIcons.device_desktop,
-                color: selected ? c.accent700 : c.textMuted,
+                color: status == _DisplayPresenceStatus.offline
+                    ? c.danger
+                    : selected
+                    ? c.accent700
+                    : c.textMuted,
                 size: 29,
               ),
               const SizedBox(width: 10),
