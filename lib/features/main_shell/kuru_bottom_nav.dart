@@ -43,6 +43,7 @@ class KuruBottomNav extends StatelessWidget {
           : null,
       actionTooltip: actionTooltip,
       onActionPressed: onActionPressed,
+      reserveActionSpace: false,
       child: Row(
         children: [
           for (var i = 0; i < tabs.length; i++) ...[
@@ -75,20 +76,23 @@ class KuruBottomBarFrame extends StatelessWidget {
     this.action,
     this.actionTooltip,
     this.onActionPressed,
+    this.reserveActionSpace = true,
   });
 
   final Widget child;
   final Widget? action;
   final String? actionTooltip;
   final VoidCallback? onActionPressed;
+  final bool reserveActionSpace;
 
-  static const double height = 68;
   static const double pillHeight = 76;
   static const double pillRadius = 34;
   static const double actionSize = 64;
-  static const double actionProtrusion = actionSize / 2;
   static const double notchRadius = 38;
   static const double notchCenterY = 8;
+  static const double actionTopInset = actionSize / 2;
+  static const double compactHeight = pillHeight - notchCenterY;
+  static const double height = pillHeight + actionTopInset - notchCenterY;
   static const double sideMargin = 16;
   static const double bottomGap = 12;
   static const double blurSigma = 18;
@@ -97,6 +101,7 @@ class KuruBottomBarFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = kuruColors(context);
     final hasAction = action != null;
+    final shouldReserveActionSpace = hasAction && reserveActionSpace;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final fill = isDark
         ? c.surfaceElev.withValues(alpha: 0.82)
@@ -106,7 +111,7 @@ class KuruBottomBarFrame extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(sideMargin, 0, sideMargin, bottomGap),
       child: SizedBox(
-        height: hasAction ? height + actionProtrusion : height,
+        height: shouldReserveActionSpace ? height : compactHeight,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -143,7 +148,7 @@ class KuruBottomBarFrame extends StatelessWidget {
             ),
             if (hasAction)
               Positioned(
-                top: 0,
+                top: shouldReserveActionSpace ? 0 : -actionTopInset,
                 left: 0,
                 right: 0,
                 child: Align(

@@ -6,6 +6,7 @@ import 'package:kuru_mobile/core/auth/auth_providers.dart';
 import 'package:kuru_mobile/core/auth/auth_repository.dart';
 import 'package:kuru_mobile/core/auth/biometric_providers.dart';
 import 'package:kuru_mobile/core/permissions/permissions_providers.dart';
+import 'package:kuru_mobile/core/profile/profile_providers.dart';
 import 'package:kuru_mobile/design/core/catalog/k_settings_row.dart';
 import 'package:kuru_mobile/design/core/layout/k_settings_hero.dart';
 import 'package:kuru_mobile/design/core/layout/k_settings_section.dart';
@@ -19,6 +20,7 @@ class SettingsHomeScreen extends ConsumerWidget {
     final bootstrap = ref.watch(appBootstrapProvider);
     final perms = ref.watch(myPermissionsProvider);
     final bioEnabled = ref.watch(biometricEnabledProvider);
+    final securityStatus = ref.watch(securityStatusProvider);
 
     final user = bootstrap.maybeWhen(
       data: (b) => b is BootstrapAuthed ? b.user : null,
@@ -80,7 +82,11 @@ class SettingsHomeScreen extends ConsumerWidget {
                   iconBackground: const Color(0xFFFEF6E5),
                   iconColor: const Color(0xFFD97706),
                   label: 'Xác thực 2 lớp',
-                  trailingText: user.totpEnabled ? 'Bật' : 'Tắt',
+                  trailingText: securityStatus.maybeWhen(
+                    data: (status) => status.totpEnabled ? 'Bật' : 'Tắt',
+                    loading: () => '...',
+                    orElse: () => 'Không rõ',
+                  ),
                   onTap: () => context.push('/settings/security'),
                 ),
                 KSettingsRow(
