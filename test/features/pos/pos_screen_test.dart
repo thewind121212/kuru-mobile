@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,10 +23,31 @@ import 'package:kuru_mobile/features/orders/data/order_repository.dart';
 import 'package:kuru_mobile/features/orders/models/order_cart_draft.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
+import 'package:kuru_mobile/features/pos/data/pos_customer_display_repository.dart';
 import 'package:kuru_mobile/features/pos/data/pos_payment_qr_repository.dart';
 import 'package:kuru_mobile/features/pos/pos_screen.dart';
+import 'package:kuru_mobile/features/pos/providers/pos_customer_display_providers.dart';
 import 'package:kuru_mobile/main.dart' show sharedPrefsProvider;
 import 'package:shared_preferences/shared_preferences.dart';
+
+List<Override> _posDisplayOverrides({
+  List<PosDisplayTerminal> terminals = const [],
+  List<PosPairedDisplay> displays = const [],
+}) {
+  return [
+    posDisplayTerminalsProvider(
+      'branch-1',
+    ).overrideWith((ref) async => terminals),
+    posPairedDisplaysProvider('branch-1').overrideWith((ref) async => displays),
+  ];
+}
+
+void _useTallTestViewport(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
 
 void main() {
   testWidgets('renders POS cart and submits a paid sale', (tester) async {
@@ -43,6 +66,7 @@ void main() {
             ),
           ];
         }),
+        ..._posDisplayOverrides(),
       ],
     );
     addTearDown(container.dispose);
@@ -135,6 +159,7 @@ void main() {
             ),
           ];
         }),
+        ..._posDisplayOverrides(),
       ],
     );
     addTearDown(container.dispose);
@@ -206,6 +231,7 @@ void main() {
             ),
           ];
         }),
+        ..._posDisplayOverrides(),
       ],
     );
     addTearDown(container.dispose);
@@ -273,6 +299,7 @@ void main() {
             ),
           ];
         }),
+        ..._posDisplayOverrides(),
       ],
     );
     addTearDown(container.dispose);
@@ -331,6 +358,7 @@ void main() {
             ),
           ];
         }),
+        ..._posDisplayOverrides(),
       ],
     );
     addTearDown(container.dispose);
@@ -378,10 +406,714 @@ void main() {
     expect(find.text('123456789'), findsOneWidget);
     expect(find.text('KURUODH250524ABC123'), findsOneWidget);
   });
+
+  testWidgets('selects customer display terminal and pushes cart snapshot', (
+    tester,
+  ) async {
+    _useTallTestViewport(tester);
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final prefs = await SharedPreferences.getInstance();
+    final displayRepo = _FakeDisplayRepository();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        currentOrgIdProvider.overrideWithValue('org_test'),
+        posCustomerDisplayRepositoryProvider.overrideWithValue(displayRepo),
+        productWarehouseOptionsProvider.overrideWith((ref) async {
+          return const [
+            ProductWarehouseOption(
+              warehouseId: 'branch-1',
+              name: 'Cửa hàng chính',
+            ),
+          ];
+        }),
+        ..._posDisplayOverrides(
+          terminals: const [
+            PosDisplayTerminal(
+              id: 'terminal-1',
+              name: 'Quầy 1',
+              isDefault: true,
+            ),
+            PosDisplayTerminal(
+              id: 'terminal-2',
+              name: 'Quầy 2',
+              isDefault: false,
+            ),
+          ],
+          displays: [
+            PosPairedDisplay(
+              id: 'display-1',
+              name: 'Màn hình cửa trước',
+              terminalId: 'terminal-1',
+              terminalName: 'Quầy 1',
+              status: 'PAIRED',
+              lastSeenAt: DateTime.now(),
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container
+        .read(orderCartProvider.notifier)
+        .addLine(
+          const OrderLineItem(
+            productId: 'p1',
+            productName: 'Cà phê sữa',
+            baseUnitCode: 'ly',
+            qty: 2,
+            unitPrice: 15000,
+          ),
+        );
+
+    final router = GoRouter(
+      initialLocation: '/pos',
+      routes: [GoRoute(path: '/pos', builder: (_, __) => const PosScreen())],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+          locale: const Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Chọn màn hình'), findsOneWidget);
+
+    await tester.tap(find.text('Chọn màn hình'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.ensureVisible(find.text('Màn hình cửa trước'));
+    await tester.pump();
+    await tester.tap(find.text('Màn hình cửa trước'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(displayRepo.pushes, hasLength(1));
+    final push = displayRepo.pushes.single;
+    expect(push.terminalId, 'terminal-1');
+    expect(push.items.single.name, 'Cà phê sữa');
+    expect(push.items.single.lineTotal, 30000);
+    expect(push.subtotal, 30000);
+    expect(push.total, 30000);
+
+    await tester.tap(find.text('Màn hình cửa trước'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.ensureVisible(find.text('Quầy 2'));
+    await tester.pump();
+    await tester.tap(find.text('Quầy 2'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(displayRepo.pushes, hasLength(3));
+    final switchRelease = displayRepo.pushes[1];
+    expect(switchRelease.terminalId, 'terminal-1');
+    expect(switchRelease.items, isEmpty);
+    expect(switchRelease.sessionId, push.sessionId);
+    final secondTerminalPush = displayRepo.pushes[2];
+    expect(secondTerminalPush.terminalId, 'terminal-2');
+    expect(secondTerminalPush.items.single.name, 'Cà phê sữa');
+    expect(secondTerminalPush.sessionId, push.sessionId);
+
+    await tester.tap(find.text('Xóa giỏ'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(displayRepo.pushes, hasLength(4));
+    final release = displayRepo.pushes.last;
+    expect(release.terminalId, 'terminal-2');
+    expect(release.items, isEmpty);
+    expect(release.subtotal, 0);
+    expect(release.total, 0);
+    expect(release.sessionId, push.sessionId);
+  });
+
+  testWidgets('releases customer display lock after paid sale', (tester) async {
+    _useTallTestViewport(tester);
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final prefs = await SharedPreferences.getInstance();
+    final displayRepo = _FakeDisplayRepository();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        currentOrgIdProvider.overrideWithValue('org_test'),
+        orderRepositoryProvider.overrideWithValue(
+          _FakeOrderRepository(
+            expectedTerminalId: 'terminal-1',
+            expectedPaymentAmount: 30000,
+          ),
+        ),
+        posCustomerDisplayRepositoryProvider.overrideWithValue(displayRepo),
+        productWarehouseOptionsProvider.overrideWith((ref) async {
+          return const [
+            ProductWarehouseOption(
+              warehouseId: 'branch-1',
+              name: 'Cửa hàng chính',
+            ),
+          ];
+        }),
+        ..._posDisplayOverrides(
+          terminals: const [
+            PosDisplayTerminal(
+              id: 'terminal-1',
+              name: 'Quầy 1',
+              isDefault: true,
+            ),
+            PosDisplayTerminal(
+              id: 'terminal-2',
+              name: 'Quầy 2',
+              isDefault: false,
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container
+        .read(orderCartProvider.notifier)
+        .addLine(
+          const OrderLineItem(
+            productId: 'p1',
+            productName: 'Cà phê sữa',
+            baseUnitCode: 'ly',
+            qty: 2,
+            unitPrice: 15000,
+          ),
+        );
+
+    final router = GoRouter(
+      initialLocation: '/pos',
+      routes: [
+        GoRoute(path: '/pos', builder: (_, __) => const PosScreen()),
+        GoRoute(path: '/orders/:id', builder: (_, __) => const SizedBox()),
+      ],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+          locale: const Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.text('Chọn màn hình'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.ensureVisible(find.text('Quầy 1'));
+    await tester.pump();
+    await tester.tap(find.text('Quầy 1'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(displayRepo.pushes, hasLength(1));
+    final cartPush = displayRepo.pushes.single;
+    expect(cartPush.terminalId, 'terminal-1');
+    expect(cartPush.items.single.name, 'Cà phê sữa');
+
+    await tester.tap(find.text('Thu tiền'));
+    await tester.pump();
+    expect(find.text('Thanh toán'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -360));
+    await tester.pump();
+    await tester.tap(find.text('Xác nhận thanh toán'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Thanh toán thành công'), findsOneWidget);
+    expect(displayRepo.pushes, hasLength(2));
+    final release = displayRepo.pushes.last;
+    expect(release.terminalId, 'terminal-1');
+    expect(release.items, isEmpty);
+    expect(release.total, 0);
+    expect(release.sessionId, cartPush.sessionId);
+  });
+
+  testWidgets('take over customer display pushes current cart for this POS', (
+    tester,
+  ) async {
+    _useTallTestViewport(tester);
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final prefs = await SharedPreferences.getInstance();
+    final displayRepo = _FakeDisplayRepository(acceptedSequence: [false, true]);
+    final container = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        currentOrgIdProvider.overrideWithValue('org_test'),
+        posCustomerDisplayRepositoryProvider.overrideWithValue(displayRepo),
+        productWarehouseOptionsProvider.overrideWith((ref) async {
+          return const [
+            ProductWarehouseOption(
+              warehouseId: 'branch-1',
+              name: 'Cửa hàng chính',
+            ),
+          ];
+        }),
+        ..._posDisplayOverrides(
+          terminals: const [
+            PosDisplayTerminal(
+              id: 'terminal-1',
+              name: 'Quầy 1',
+              isDefault: true,
+            ),
+            PosDisplayTerminal(
+              id: 'terminal-2',
+              name: 'Quầy 2',
+              isDefault: false,
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    container
+        .read(orderCartProvider.notifier)
+        .addLine(
+          const OrderLineItem(
+            productId: 'p1',
+            productName: 'Cà phê sữa',
+            baseUnitCode: 'ly',
+            qty: 2,
+            unitPrice: 15000,
+          ),
+        );
+
+    final router = GoRouter(
+      initialLocation: '/pos',
+      routes: [GoRoute(path: '/pos', builder: (_, __) => const PosScreen())],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+          locale: const Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    await tester.tap(find.text('Chọn màn hình'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.ensureVisible(find.text('Quầy 1'));
+    await tester.pump();
+    await tester.tap(find.text('Quầy 1'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(displayRepo.pushes, hasLength(1));
+    final rejected = displayRepo.pushes.single;
+    expect(rejected.takeOver, isFalse);
+    expect(find.text('Đang được POS khác dùng'), findsOneWidget);
+    expect(find.text('Tiếp quản'), findsOneWidget);
+
+    await tester.tap(find.text('Tiếp quản'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(displayRepo.pushes, hasLength(2));
+    final takeover = displayRepo.pushes.last;
+    expect(takeover.terminalId, 'terminal-1');
+    expect(takeover.takeOver, isTrue);
+    expect(takeover.sessionId, rejected.sessionId);
+    expect(takeover.items.single.name, 'Cà phê sữa');
+  });
+
+  testWidgets(
+    'take over customer display is available before adding products',
+    (tester) async {
+      _useTallTestViewport(tester);
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      final prefs = await SharedPreferences.getInstance();
+      final displayRepo = _FakeDisplayRepository(
+        acceptedSequence: [false, true],
+      );
+      final container = ProviderContainer(
+        overrides: [
+          sharedPrefsProvider.overrideWithValue(prefs),
+          currentOrgIdProvider.overrideWithValue('org_test'),
+          posCustomerDisplayRepositoryProvider.overrideWithValue(displayRepo),
+          productWarehouseOptionsProvider.overrideWith((ref) async {
+            return const [
+              ProductWarehouseOption(
+                warehouseId: 'branch-1',
+                name: 'Cửa hàng chính',
+              ),
+            ];
+          }),
+          ..._posDisplayOverrides(
+            terminals: const [
+              PosDisplayTerminal(
+                id: 'terminal-1',
+                name: 'Quầy 1',
+                isDefault: true,
+              ),
+              PosDisplayTerminal(
+                id: 'terminal-2',
+                name: 'Quầy 2',
+                isDefault: false,
+              ),
+            ],
+            displays: [
+              PosPairedDisplay(
+                id: 'display-1',
+                name: 'Màn hình cửa trước',
+                terminalId: 'terminal-1',
+                terminalName: 'Quầy 1',
+                status: 'PAIRED',
+                lastSeenAt: DateTime.now(),
+              ),
+            ],
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final router = GoRouter(
+        initialLocation: '/pos',
+        routes: [GoRoute(path: '/pos', builder: (_, __) => const PosScreen())],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp.router(
+            routerConfig: router,
+            theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+            locale: const Locale('vi'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      await tester.tap(find.text('Chọn màn hình'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      await tester.ensureVisible(find.text('Màn hình cửa trước'));
+      await tester.pump();
+      await tester.tap(find.text('Màn hình cửa trước'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(displayRepo.pushes, hasLength(1));
+      final rejected = displayRepo.pushes.single;
+      expect(rejected.items, isEmpty);
+      expect(rejected.takeOver, isFalse);
+      expect(find.text('Đang được POS khác dùng'), findsOneWidget);
+      expect(find.text('Tiếp quản'), findsOneWidget);
+
+      await tester.tap(find.text('Tiếp quản'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(displayRepo.pushes, hasLength(2));
+      final takeover = displayRepo.pushes.last;
+      expect(takeover.items, isEmpty);
+      expect(takeover.takeOver, isTrue);
+      expect(takeover.sessionId, rejected.sessionId);
+      expect(find.text('Màn hình cửa trước'), findsOneWidget);
+      expect(find.text('Đang kết nối'), findsNothing);
+    },
+  );
+
+  testWidgets('shows display loading while presence data is fetching', (
+    tester,
+  ) async {
+    _useTallTestViewport(tester);
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      'kuru.pos.terminal.v1.org_test.branch-1': 'terminal-1',
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final displays = Completer<List<PosPairedDisplay>>();
+    final displayRepo = _FakeDisplayRepository();
+    final container = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        currentOrgIdProvider.overrideWithValue('org_test'),
+        posCustomerDisplayRepositoryProvider.overrideWithValue(displayRepo),
+        productWarehouseOptionsProvider.overrideWith((ref) async {
+          return const [
+            ProductWarehouseOption(
+              warehouseId: 'branch-1',
+              name: 'Cửa hàng chính',
+            ),
+          ];
+        }),
+        posDisplayTerminalsProvider('branch-1').overrideWith((ref) async {
+          return const [
+            PosDisplayTerminal(
+              id: 'terminal-1',
+              name: 'Quầy 1',
+              isDefault: true,
+            ),
+          ];
+        }),
+        posPairedDisplaysProvider(
+          'branch-1',
+        ).overrideWith((ref) => displays.future),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final router = GoRouter(
+      initialLocation: '/pos',
+      routes: [GoRoute(path: '/pos', builder: (_, __) => const PosScreen())],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+          locale: const Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.text('Đang tải màn hình'), findsNothing);
+    expect(find.text('Mất kết nối'), findsNothing);
+    expect(find.text('Chưa ghép màn hình'), findsNothing);
+
+    displays.complete([
+      PosPairedDisplay(
+        id: 'display-1',
+        name: 'Màn hình cửa trước',
+        terminalId: 'terminal-1',
+        terminalName: 'Quầy 1',
+        status: 'PAIRED',
+        lastSeenAt: DateTime.now(),
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(displayRepo.pushes, hasLength(1));
+    expect(find.text('Màn hình cửa trước'), findsOneWidget);
+    expect(find.text('Đang tải màn hình'), findsNothing);
+    expect(find.text('Đang kết nối'), findsNothing);
+  });
+
+  testWidgets('checks selected customer display when POS route renders', (
+    tester,
+  ) async {
+    _useTallTestViewport(tester);
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      'kuru.pos.terminal.v1.org_test.branch-1': 'terminal-1',
+    });
+    final prefs = await SharedPreferences.getInstance();
+    final displayRepo = _FakeDisplayRepository(acceptedSequence: [false]);
+    final container = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        currentOrgIdProvider.overrideWithValue('org_test'),
+        posCustomerDisplayRepositoryProvider.overrideWithValue(displayRepo),
+        productWarehouseOptionsProvider.overrideWith((ref) async {
+          return const [
+            ProductWarehouseOption(
+              warehouseId: 'branch-1',
+              name: 'Cửa hàng chính',
+            ),
+          ];
+        }),
+        ..._posDisplayOverrides(
+          terminals: const [
+            PosDisplayTerminal(
+              id: 'terminal-1',
+              name: 'Quầy 1',
+              isDefault: true,
+            ),
+            PosDisplayTerminal(
+              id: 'terminal-2',
+              name: 'Quầy 2',
+              isDefault: false,
+            ),
+          ],
+          displays: [
+            PosPairedDisplay(
+              id: 'display-1',
+              name: 'Màn hình cửa trước',
+              terminalId: 'terminal-1',
+              terminalName: 'Quầy 1',
+              status: 'PAIRED',
+              lastSeenAt: DateTime.now(),
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final router = GoRouter(
+      initialLocation: '/pos',
+      routes: [GoRoute(path: '/pos', builder: (_, __) => const PosScreen())],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+          locale: const Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(displayRepo.pushes, hasLength(1));
+    final rejected = displayRepo.pushes.single;
+    expect(rejected.items, isEmpty);
+    expect(rejected.takeOver, isFalse);
+    expect(find.text('Đang được POS khác dùng'), findsOneWidget);
+    expect(find.text('Tiếp quản'), findsOneWidget);
+  });
+
+  testWidgets('generates customer display pair code from POS terminal picker', (
+    tester,
+  ) async {
+    _useTallTestViewport(tester);
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    final prefs = await SharedPreferences.getInstance();
+    final displayRepo = _FakeDisplayRepository(
+      pairSession: PosPairSession(
+        code: '123456',
+        expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(prefs),
+        currentOrgIdProvider.overrideWithValue('org_test'),
+        posCustomerDisplayRepositoryProvider.overrideWithValue(displayRepo),
+        productWarehouseOptionsProvider.overrideWith((ref) async {
+          return const [
+            ProductWarehouseOption(
+              warehouseId: 'branch-1',
+              name: 'Cửa hàng chính',
+            ),
+          ];
+        }),
+        ..._posDisplayOverrides(
+          terminals: const [
+            PosDisplayTerminal(
+              id: 'terminal-1',
+              name: 'Quầy chính',
+              isDefault: true,
+            ),
+          ],
+          displays: [
+            PosPairedDisplay(
+              id: 'display-1',
+              name: 'Màn hình cửa trước',
+              terminalId: 'terminal-1',
+              terminalName: 'Quầy chính',
+              status: 'PAIRED',
+              lastSeenAt: DateTime.now(),
+            ),
+          ],
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final router = GoRouter(
+      initialLocation: '/pos',
+      routes: [GoRoute(path: '/pos', builder: (_, __) => const PosScreen())],
+    );
+    addTearDown(router.dispose);
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: MaterialApp.router(
+          routerConfig: router,
+          theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+          locale: const Locale('vi'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    final chip = find.text('Màn hình cửa trước').evaluate().isNotEmpty
+        ? find.text('Màn hình cửa trước')
+        : find.text('Chọn màn hình');
+    await tester.tap(chip);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.ensureVisible(find.text('Ghép lại'));
+    await tester.pump();
+    await tester.tap(find.text('Ghép lại'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 400));
+
+    expect(find.text('Ghép lại màn hình khách'), findsOneWidget);
+    expect(find.text('Màn hình cửa trước'), findsAtLeastNWidgets(1));
+    expect(find.text('Tên màn hình'), findsNothing);
+    await tester.tap(find.text('Tạo mã ghép'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(displayRepo.createdName, 'Màn hình cửa trước');
+    expect(find.text('123 456'), findsOneWidget);
+  });
 }
 
 class _FakeOrderRepository extends OrderRepository {
-  _FakeOrderRepository() : super(Dio(), uuidFactory: () => 'idem-pos-1');
+  _FakeOrderRepository({
+    this.expectedTerminalId,
+    this.expectedPaymentAmount = 50000,
+  }) : super(Dio(), uuidFactory: () => 'idem-pos-1');
+
+  final String? expectedTerminalId;
+  final double expectedPaymentAmount;
 
   @override
   Future<ApiResult<String>> createOrder({
@@ -389,13 +1121,15 @@ class _FakeOrderRepository extends OrderRepository {
     required String idempotencyKey,
     required OrderCartDraft draft,
     String? storeId,
+    String? terminalId,
     OrderPaymentInput? payment,
   }) async {
     expect(orgId, 'org_test');
     expect(idempotencyKey, 'idem-pos-1');
     expect(storeId, 'branch-1');
+    expect(terminalId, expectedTerminalId);
     expect(draft.items.single.productName, 'Cà phê sữa');
-    expect(payment?.amount, 50000);
+    expect(payment?.amount, expectedPaymentAmount);
     return ApiResult.success('order_pos_1');
   }
 }
@@ -421,6 +1155,104 @@ class _FakeQrRepository extends PosPaymentQrRepository {
       ),
     );
   }
+}
+
+class _FakeDisplayRepository extends PosCustomerDisplayRepository {
+  _FakeDisplayRepository({this.pairSession, List<bool>? acceptedSequence})
+    : acceptedSequence = acceptedSequence ?? [],
+      super(Dio());
+
+  final PosPairSession? pairSession;
+  final List<bool> acceptedSequence;
+  final List<_PushCall> pushes = [];
+  String? createdName;
+
+  @override
+  Future<ApiResult<List<PosDisplayTerminal>>> listTerminals({
+    required String storeId,
+  }) async {
+    return ApiResult.success(const []);
+  }
+
+  @override
+  Future<ApiResult<List<PosPairedDisplay>>> listPairedDisplays({
+    String? storeId,
+    String? terminalId,
+  }) async {
+    return ApiResult.success(const []);
+  }
+
+  @override
+  Future<ApiResult<PosPairSession>> createPairSession({
+    required String terminalId,
+    String? name,
+    String? description,
+    String? rebindDeviceId,
+  }) async {
+    createdName = name;
+    return ApiResult.success(
+      pairSession ??
+          PosPairSession(
+            code: '654321',
+            expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+          ),
+    );
+  }
+
+  @override
+  Future<ApiResult<bool>> cancelPairSession({
+    required String terminalId,
+  }) async {
+    return ApiResult.success(true);
+  }
+
+  @override
+  Future<ApiResult<PosDisplayPushResult>> pushCart({
+    required String terminalId,
+    required List<PosDisplayCartItem> items,
+    required double subtotal,
+    required double discount,
+    required double total,
+    required String sessionId,
+    bool takeOver = false,
+    String? customerName,
+  }) async {
+    final accepted = acceptedSequence.isEmpty || acceptedSequence.removeAt(0);
+    pushes.add(
+      _PushCall(
+        terminalId: terminalId,
+        items: items,
+        subtotal: subtotal,
+        discount: discount,
+        total: total,
+        sessionId: sessionId,
+        takeOver: takeOver,
+      ),
+    );
+    return ApiResult.success(
+      PosDisplayPushResult(ok: true, accepted: accepted),
+    );
+  }
+}
+
+class _PushCall {
+  const _PushCall({
+    required this.terminalId,
+    required this.items,
+    required this.subtotal,
+    required this.discount,
+    required this.total,
+    required this.sessionId,
+    required this.takeOver,
+  });
+
+  final String terminalId;
+  final List<PosDisplayCartItem> items;
+  final double subtotal;
+  final double discount;
+  final double total;
+  final String sessionId;
+  final bool takeOver;
 }
 
 class _FakeProductRepository extends ProductRepository {

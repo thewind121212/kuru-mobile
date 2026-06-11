@@ -1,5 +1,6 @@
 // flutter_tabler_icons uses snake_case symbols.
 // ignore_for_file: non_constant_identifier_names
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -30,8 +31,10 @@ import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment_method.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 import 'package:kuru_mobile/features/pos/data/pos_barcode_repository.dart';
+import 'package:kuru_mobile/features/pos/data/pos_customer_display_repository.dart';
 import 'package:kuru_mobile/features/pos/data/pos_payment_qr_repository.dart';
 import 'package:kuru_mobile/features/pos/providers/pos_branch_provider.dart';
+import 'package:kuru_mobile/features/pos/providers/pos_customer_display_providers.dart';
 import 'package:lottie/lottie.dart';
 
 enum _PosView { sale, payment, success }
@@ -71,6 +74,12 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   PosPaymentQr? _paymentQr;
   bool _paymentQrLoading = false;
   String? _paymentQrError;
+  bool _displayInUse = false;
+  bool _displayChecking = false;
+  Timer? _displayDebounce;
+  Timer? _displayHeartbeat;
+  String? _mirroredDisplayTerminalId;
+  String? _checkedDisplayTerminalId;
 
   @override
   void initState() {
@@ -83,6 +92,8 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   void dispose() {
     _search.removeListener(_refresh);
     _amount.removeListener(_refresh);
+    _displayDebounce?.cancel();
+    _displayHeartbeat?.cancel();
     _search.dispose();
     _amount.dispose();
     _saleScroll.dispose();
@@ -97,6 +108,161 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       NumberFormat.currency(locale: 'vi_VN', symbol: 'đ', decimalDigits: 0);
 
   String _format(double amount) => _money.format(amount);
+
+  String? _selectedDisplayTerminalId() {
+    final branchId = _effectiveBranchId(
+      ref.read(productWarehouseOptionsProvider).valueOrNull,
+      ref.read(posSelectedBranchIdProvider),
+    );
+    if (branchId == null) return null;
+    final selected = ref.read(posSelectedTerminalIdProvider(branchId));
+    if (selected == null || selected.isEmpty) return null;
+    return selected;
+  }
+
+  void _cancelDisplaySync() {
+    _displayDebounce?.cancel();
+    _displayDebounce = null;
+    _displayHeartbeat?.cancel();
+    _displayHeartbeat = null;
+  }
+
+  void _scheduleDisplayPush() {
+    _displayDebounce?.cancel();
+    _displayHeartbeat?.cancel();
+    final terminalId = _selectedDisplayTerminalId();
+    final cart = ref.read(orderCartProvider);
+    final previousTerminalId = _mirroredDisplayTerminalId;
+    if (previousTerminalId != null && previousTerminalId != terminalId) {
+      unawaited(_releaseDisplayTerminal(previousTerminalId));
+      _mirroredDisplayTerminalId = null;
+      _checkedDisplayTerminalId = null;
+    }
+    if (_view != _PosView.sale || terminalId == null) {
+      if (mounted && (_displayInUse || _displayChecking)) {
+        setState(() {
+          _displayInUse = false;
+          _displayChecking = false;
+        });
+      }
+      return;
+    }
+    if (_checkedDisplayTerminalId != null &&
+        _checkedDisplayTerminalId != terminalId) {
+      _checkedDisplayTerminalId = null;
+    }
+    final needsOwnershipCheck = _checkedDisplayTerminalId != terminalId;
+    if (needsOwnershipCheck && mounted && !_displayChecking) {
+      setState(() => _displayChecking = true);
+    }
+    _mirroredDisplayTerminalId = terminalId;
+
+    _displayDebounce = Timer(const Duration(milliseconds: 350), () {
+      _pushDisplayCart(takeOver: false);
+    });
+
+    if (cart.items.isNotEmpty) {
+      _displayHeartbeat = Timer.periodic(const Duration(seconds: 30), (_) {
+        _pushDisplayCart(takeOver: false);
+      });
+    }
+  }
+
+  Future<void> _pushDisplayCart({required bool takeOver}) async {
+    if (!mounted || _view != _PosView.sale) return;
+    final terminalId = _selectedDisplayTerminalId();
+    if (terminalId == null) return;
+    final needsOwnershipCheck =
+        takeOver || _checkedDisplayTerminalId != terminalId;
+    if (needsOwnershipCheck && !_displayChecking) {
+      setState(() => _displayChecking = true);
+    }
+    _mirroredDisplayTerminalId = terminalId;
+    final cart = ref.read(orderCartProvider);
+    final totals = ref.read(orderCartTotalsProvider);
+    final result = await _sendDisplayCart(
+      terminalId: terminalId,
+      items: cart.items.map(_displayCartItemFromLine).toList(),
+      subtotal: totals.subtotal,
+      discount: totals.orderDiscountAmount,
+      total: totals.total,
+      takeOver: takeOver,
+      customerName: cart.customerName,
+    );
+    if (!mounted) return;
+    if (result == null) {
+      setState(() => _displayChecking = false);
+      return;
+    }
+    _checkedDisplayTerminalId = terminalId;
+    if (cart.items.isEmpty) {
+      _mirroredDisplayTerminalId = result.accepted ? null : terminalId;
+      setState(() {
+        _displayInUse = !result.accepted;
+        _displayChecking = false;
+      });
+      return;
+    }
+    setState(() {
+      _displayInUse = !result.accepted;
+      _displayChecking = false;
+    });
+  }
+
+  Future<void> _releaseDisplayTerminal(String terminalId) async {
+    final trimmed = terminalId.trim();
+    if (trimmed.isEmpty) return;
+    await _sendDisplayCart(
+      terminalId: trimmed,
+      items: const [],
+      subtotal: 0,
+      discount: 0,
+      total: 0,
+      takeOver: false,
+    );
+  }
+
+  Future<PosDisplayPushResult?> _sendDisplayCart({
+    required String terminalId,
+    required List<PosDisplayCartItem> items,
+    required double subtotal,
+    required double discount,
+    required double total,
+    required bool takeOver,
+    String? customerName,
+  }) async {
+    final result = await ref
+        .read(posCustomerDisplayRepositoryProvider)
+        .pushCart(
+          terminalId: terminalId,
+          items: items,
+          subtotal: subtotal,
+          discount: discount,
+          total: total,
+          sessionId: ref.read(posDisplaySessionIdProvider),
+          takeOver: takeOver,
+          customerName: customerName,
+        );
+    switch (result) {
+      case ApiSuccess<PosDisplayPushResult>(:final data):
+        return data;
+      case ApiFailure<PosDisplayPushResult>():
+        return null;
+    }
+  }
+
+  PosDisplayCartItem _displayCartItemFromLine(OrderLineItem item) {
+    final rawVariantId = item.variantId ?? '';
+    return PosDisplayCartItem(
+      id: '${item.productId}:$rawVariantId',
+      name: item.productName,
+      qty: item.qty,
+      unitPrice: item.unitPrice,
+      lineTotal: computeLineTotal(item),
+      imageUrl: item.imageUrl,
+      variant: item.variantName,
+    );
+  }
 
   void _addLine(OrderLineItem item) {
     ref.read(orderCartProvider.notifier).addLine(item);
@@ -263,6 +429,17 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       KNotify.warning(context, l.posBranchRequired);
       return;
     }
+    final terminals = ref
+        .read(posDisplayTerminalsProvider(branchId))
+        .valueOrNull;
+    final selectedTerminalId = ref.read(
+      posSelectedTerminalIdProvider(branchId),
+    );
+    if ((terminals?.length ?? 0) >= 2 && selectedTerminalId == null) {
+      KNotify.warning(context, l.posDisplaySelectRequired);
+      return;
+    }
+    _cancelDisplaySync();
     setState(() {
       _method = OrderPaymentMethod.cash;
       _amount.text = NumberFormat('#').format(totals.total);
@@ -342,6 +519,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       KNotify.warning(context, l.posBranchRequired);
       return;
     }
+    final selectedTerminalId = ref.read(
+      posSelectedTerminalIdProvider(branchId),
+    );
     final amount = _method == OrderPaymentMethod.cash
         ? _paymentAmount()
         : totals.total;
@@ -359,6 +539,9 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       idempotencyKey: key,
       draft: cart,
       storeId: branchId,
+      terminalId: selectedTerminalId == null || selectedTerminalId.isEmpty
+          ? null
+          : selectedTerminalId,
       payment: OrderPaymentInput(
         method: _method,
         amount: amount,
@@ -372,7 +555,16 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     switch (result) {
       case ApiSuccess<String>(:final data):
         ref.invalidate(orderListProvider);
+        final releaseTerminalId =
+            selectedTerminalId == null || selectedTerminalId.isEmpty
+            ? _mirroredDisplayTerminalId
+            : selectedTerminalId;
+        _cancelDisplaySync();
+        _mirroredDisplayTerminalId = null;
         ref.read(orderCartProvider.notifier).clear();
+        if (releaseTerminalId != null && releaseTerminalId.isNotEmpty) {
+          unawaited(_releaseDisplayTerminal(releaseTerminalId));
+        }
         setState(() {
           _completedOrderId = data;
           _view = _PosView.success;
@@ -397,10 +589,14 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       _amount.clear();
       _view = _PosView.sale;
     });
+    _scheduleDisplayPush();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(orderCartProvider, (_, __) {
+      if (_view == _PosView.sale) _scheduleDisplayPush();
+    });
     final l = AppLocalizations.of(context);
     final c = kuruColors(context);
     final title = switch (_view) {
@@ -426,7 +622,10 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             ? IconButton(
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 icon: const Icon(TablerIcons.arrow_left),
-                onPressed: () => setState(() => _view = _PosView.sale),
+                onPressed: () {
+                  setState(() => _view = _PosView.sale);
+                  _scheduleDisplayPush();
+                },
               )
             : null,
         actions: [
@@ -446,9 +645,13 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             search: _search,
             scrollController: _saleScroll,
             barcodeLoading: _barcodeLoading,
+            displayInUse: _displayInUse,
+            displayChecking: _displayChecking,
             onScan: _addBarcode,
             onAddProduct: _addProduct,
             onCharge: _openPayment,
+            onDisplayChanged: _scheduleDisplayPush,
+            onTakeOverDisplay: () => _pushDisplayCart(takeOver: true),
             format: _format,
           ),
           _PosView.payment => _PaymentView(
@@ -481,19 +684,27 @@ class _SaleView extends ConsumerWidget {
     required this.search,
     required this.scrollController,
     required this.barcodeLoading,
+    required this.displayInUse,
+    required this.displayChecking,
     required this.onScan,
     required this.onAddProduct,
     required this.onCharge,
+    required this.onDisplayChanged,
+    required this.onTakeOverDisplay,
     required this.format,
   });
 
   final TextEditingController search;
   final ScrollController scrollController;
   final bool barcodeLoading;
+  final bool displayInUse;
+  final bool displayChecking;
   final ValueChanged<String> onScan;
   final Future<void> Function(ProductSummary product, {String? barcode})
   onAddProduct;
   final VoidCallback onCharge;
+  final VoidCallback onDisplayChanged;
+  final VoidCallback onTakeOverDisplay;
   final String Function(double amount) format;
 
   @override
@@ -513,9 +724,22 @@ class _SaleView extends ConsumerWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 10),
-          child: _BranchSelector(
-            branches: branches,
-            selectedBranch: effectiveBranch,
+          child: Column(
+            children: [
+              _BranchSelector(
+                branches: branches,
+                selectedBranch: effectiveBranch,
+                onBranchChanged: onDisplayChanged,
+              ),
+              const SizedBox(height: 8),
+              _DisplaySelector(
+                branch: effectiveBranch,
+                displayInUse: displayInUse,
+                displayChecking: displayChecking,
+                onChanged: onDisplayChanged,
+                onTakeOver: onTakeOverDisplay,
+              ),
+            ],
           ),
         ),
         Padding(
@@ -585,10 +809,15 @@ class _SaleView extends ConsumerWidget {
 }
 
 class _BranchSelector extends ConsumerWidget {
-  const _BranchSelector({required this.branches, required this.selectedBranch});
+  const _BranchSelector({
+    required this.branches,
+    required this.selectedBranch,
+    required this.onBranchChanged,
+  });
 
   final AsyncValue<List<ProductWarehouseOption>> branches;
   final ProductWarehouseOption? selectedBranch;
+  final VoidCallback onBranchChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -643,6 +872,7 @@ class _BranchSelector extends ConsumerWidget {
                     await ref
                         .read(posSelectedBranchIdProvider.notifier)
                         .setBranch(branch.warehouseId);
+                    onBranchChanged();
                     if (sheetContext.mounted) Navigator.of(sheetContext).pop();
                   },
                 ),
@@ -771,9 +1001,1005 @@ class _BranchPickerRow extends StatelessWidget {
                   ],
                 ),
               ),
-              if (selected) Icon(TablerIcons.check, color: c.accent700),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DisplaySelector extends ConsumerStatefulWidget {
+  const _DisplaySelector({
+    required this.branch,
+    required this.displayInUse,
+    required this.displayChecking,
+    required this.onChanged,
+    required this.onTakeOver,
+  });
+
+  final ProductWarehouseOption? branch;
+  final bool displayInUse;
+  final bool displayChecking;
+  final VoidCallback onChanged;
+  final VoidCallback onTakeOver;
+
+  @override
+  ConsumerState<_DisplaySelector> createState() => _DisplaySelectorState();
+}
+
+class _DisplaySelectorState extends ConsumerState<_DisplaySelector> {
+  Timer? _presenceTimer;
+  String? _renderCheckedTerminalKey;
+
+  @override
+  void initState() {
+    super.initState();
+    _configurePresenceTimer();
+  }
+
+  @override
+  void didUpdateWidget(covariant _DisplaySelector oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.branch?.warehouseId != widget.branch?.warehouseId) {
+      _configurePresenceTimer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _presenceTimer?.cancel();
+    super.dispose();
+  }
+
+  void _configurePresenceTimer() {
+    _presenceTimer?.cancel();
+    final branchId = widget.branch?.warehouseId;
+    if (branchId == null || branchId.isEmpty) return;
+    _presenceTimer = Timer.periodic(const Duration(seconds: 10), (_) {
+      if (!mounted) return;
+      ref.invalidate(posPairedDisplaysProvider(branchId));
+    });
+  }
+
+  void _checkSelectedDisplayOnRender({
+    required String branchId,
+    required String terminalId,
+  }) {
+    final key = '$branchId:$terminalId';
+    if (_renderCheckedTerminalKey == key) return;
+    _renderCheckedTerminalKey = key;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final current = ref.read(posSelectedTerminalIdProvider(branchId));
+      if (current == terminalId) widget.onChanged();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final branchId = widget.branch?.warehouseId;
+    if (branchId == null || branchId.isEmpty) {
+      return _DisplayChip(label: l.posDisplayMissing, muted: true);
+    }
+
+    final terminalsAsync = ref.watch(posDisplayTerminalsProvider(branchId));
+    final displaysAsync = ref.watch(posPairedDisplaysProvider(branchId));
+    final displays = displaysAsync.valueOrNull ?? const <PosPairedDisplay>[];
+    final displaysLoading = displaysAsync.isLoading && !displaysAsync.hasValue;
+    final selectedId = ref.watch(posSelectedTerminalIdProvider(branchId));
+
+    return terminalsAsync.when(
+      data: (terminals) {
+        if (terminals.isEmpty) {
+          return _DisplayChip(label: l.posDisplayMissing, muted: true);
+        }
+        if (selectedId == null && terminals.length == 1) {
+          WidgetsBinding.instance.addPostFrameCallback((_) async {
+            if (!mounted) return;
+            final current = ref.read(posSelectedTerminalIdProvider(branchId));
+            if (current == null) {
+              await ref
+                  .read(posSelectedTerminalIdProvider(branchId).notifier)
+                  .setTerminal(terminals.single.id);
+              widget.onChanged();
+            }
+          });
+        }
+
+        final selectedTerminal = selectedId == null || selectedId.isEmpty
+            ? null
+            : _terminalById(terminals, selectedId);
+        final selectedDisplay = selectedId == null || selectedId.isEmpty
+            ? null
+            : _displayForTerminal(displays, selectedId);
+        final renderCheckPending =
+            selectedTerminal != null &&
+            _renderCheckedTerminalKey != '$branchId:${selectedTerminal.id}';
+        if (selectedTerminal != null) {
+          _checkSelectedDisplayOnRender(
+            branchId: branchId,
+            terminalId: selectedTerminal.id,
+          );
+        }
+        final hasSelectedTerminal = selectedTerminal != null;
+        final label = selectedId == null
+            ? l.posDisplaySelect
+            : selectedId.isEmpty
+            ? l.posDisplayNone
+            : selectedDisplay?.name ??
+                  selectedTerminal?.name ??
+                  l.posDisplaySelect;
+
+        final status =
+            hasSelectedTerminal &&
+                (renderCheckPending ||
+                    widget.displayChecking ||
+                    displaysLoading)
+            ? _DisplayPresenceStatus.checking
+            : widget.displayInUse
+            ? _DisplayPresenceStatus.inUse
+            : _displayStatus(selectedDisplay);
+        return _DisplayChip(
+          label: label,
+          status: status,
+          onTakeOver:
+              widget.displayInUse && selectedId != null && selectedId.isNotEmpty
+              ? widget.onTakeOver
+              : null,
+          onTap: () => _showTerminalPicker(
+            context: context,
+            branchId: branchId,
+            terminals: terminals,
+            displays: displays,
+            selectedId: selectedId,
+          ),
+        );
+      },
+      loading: () => _DisplayChip(label: l.posDisplayLoading, muted: true),
+      error: (_, __) => _DisplayChip(label: l.posDisplayMissing, muted: true),
+    );
+  }
+
+  Future<void> _showTerminalPicker({
+    required BuildContext context,
+    required String branchId,
+    required List<PosDisplayTerminal> terminals,
+    required List<PosPairedDisplay> displays,
+    required String? selectedId,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.sizeOf(context).height * 0.86,
+      ),
+      builder: (sheetContext) {
+        final l = AppLocalizations.of(sheetContext);
+        final c = kuruColors(sheetContext);
+        final height = math.min<double>(
+          MediaQuery.sizeOf(sheetContext).height * 0.78,
+          198 + terminals.length * 82,
+        );
+        return SafeArea(
+          top: false,
+          child: SizedBox(
+            height: height,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 18),
+              children: [
+                Text(
+                  l.posDisplayPickerTitle,
+                  style: TextStyle(
+                    color: c.textPrimary,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l.posDisplayPickerSubtitle,
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _DisplayPickerNoneRow(
+                  selected: selectedId == '',
+                  onTap: () async {
+                    await ref
+                        .read(posSelectedTerminalIdProvider(branchId).notifier)
+                        .setTerminal('');
+                    widget.onChanged();
+                    if (sheetContext.mounted) Navigator.of(sheetContext).pop();
+                  },
+                ),
+                const SizedBox(height: 8),
+                for (final terminal in terminals)
+                  _DisplayPickerTerminalRow(
+                    terminal: terminal,
+                    display: _displayForTerminal(displays, terminal.id),
+                    selected: selectedId == terminal.id,
+                    onTap: () async {
+                      await ref
+                          .read(
+                            posSelectedTerminalIdProvider(branchId).notifier,
+                          )
+                          .setTerminal(terminal.id);
+                      widget.onChanged();
+                      if (sheetContext.mounted) {
+                        Navigator.of(sheetContext).pop();
+                      }
+                    },
+                    onPair: () {
+                      Navigator.of(sheetContext).pop();
+                      _showPairSheet(
+                        context: context,
+                        branchId: branchId,
+                        terminal: terminal,
+                        existing: _displayForTerminal(displays, terminal.id),
+                      );
+                    },
+                  ),
+                const SizedBox(height: 10),
+                Text(
+                  l.posDisplayPairHint,
+                  style: TextStyle(
+                    color: c.textMuted,
+                    fontSize: 12,
+                    height: 1.35,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showPairSheet({
+    required BuildContext context,
+    required String branchId,
+    required PosDisplayTerminal terminal,
+    required PosPairedDisplay? existing,
+  }) async {
+    final existingName = existing?.name.trim();
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _PairDisplaySheet(
+        branchId: branchId,
+        terminal: terminal,
+        existing: existing,
+        displayName: existingName == null || existingName.isEmpty
+            ? ''
+            : existingName,
+      ),
+    );
+    if (!mounted) return;
+    ref.invalidate(posPairedDisplaysProvider(branchId));
+    widget.onChanged();
+  }
+}
+
+class _DisplayChip extends StatelessWidget {
+  const _DisplayChip({
+    required this.label,
+    this.status = _DisplayPresenceStatus.none,
+    this.onTap,
+    this.onTakeOver,
+    this.muted = false,
+  });
+
+  final String label;
+  final _DisplayPresenceStatus status;
+  final VoidCallback? onTap;
+  final VoidCallback? onTakeOver;
+  final bool muted;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    final fg = muted ? c.textMuted : c.textPrimary;
+    final isChecking = status == _DisplayPresenceStatus.checking;
+    final isInUse = status == _DisplayPresenceStatus.inUse;
+    final statusText = switch (status) {
+      _DisplayPresenceStatus.checking => null,
+      _DisplayPresenceStatus.online => null,
+      _DisplayPresenceStatus.offline => l.posDisplayOffline,
+      _DisplayPresenceStatus.inUse => l.posDisplayInUseShort,
+      _DisplayPresenceStatus.none => l.posDisplayNoScreen,
+    };
+    final showStatusRow = statusText != null || onTakeOver != null;
+    return Material(
+      color: c.surfaceElev,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isInUse ? const Color(0xFFFCD34D) : c.borderSoft,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    TablerIcons.device_tablet,
+                    color: isInUse
+                        ? c.warning
+                        : isChecking
+                        ? c.textMuted
+                        : c.accent600,
+                    size: 28,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    l.posDisplayLabel,
+                    style: TextStyle(
+                      color: c.textMuted,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  _DisplayPresenceDot(status: status),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: fg,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  if (onTap != null)
+                    Icon(
+                      TablerIcons.chevron_down,
+                      color: c.textMuted,
+                      size: 18,
+                    ),
+                ],
+              ),
+              if (showStatusRow) ...[
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Expanded(
+                      child: statusText == null
+                          ? const SizedBox.shrink()
+                          : Text(
+                              statusText,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: isChecking
+                                    ? c.textMuted
+                                    : isInUse
+                                    ? c.warning
+                                    : status == _DisplayPresenceStatus.offline
+                                    ? c.danger
+                                    : c.textMuted,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                    ),
+                    if (onTakeOver != null) ...[
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: onTakeOver,
+                        style: TextButton.styleFrom(
+                          foregroundColor: c.warning,
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          minimumSize: const Size(0, 32),
+                        ),
+                        child: Text(
+                          l.posDisplayTakeOver,
+                          style: const TextStyle(fontWeight: FontWeight.w900),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DisplayPresenceDot extends StatelessWidget {
+  const _DisplayPresenceDot({required this.status});
+
+  final _DisplayPresenceStatus status;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    if (status == _DisplayPresenceStatus.checking) {
+      return SizedBox(
+        width: 10,
+        height: 10,
+        child: CircularProgressIndicator(strokeWidth: 1.8, color: c.textMuted),
+      );
+    }
+    final color = switch (status) {
+      _DisplayPresenceStatus.checking => c.textMuted,
+      _DisplayPresenceStatus.online => const Color(0xFF10B981),
+      _DisplayPresenceStatus.offline => c.danger,
+      _DisplayPresenceStatus.inUse => c.warning,
+      _DisplayPresenceStatus.none => c.textMuted.withValues(alpha: 0.45),
+    };
+    return Container(
+      width: 7,
+      height: 7,
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+    );
+  }
+}
+
+class _DisplayPickerNoneRow extends StatelessWidget {
+  const _DisplayPickerNoneRow({required this.selected, required this.onTap});
+
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    return Material(
+      color: selected ? c.accent100 : Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              Icon(TablerIcons.device_tablet_off, color: c.textMuted, size: 28),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l.posDisplayNone,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      l.posDisplayNoneDesc,
+                      style: TextStyle(
+                        color: c.textMuted,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DisplayPickerTerminalRow extends StatelessWidget {
+  const _DisplayPickerTerminalRow({
+    required this.terminal,
+    required this.display,
+    required this.selected,
+    required this.onTap,
+    required this.onPair,
+  });
+
+  final PosDisplayTerminal terminal;
+  final PosPairedDisplay? display;
+  final bool selected;
+  final VoidCallback onTap;
+  final VoidCallback onPair;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    final status = _displayStatus(display);
+    final displayName = display?.name.trim();
+    final title = displayName == null || displayName.isEmpty
+        ? terminal.name
+        : displayName;
+    final statusText = switch (status) {
+      _DisplayPresenceStatus.checking => l.posDisplayLoading,
+      _DisplayPresenceStatus.online => l.posDisplayOnline,
+      _DisplayPresenceStatus.offline => l.posDisplayOffline,
+      _DisplayPresenceStatus.inUse => l.posDisplayInUseShort,
+      _DisplayPresenceStatus.none => l.posDisplayNoScreen,
+    };
+    final statusColor = switch (status) {
+      _DisplayPresenceStatus.checking => c.textMuted,
+      _DisplayPresenceStatus.online => const Color(0xFF059669),
+      _DisplayPresenceStatus.offline => c.danger,
+      _DisplayPresenceStatus.inUse => c.warning,
+      _DisplayPresenceStatus.none => c.textMuted,
+    };
+    return Material(
+      color: selected ? c.accent100 : Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              Icon(
+                TablerIcons.device_desktop,
+                color: selected ? c.accent700 : c.textMuted,
+                size: 29,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        color: c.textPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    if (terminal.isDefault) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        l.posDisplayDefault,
+                        style: TextStyle(
+                          color: c.textMuted,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 3),
+                    Row(
+                      children: [
+                        _DisplayPresenceDot(status: status),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            statusText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: statusColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
+              OutlinedButton(
+                onPressed: onPair,
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(0, 34),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  visualDensity: VisualDensity.compact,
+                  side: BorderSide(color: c.borderSoft),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  display == null ? l.posDisplayPair : l.posDisplayRepair,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PairDisplaySheet extends ConsumerStatefulWidget {
+  const _PairDisplaySheet({
+    required this.branchId,
+    required this.terminal,
+    required this.existing,
+    required this.displayName,
+  });
+
+  final String branchId;
+  final PosDisplayTerminal terminal;
+  final PosPairedDisplay? existing;
+  final String displayName;
+
+  @override
+  ConsumerState<_PairDisplaySheet> createState() => _PairDisplaySheetState();
+}
+
+class _PairDisplaySheetState extends ConsumerState<_PairDisplaySheet> {
+  Timer? _countdown;
+  Timer? _poll;
+  PosPairSession? _session;
+  bool _generating = false;
+  bool _paired = false;
+  int _remainingSec = 0;
+  Set<String> _baselineIds = const {};
+  DateTime? _rebindBaselinePairedAt;
+
+  @override
+  void dispose() {
+    _countdown?.cancel();
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _generate() async {
+    final l = AppLocalizations.of(context);
+    final displayName = widget.displayName.trim();
+    setState(() => _generating = true);
+    final baselineResult = await ref
+        .read(posCustomerDisplayRepositoryProvider)
+        .listPairedDisplays(storeId: widget.branchId);
+    if (!mounted) return;
+    switch (baselineResult) {
+      case ApiSuccess<List<PosPairedDisplay>>(:final data):
+        _baselineIds = data.map((display) => display.id).toSet();
+        _rebindBaselinePairedAt = widget.existing == null
+            ? null
+            : _displayById(data, widget.existing!.id)?.pairedAt;
+      case ApiFailure<List<PosPairedDisplay>>():
+        _baselineIds = const {};
+        _rebindBaselinePairedAt = widget.existing?.pairedAt;
+    }
+
+    final result = await ref
+        .read(posCustomerDisplayRepositoryProvider)
+        .createPairSession(
+          terminalId: widget.terminal.id,
+          name: displayName.isEmpty ? null : displayName,
+          rebindDeviceId: widget.existing?.id,
+        );
+    if (!mounted) return;
+    setState(() => _generating = false);
+    switch (result) {
+      case ApiSuccess<PosPairSession>(:final data):
+        setState(() {
+          _session = data;
+          _paired = false;
+        });
+        _startCountdown();
+        _startPolling();
+      case ApiFailure<PosPairSession>(:final err):
+        KNotify.warning(
+          context,
+          err.message.trim().isEmpty ? l.posPairError : err.message,
+        );
+    }
+  }
+
+  void _startCountdown() {
+    _countdown?.cancel();
+    void tick() {
+      final expiresAt = _session?.expiresAt;
+      final remaining = expiresAt == null
+          ? 0
+          : math.max(0, expiresAt.difference(DateTime.now()).inSeconds);
+      if (mounted) setState(() => _remainingSec = remaining);
+    }
+
+    tick();
+    _countdown = Timer.periodic(const Duration(seconds: 1), (_) => tick());
+  }
+
+  void _startPolling() {
+    _poll?.cancel();
+    _poll = Timer.periodic(const Duration(seconds: 3), (_) async {
+      if (!mounted || _session == null || _paired || _remainingSec <= 0) {
+        return;
+      }
+      final result = await ref
+          .read(posCustomerDisplayRepositoryProvider)
+          .listPairedDisplays(storeId: widget.branchId);
+      if (!mounted) return;
+      switch (result) {
+        case ApiSuccess<List<PosPairedDisplay>>(:final data):
+          final detected = _detectPaired(data);
+          if (detected) {
+            setState(() => _paired = true);
+            _poll?.cancel();
+            ref.invalidate(posPairedDisplaysProvider(widget.branchId));
+            KNotify.success(
+              context,
+              AppLocalizations.of(context).posPairConnected,
+            );
+          }
+        case ApiFailure<List<PosPairedDisplay>>():
+          break;
+      }
+    });
+  }
+
+  bool _detectPaired(List<PosPairedDisplay> current) {
+    final existingId = widget.existing?.id;
+    if (existingId != null && existingId.isNotEmpty) {
+      final target = current.where((display) => display.id == existingId);
+      if (target.isEmpty) return false;
+      final pairedAt = target.first.pairedAt;
+      return pairedAt != null && pairedAt != _rebindBaselinePairedAt;
+    }
+    return current.any((display) => !_baselineIds.contains(display.id));
+  }
+
+  Future<void> _cancelCode() async {
+    await ref
+        .read(posCustomerDisplayRepositoryProvider)
+        .cancelPairSession(terminalId: widget.terminal.id);
+    if (!mounted) return;
+    _countdown?.cancel();
+    _poll?.cancel();
+    setState(() {
+      _session = null;
+      _paired = false;
+      _remainingSec = 0;
+    });
+    KNotify.success(context, AppLocalizations.of(context).posPairCancelled);
+  }
+
+  Future<void> _copyCode(String code) async {
+    final l = AppLocalizations.of(context);
+    try {
+      await Clipboard.setData(ClipboardData(text: code));
+      if (mounted) KNotify.success(context, l.posPairCopied);
+    } on Object {
+      if (mounted) KNotify.warning(context, l.posPairCopyFailed);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final c = kuruColors(context);
+    final code = _session?.code;
+    final displayName = widget.displayName.trim();
+    final isRepair = widget.existing != null;
+    final isExpired = code != null && !_paired && _remainingSec <= 0;
+    final minutes = (_remainingSec ~/ 60).toString().padLeft(2, '0');
+    final seconds = (_remainingSec % 60).toString().padLeft(2, '0');
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 2, 16, 18),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    isRepair ? l.posPairRepairTitle : l.posPairTitle,
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                  icon: const Icon(TablerIcons.x),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              displayName.isEmpty ? l.posDisplayNoScreen : displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: c.textMuted,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (code == null) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: c.accent100,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: c.accent200),
+                ),
+                child: Text(
+                  isRepair
+                      ? l.posPairRepairInstructions
+                      : l.posPairInstructions,
+                  style: TextStyle(
+                    color: c.accent700,
+                    fontSize: 12,
+                    height: 1.35,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: _generating ? null : _generate,
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: _generating
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        l.posPairGenerate,
+                        style: const TextStyle(fontWeight: FontWeight.w900),
+                      ),
+              ),
+            ] else if (_paired) ...[
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFECFDF5),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFA7F3D0)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      TablerIcons.circle_check,
+                      color: Color(0xFF059669),
+                      size: 30,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        l.posPairConnected,
+                        style: const TextStyle(
+                          color: Color(0xFF047857),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                child: Text(
+                  l.posPairDone,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+              ),
+            ] else ...[
+              Stack(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 34,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isExpired
+                          ? const Color(0xFFFEF2F2)
+                          : c.surfaceElev,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: isExpired
+                            ? const Color(0xFFFCA5A5)
+                            : c.borderSoft,
+                      ),
+                    ),
+                    child: Text(
+                      _formatPairCode(code),
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: isExpired ? c.danger : c.textPrimary,
+                        fontSize: 46,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: IconButton(
+                      tooltip: l.posPairCodeCopy,
+                      icon: const Icon(TablerIcons.copy, size: 19),
+                      onPressed: isExpired ? null : () => _copyCode(code),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                isExpired
+                    ? l.posPairExpired
+                    : l.posPairExpiresIn('$minutes:$seconds'),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: isExpired ? c.danger : c.textMuted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextButton(
+                onPressed: _cancelCode,
+                style: TextButton.styleFrom(foregroundColor: c.danger),
+                child: Text(
+                  l.posPairCancel,
+                  style: const TextStyle(fontWeight: FontWeight.w900),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -2823,6 +4049,48 @@ class _PlainState extends StatelessWidget {
       ),
     );
   }
+}
+
+enum _DisplayPresenceStatus { checking, online, offline, inUse, none }
+
+PosDisplayTerminal? _terminalById(
+  List<PosDisplayTerminal> terminals,
+  String id,
+) {
+  for (final terminal in terminals) {
+    if (terminal.id == id) return terminal;
+  }
+  return null;
+}
+
+PosPairedDisplay? _displayById(List<PosPairedDisplay> displays, String id) {
+  for (final display in displays) {
+    if (display.id == id) return display;
+  }
+  return null;
+}
+
+PosPairedDisplay? _displayForTerminal(
+  List<PosPairedDisplay> displays,
+  String terminalId,
+) {
+  for (final display in displays) {
+    if (display.terminalId == terminalId && display.isPaired) return display;
+  }
+  return null;
+}
+
+_DisplayPresenceStatus _displayStatus(PosPairedDisplay? display) {
+  if (display == null) return _DisplayPresenceStatus.none;
+  return display.isOnline
+      ? _DisplayPresenceStatus.online
+      : _DisplayPresenceStatus.offline;
+}
+
+String _formatPairCode(String code) {
+  final trimmed = code.trim();
+  if (trimmed.length <= 3) return trimmed;
+  return '${trimmed.substring(0, 3)} ${trimmed.substring(3)}';
 }
 
 List<double> _quickPicks(double total) {

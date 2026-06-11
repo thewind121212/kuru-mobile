@@ -366,6 +366,30 @@ void main() {
       expect((result as ApiSuccess<String>).data, 'ord-3');
     });
 
+    test('includes terminalId when provided', () async {
+      when(
+        () => dio.post<dynamic>(any(), data: any(named: 'data')),
+      ).thenAnswer((_) async => ok201(<String, dynamic>{'orderId': 'ord-4'}));
+
+      await repo.createOrder(
+        orgId: 'org-1',
+        idempotencyKey: 'fixed-uuid',
+        storeId: 'store-1',
+        terminalId: 'terminal-1',
+        draft: const OrderCartDraft(items: [lineItem]),
+      );
+
+      final body =
+          verify(
+                () => dio.post<dynamic>(
+                  '/order/CreateOrder',
+                  data: captureAny(named: 'data'),
+                ),
+              ).captured.single
+              as Map<String, dynamic>;
+      expect(body['terminalId'], 'terminal-1');
+    });
+
     test('400 → ApiFailure<String> with BadRequestException', () async {
       when(
         () => dio.post<dynamic>(any(), data: any(named: 'data')),

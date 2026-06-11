@@ -824,6 +824,210 @@ abstract class AppLocalizations {
   /// **'Chọn chi nhánh bán hàng'**
   String get posBranchPickerTitle;
 
+  /// No description provided for @posDisplayLabel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màn hình'**
+  String get posDisplayLabel;
+
+  /// No description provided for @posDisplayLoading.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang tải màn hình'**
+  String get posDisplayLoading;
+
+  /// No description provided for @posDisplayMissing.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa có màn hình khách'**
+  String get posDisplayMissing;
+
+  /// No description provided for @posDisplaySelect.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn màn hình'**
+  String get posDisplaySelect;
+
+  /// No description provided for @posDisplaySelectRequired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn quầy hoặc Không dùng màn hình trước khi thu tiền'**
+  String get posDisplaySelectRequired;
+
+  /// No description provided for @posDisplayNone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không dùng màn hình'**
+  String get posDisplayNone;
+
+  /// No description provided for @posDisplayNoneDesc.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không đồng bộ giỏ hàng ra màn hình khách'**
+  String get posDisplayNoneDesc;
+
+  /// No description provided for @posDisplayDefault.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mặc định'**
+  String get posDisplayDefault;
+
+  /// No description provided for @posDisplayPickerTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chọn màn hình khách'**
+  String get posDisplayPickerTitle;
+
+  /// No description provided for @posDisplayPickerSubtitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Giỏ hàng sẽ được đồng bộ đến màn hình của quầy này.'**
+  String get posDisplayPickerSubtitle;
+
+  /// No description provided for @posDisplayOnline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang kết nối'**
+  String get posDisplayOnline;
+
+  /// No description provided for @posDisplayOffline.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mất kết nối'**
+  String get posDisplayOffline;
+
+  /// No description provided for @posDisplayNoScreen.
+  ///
+  /// In vi, this message translates to:
+  /// **'Chưa ghép màn hình'**
+  String get posDisplayNoScreen;
+
+  /// No description provided for @posDisplayPair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghép'**
+  String get posDisplayPair;
+
+  /// No description provided for @posDisplayRepair.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghép lại'**
+  String get posDisplayRepair;
+
+  /// No description provided for @posDisplayPairHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mở màn hình khách, nhập mã ghép, rồi giữ màn hình đó ở trang hiển thị bán hàng.'**
+  String get posDisplayPairHint;
+
+  /// No description provided for @posDisplayInUseShort.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang được POS khác dùng'**
+  String get posDisplayInUseShort;
+
+  /// No description provided for @posDisplayInUse.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màn hình này đang được một phiên thu ngân khác sử dụng.'**
+  String get posDisplayInUse;
+
+  /// No description provided for @posDisplayTakeOver.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tiếp quản'**
+  String get posDisplayTakeOver;
+
+  /// No description provided for @posPairTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghép màn hình khách'**
+  String get posPairTitle;
+
+  /// No description provided for @posPairRepairTitle.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ghép lại màn hình khách'**
+  String get posPairRepairTitle;
+
+  /// No description provided for @posPairInstructions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mã ghép rồi nhập mã này trên màn hình khách.'**
+  String get posPairInstructions;
+
+  /// No description provided for @posPairRepairInstructions.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mã ghép mới rồi nhập mã này trên màn hình khách hiện có.'**
+  String get posPairRepairInstructions;
+
+  /// No description provided for @posPairGenerate.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo mã ghép'**
+  String get posPairGenerate;
+
+  /// No description provided for @posPairCodeCopy.
+  ///
+  /// In vi, this message translates to:
+  /// **'Sao chép mã ghép'**
+  String get posPairCodeCopy;
+
+  /// No description provided for @posPairCopied.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã sao chép mã'**
+  String get posPairCopied;
+
+  /// No description provided for @posPairCopyFailed.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể sao chép mã'**
+  String get posPairCopyFailed;
+
+  /// No description provided for @posPairConnected.
+  ///
+  /// In vi, this message translates to:
+  /// **'Màn hình đã kết nối'**
+  String get posPairConnected;
+
+  /// No description provided for @posPairDone.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xong'**
+  String get posPairDone;
+
+  /// No description provided for @posPairExpiresIn.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã hết hạn sau {time}'**
+  String posPairExpiresIn(String time);
+
+  /// No description provided for @posPairExpired.
+  ///
+  /// In vi, this message translates to:
+  /// **'Mã đã hết hạn'**
+  String get posPairExpired;
+
+  /// No description provided for @posPairCancel.
+  ///
+  /// In vi, this message translates to:
+  /// **'Hủy mã'**
+  String get posPairCancel;
+
+  /// No description provided for @posPairCancelled.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đã hủy mã ghép'**
+  String get posPairCancelled;
+
+  /// No description provided for @posPairError.
+  ///
+  /// In vi, this message translates to:
+  /// **'Không thể tạo mã ghép'**
+  String get posPairError;
+
   /// No description provided for @posScanHint.
   ///
   /// In vi, this message translates to:
