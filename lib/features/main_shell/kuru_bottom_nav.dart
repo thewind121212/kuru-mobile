@@ -101,6 +101,7 @@ class KuruBottomBarFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = kuruColors(context);
     final hasAction = action != null;
+    final shouldReserveActionSpace = hasAction && reserveActionSpace;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final fill = isDark
         ? c.surfaceElev.withValues(alpha: 0.82)
@@ -110,7 +111,7 @@ class KuruBottomBarFrame extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(sideMargin, 0, sideMargin, bottomGap),
       child: SizedBox(
-        height: reserveActionSpace ? height : compactHeight,
+        height: shouldReserveActionSpace ? height : compactHeight,
         child: Stack(
           clipBehavior: Clip.none,
           children: [
@@ -147,7 +148,7 @@ class KuruBottomBarFrame extends StatelessWidget {
             ),
             if (hasAction)
               Positioned(
-                top: reserveActionSpace ? 0 : -actionTopInset,
+                top: shouldReserveActionSpace ? 0 : -actionTopInset,
                 left: 0,
                 right: 0,
                 child: Align(

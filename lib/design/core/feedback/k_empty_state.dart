@@ -20,6 +20,19 @@ class KEmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = kuruColors(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: _buildBody(c),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBody(KuruColors c) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),

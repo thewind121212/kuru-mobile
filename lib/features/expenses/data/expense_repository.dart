@@ -85,12 +85,34 @@ class ExpenseRepository {
       final data = _data(res);
       final entries = (data['entries'] as List<dynamic>? ?? const [])
           .map((e) => ExpenseEntry.fromJson(e as Map<String, dynamic>))
-          .where((e) => !e.isDelete)
           .toList();
       log.i('ListExpenseEntries ← ${res.statusCode} count=${entries.length}');
       return ApiResult.success(entries);
     } on DioException catch (e) {
       log.w('ListExpenseEntries failed: ${e.message}');
+      return ApiResult.failure(_extract(e));
+    }
+  }
+
+  Future<ApiResult<ExpenseEntry>> getEntryById(String id) async {
+    try {
+      final res = await _dio.get<dynamic>(
+        '/expense/GetExpenseEntry',
+        queryParameters: <String, dynamic>{'id': id},
+      );
+      final data = _data(res);
+      final raw =
+          data['entry'] as Object? ??
+          data['expenseEntry'] as Object? ??
+          data['expense'] as Object? ??
+          data;
+      final entryJson = raw is Map<String, dynamic>
+          ? raw
+          : (raw as Map).cast<String, dynamic>();
+      log.i('GetExpenseEntry ← ${res.statusCode} id=$id');
+      return ApiResult.success(ExpenseEntry.fromJson(entryJson));
+    } on DioException catch (e) {
+      log.w('GetExpenseEntry failed: ${e.message}');
       return ApiResult.failure(_extract(e));
     }
   }

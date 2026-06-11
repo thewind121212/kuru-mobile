@@ -1185,4 +1185,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get orderCreatePercentHint => '0–100';
+
+  @override
+  String get detailQuantityByStore => 'Stock by store';
+
+  @override
+  String get detailQuantityByStoreSubtitle =>
+      'Remaining quantity at each store';
 }

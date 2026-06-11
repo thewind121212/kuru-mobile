@@ -419,5 +419,8 @@
   "orderCreatePhoneHint": "0xxxxxxxxx",
   "orderCreateNoteHint": "Add notes for this order",
   "orderCreateManualTaxHint": "e.g. 8",
-  "orderCreatePercentHint": "0–100"
+  "orderCreatePercentHint": "0–100",
+
+  "detailQuantityByStore": "Stock by store",
+  "detailQuantityByStoreSubtitle": "Remaining quantity at each store"
 }

@@ -1164,4 +1164,11 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get orderCreatePercentHint => '0–100';
+
+  @override
+  String get detailQuantityByStore => 'Tồn kho theo chi nhánh';
+
+  @override
+  String get detailQuantityByStoreSubtitle =>
+      'Số lượng còn lại tại mỗi chi nhánh';
 }
