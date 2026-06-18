@@ -29,6 +29,7 @@ import 'package:kuru_mobile/features/orders/models/discount_type.dart';
 import 'package:kuru_mobile/features/orders/models/order_cart_totals.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
 import 'package:kuru_mobile/features/orders/models/order_payment_method.dart';
+import 'package:kuru_mobile/features/orders/models/order_payment_status.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 import 'package:kuru_mobile/features/pos/data/pos_barcode_repository.dart';
 import 'package:kuru_mobile/features/pos/data/pos_customer_display_repository.dart';
@@ -71,9 +72,15 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   bool _barcodeLoading = false;
   String? _completedOrderId;
   String? _paymentRef;
+  String? _pendingPaymentOrderId;
+  String? _pendingPaymentOrderNumber;
+  double? _pendingPaymentAmount;
+  String? _pendingPaymentTerminalId;
   PosPaymentQr? _paymentQr;
   bool _paymentQrLoading = false;
   String? _paymentQrError;
+  bool _paymentStatusPolling = false;
+  Timer? _paymentStatusPoll;
   bool _displayInUse = false;
   bool _displayChecking = false;
   Timer? _displayDebounce;
@@ -94,6 +101,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     _amount.removeListener(_refresh);
     _displayDebounce?.cancel();
     _displayHeartbeat?.cancel();
+    _paymentStatusPoll?.cancel();
     _search.dispose();
     _amount.dispose();
     _saleScroll.dispose();
@@ -125,6 +133,39 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     _displayDebounce = null;
     _displayHeartbeat?.cancel();
     _displayHeartbeat = null;
+  }
+
+  void _cancelPaymentStatusPoll() {
+    _paymentStatusPoll?.cancel();
+    _paymentStatusPoll = null;
+    _paymentStatusPolling = false;
+  }
+
+  void _startPaymentStatusPoll() {
+    _paymentStatusPoll?.cancel();
+    if (_pendingPaymentOrderId == null) return;
+    _paymentStatusPoll = Timer.periodic(const Duration(seconds: 3), (_) {
+      unawaited(_pollPendingBankPayment());
+    });
+  }
+
+  Future<void> _pollPendingBankPayment() async {
+    final orderId = _pendingPaymentOrderId;
+    if (orderId == null || _paymentStatusPolling) return;
+    _paymentStatusPolling = true;
+    final result = await ref
+        .read(orderRepositoryProvider)
+        .getOrderById(orderId);
+    _paymentStatusPolling = false;
+    if (!mounted || _pendingPaymentOrderId != orderId) return;
+    switch (result) {
+      case ApiSuccess(:final data):
+        if (data.paymentStatus == OrderPaymentStatus.paid) {
+          _finishBankTransferPayment(orderId);
+        }
+      case ApiFailure():
+        break;
+    }
   }
 
   void _scheduleDisplayPush() {
@@ -440,10 +481,15 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       return;
     }
     _cancelDisplaySync();
+    _cancelPaymentStatusPoll();
     setState(() {
       _method = OrderPaymentMethod.cash;
       _amount.text = NumberFormat('#').format(totals.total);
       _paymentRef = null;
+      _pendingPaymentOrderId = null;
+      _pendingPaymentOrderNumber = null;
+      _pendingPaymentAmount = null;
+      _pendingPaymentTerminalId = null;
       _paymentQr = null;
       _paymentQrLoading = false;
       _paymentQrError = null;
@@ -452,6 +498,10 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   void _setMethod(OrderPaymentMethod method) {
+    if (_pendingPaymentOrderId != null &&
+        method != OrderPaymentMethod.bankTransfer) {
+      return;
+    }
     final totals = ref.read(orderCartTotalsProvider);
     setState(() {
       _method = method;
@@ -459,31 +509,46 @@ class _PosScreenState extends ConsumerState<PosScreen> {
         _amount.text = NumberFormat('#').format(totals.total);
       }
       if (method == OrderPaymentMethod.bankTransfer) {
-        _paymentRef ??= _generatePaymentReference();
+        _paymentRef = _pendingPaymentOrderNumber ?? _pendingPaymentOrderId;
         _paymentQr = null;
         _paymentQrError = null;
       } else {
+        _cancelPaymentStatusPoll();
+        _paymentRef = null;
+        _pendingPaymentOrderId = null;
+        _pendingPaymentOrderNumber = null;
+        _pendingPaymentAmount = null;
+        _pendingPaymentTerminalId = null;
         _paymentQr = null;
         _paymentQrLoading = false;
         _paymentQrError = null;
       }
     });
-    if (method == OrderPaymentMethod.bankTransfer) {
-      _loadPaymentQr(totals.total);
-    }
   }
 
   Future<void> _loadPaymentQr(double amount) async {
     final orgId = ref.read(currentOrgIdProvider);
     final refNumber = _paymentRef;
-    if (orgId == null || refNumber == null || refNumber.isEmpty) return;
+    final orderId = _pendingPaymentOrderId;
+    if (orgId == null ||
+        refNumber == null ||
+        refNumber.isEmpty ||
+        orderId == null) {
+      return;
+    }
     setState(() {
       _paymentQrLoading = true;
       _paymentQrError = null;
     });
     final result = await ref
         .read(posPaymentQrRepositoryProvider)
-        .generate(orgId: orgId, refNumber: refNumber, amount: amount);
+        .generate(
+          orgId: orgId,
+          refNumber: refNumber,
+          amount: amount,
+          terminalId: _pendingPaymentTerminalId,
+          orderId: orderId,
+        );
     if (!mounted || _paymentRef != refNumber) return;
     switch (result) {
       case ApiSuccess<PosPaymentQr>(:final data):
@@ -491,6 +556,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           _paymentQr = data;
           _paymentQrLoading = false;
         });
+        _startPaymentStatusPoll();
       case ApiFailure<PosPaymentQr>(:final err):
         setState(() {
           _paymentQr = null;
@@ -506,6 +572,15 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   Future<void> _submitPayment() async {
+    if (_method == OrderPaymentMethod.bankTransfer) {
+      if (_pendingPaymentOrderId == null) {
+        await _createBankTransferOrder();
+      } else {
+        await _confirmBankTransferPayment();
+      }
+      return;
+    }
+
     final l = AppLocalizations.of(context);
     final cart = ref.read(orderCartProvider);
     final totals = ref.read(orderCartTotalsProvider);
@@ -542,13 +617,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       terminalId: selectedTerminalId == null || selectedTerminalId.isEmpty
           ? null
           : selectedTerminalId,
-      payment: OrderPaymentInput(
-        method: _method,
-        amount: amount,
-        reference: _method == OrderPaymentMethod.bankTransfer
-            ? _paymentRef
-            : null,
-      ),
+      payment: OrderPaymentInput(method: _method, amount: amount),
     );
     if (!mounted) return;
     setState(() => _submitting = false);
@@ -577,11 +646,150 @@ class _PosScreenState extends ConsumerState<PosScreen> {
     }
   }
 
+  Future<void> _createBankTransferOrder() async {
+    final l = AppLocalizations.of(context);
+    final cart = ref.read(orderCartProvider);
+    final totals = ref.read(orderCartTotalsProvider);
+    final orgId = ref.read(currentOrgIdProvider);
+    if (cart.items.isEmpty || orgId == null || _submitting) return;
+
+    final branchId = _effectiveBranchId(
+      ref.read(productWarehouseOptionsProvider).valueOrNull,
+      ref.read(posSelectedBranchIdProvider),
+    );
+    if (branchId == null) {
+      KNotify.warning(context, l.posBranchRequired);
+      return;
+    }
+    final selectedTerminalId = ref.read(
+      posSelectedTerminalIdProvider(branchId),
+    );
+    final terminalId = selectedTerminalId == null || selectedTerminalId.isEmpty
+        ? null
+        : selectedTerminalId;
+    final amount = totals.total;
+    if (amount <= 0) return;
+
+    final orderRepo = ref.read(orderRepositoryProvider);
+    ref
+        .read(orderCartProvider.notifier)
+        .ensureIdempotencyKey(orderRepo.newIdempotencyKey);
+    final key = ref.read(orderCartProvider).idempotencyKey!;
+
+    setState(() => _submitting = true);
+    final result = await orderRepo.createOrderWithResult(
+      orgId: orgId,
+      idempotencyKey: key,
+      draft: cart,
+      storeId: branchId,
+      terminalId: terminalId,
+    );
+    if (!mounted) return;
+
+    switch (result) {
+      case ApiSuccess<CreateOrderResult>(:final data):
+        final orderNumber =
+            _trimToNull(data.orderNumber) ??
+            await _fetchOrderNumber(data.orderId);
+        if (!mounted) return;
+        final reference = orderNumber ?? data.orderId;
+        setState(() {
+          _submitting = false;
+          _pendingPaymentOrderId = data.orderId;
+          _pendingPaymentOrderNumber = orderNumber;
+          _pendingPaymentAmount = amount;
+          _pendingPaymentTerminalId = terminalId;
+          _paymentRef = reference;
+          _paymentQr = null;
+          _paymentQrError = null;
+        });
+        ref.invalidate(orderListProvider);
+        await _loadPaymentQr(amount);
+      case ApiFailure<CreateOrderResult>(:final err):
+        setState(() => _submitting = false);
+        final message = err.message.trim().isEmpty
+            ? l.posPaymentFailed
+            : err.message;
+        KNotify.warning(context, message);
+    }
+  }
+
+  Future<String?> _fetchOrderNumber(String orderId) async {
+    final result = await ref
+        .read(orderRepositoryProvider)
+        .getOrderById(orderId);
+    return switch (result) {
+      ApiSuccess(:final data) => _trimToNull(data.orderNumber),
+      ApiFailure() => null,
+    };
+  }
+
+  Future<void> _confirmBankTransferPayment() async {
+    final orderId = _pendingPaymentOrderId;
+    final amount = _pendingPaymentAmount;
+    if (orderId == null || amount == null || amount <= 0 || _submitting) {
+      return;
+    }
+    final resultRef = _trimToNull(_paymentQr?.memo) ?? _trimToNull(_paymentRef);
+    setState(() => _submitting = true);
+    final result = await ref
+        .read(orderRepositoryProvider)
+        .addOrderPayment(
+          orderId: orderId,
+          idempotencyKey: orderId,
+          method: OrderPaymentMethod.bankTransfer,
+          amount: amount,
+          reference: resultRef,
+          note: 'Manual confirm from POS QR step',
+        );
+    if (!mounted) return;
+    switch (result) {
+      case ApiSuccess<String>():
+        _finishBankTransferPayment(orderId);
+      case ApiFailure<String>(:final err):
+        setState(() => _submitting = false);
+        KNotify.warning(context, err.message);
+    }
+  }
+
+  void _finishBankTransferPayment(String orderId) {
+    if (!mounted) return;
+    final releaseTerminalId = _pendingPaymentTerminalId;
+    _cancelPaymentStatusPoll();
+    _cancelDisplaySync();
+    _mirroredDisplayTerminalId = null;
+    ref
+      ..invalidate(orderListProvider)
+      ..invalidate(orderDetailProvider(orderId))
+      ..read(orderCartProvider.notifier).clear();
+    if (releaseTerminalId != null && releaseTerminalId.isNotEmpty) {
+      unawaited(_releaseDisplayTerminal(releaseTerminalId));
+    }
+    setState(() {
+      _submitting = false;
+      _completedOrderId = orderId;
+      _pendingPaymentOrderId = null;
+      _pendingPaymentOrderNumber = null;
+      _pendingPaymentAmount = null;
+      _pendingPaymentTerminalId = null;
+      _paymentRef = null;
+      _paymentQr = null;
+      _paymentQrLoading = false;
+      _paymentQrError = null;
+      _view = _PosView.success;
+    });
+  }
+
   void _newSale() {
+    _cancelPaymentStatusPoll();
     ref.read(orderCartProvider.notifier).clear();
     setState(() {
       _completedOrderId = null;
       _paymentRef = null;
+      _pendingPaymentOrderId = null;
+      _pendingPaymentOrderNumber = null;
+      _pendingPaymentAmount = null;
+      _pendingPaymentTerminalId = null;
       _paymentQr = null;
       _paymentQrLoading = false;
       _paymentQrError = null;
@@ -623,7 +831,22 @@ class _PosScreenState extends ConsumerState<PosScreen> {
                 tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                 icon: const Icon(TablerIcons.arrow_left),
                 onPressed: () {
-                  setState(() => _view = _PosView.sale);
+                  final hadPendingBankTransfer = _pendingPaymentOrderId != null;
+                  _cancelPaymentStatusPoll();
+                  if (hadPendingBankTransfer) {
+                    ref.read(orderCartProvider.notifier).clear();
+                  }
+                  setState(() {
+                    _pendingPaymentOrderId = null;
+                    _pendingPaymentOrderNumber = null;
+                    _pendingPaymentAmount = null;
+                    _pendingPaymentTerminalId = null;
+                    _paymentRef = null;
+                    _paymentQr = null;
+                    _paymentQrLoading = false;
+                    _paymentQrError = null;
+                    _view = _PosView.sale;
+                  });
                   _scheduleDisplayPush();
                 },
               )
@@ -658,14 +881,18 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             method: _method,
             amount: _amount,
             paymentRef: _paymentRef,
+            pendingOrderId: _pendingPaymentOrderId,
+            pendingOrderNumber: _pendingPaymentOrderNumber,
             paymentQr: _paymentQr,
             paymentQrLoading: _paymentQrLoading,
             paymentQrError: _paymentQrError,
+            pendingAmount: _pendingPaymentAmount,
             submitting: _submitting,
             onMethodChanged: _setMethod,
             onSubmit: _submitPayment,
-            onRetryQr: () =>
-                _loadPaymentQr(ref.read(orderCartTotalsProvider).total),
+            onRetryQr: () => _loadPaymentQr(
+              _pendingPaymentAmount ?? ref.read(orderCartTotalsProvider).total,
+            ),
             onAmountChanged: () => setState(() {}),
             format: _format,
           ),
@@ -3354,9 +3581,12 @@ class _PaymentView extends ConsumerWidget {
     required this.method,
     required this.amount,
     required this.paymentRef,
+    required this.pendingOrderId,
+    required this.pendingOrderNumber,
     required this.paymentQr,
     required this.paymentQrLoading,
     required this.paymentQrError,
+    required this.pendingAmount,
     required this.submitting,
     required this.onMethodChanged,
     required this.onSubmit,
@@ -3368,9 +3598,12 @@ class _PaymentView extends ConsumerWidget {
   final OrderPaymentMethod method;
   final TextEditingController amount;
   final String? paymentRef;
+  final String? pendingOrderId;
+  final String? pendingOrderNumber;
   final PosPaymentQr? paymentQr;
   final bool paymentQrLoading;
   final String? paymentQrError;
+  final double? pendingAmount;
   final bool submitting;
   final ValueChanged<OrderPaymentMethod> onMethodChanged;
   final VoidCallback onSubmit;
@@ -3383,18 +3616,31 @@ class _PaymentView extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final c = kuruColors(context);
     final totals = ref.watch(orderCartTotalsProvider);
+    final isBankTransfer = method == OrderPaymentMethod.bankTransfer;
+    final hasPendingBankTransfer = isBankTransfer && pendingOrderId != null;
+    final effectiveTotal = pendingAmount ?? totals.total;
     final paid = method == OrderPaymentMethod.cash
         ? double.tryParse(amount.text.replaceAll(',', '').trim()) ?? 0
-        : totals.total;
+        : effectiveTotal;
     final change = method == OrderPaymentMethod.cash
-        ? math.max<double>(0, paid - totals.total)
+        ? math.max<double>(0, paid - effectiveTotal)
         : 0.0;
-    final remaining = math.max<double>(0, totals.total - paid);
+    final remaining = math.max<double>(0, effectiveTotal - paid);
+    final submitLabel = isBankTransfer
+        ? hasPendingBankTransfer
+              ? l.posBankTransferManualConfirm
+              : l.posCreateBankTransferOrder
+        : l.posConfirmPayment;
+    final note = isBankTransfer
+        ? hasPendingBankTransfer
+              ? l.posBankTransferPendingNote
+              : l.posBankTransferCreateNote
+        : l.posPaymentNote;
     return ListView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       children: [
-        _PaymentTotal(total: totals.total, format: format),
+        _PaymentTotal(total: effectiveTotal, format: format),
         const SizedBox(height: 18),
         _MethodPicker(value: method, onChanged: onMethodChanged),
         const SizedBox(height: 20),
@@ -3434,21 +3680,32 @@ class _PaymentView extends ConsumerWidget {
             const SizedBox(height: 14),
             _PaymentInfoRow(label: l.posRemaining, value: format(remaining)),
           ],
-        ] else if (method == OrderPaymentMethod.bankTransfer &&
-            paymentRef != null) ...[
+        ] else if (hasPendingBankTransfer && paymentRef != null) ...[
           _ReferenceBox(
             reference: paymentRef!,
+            orderNumber: pendingOrderNumber,
             qr: paymentQr,
             loading: paymentQrLoading,
             error: paymentQrError,
-            amount: totals.total,
+            amount: effectiveTotal,
             format: format,
             onRetry: onRetryQr,
+          ),
+          const SizedBox(height: 12),
+          _BankTransferWaitingBox(
+            waitingLabel: l.posBankTransferWaiting,
+            autoLabel: l.posBankTransferAutoConfirm,
+            manualHint: l.posBankTransferManualHint,
           ),
         ],
         const SizedBox(height: 24),
         FilledButton.icon(
-          onPressed: submitting || paid <= 0 ? null : onSubmit,
+          onPressed:
+              submitting ||
+                  paid <= 0 ||
+                  (hasPendingBankTransfer && paymentQrLoading)
+              ? null
+              : onSubmit,
           icon: submitting
               ? const SizedBox(
                   width: 18,
@@ -3456,7 +3713,7 @@ class _PaymentView extends ConsumerWidget {
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
               : const Icon(TablerIcons.check),
-          label: Text(l.posConfirmPayment),
+          label: Text(submitLabel),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(50),
             shape: RoundedRectangleBorder(
@@ -3466,7 +3723,7 @@ class _PaymentView extends ConsumerWidget {
         ),
         const SizedBox(height: 14),
         Text(
-          l.posPaymentNote,
+          note,
           textAlign: TextAlign.center,
           style: TextStyle(
             color: c.textMuted,
@@ -3760,6 +4017,7 @@ class _PaymentInfoRow extends StatelessWidget {
 class _ReferenceBox extends StatelessWidget {
   const _ReferenceBox({
     required this.reference,
+    required this.orderNumber,
     required this.qr,
     required this.loading,
     required this.error,
@@ -3769,6 +4027,7 @@ class _ReferenceBox extends StatelessWidget {
   });
 
   final String reference;
+  final String? orderNumber;
   final PosPaymentQr? qr;
   final bool loading;
   final String? error;
@@ -3790,6 +4049,25 @@ class _ReferenceBox extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (orderNumber != null) ...[
+            Row(
+              children: [
+                Icon(TablerIcons.receipt_2, color: c.accent600, size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Đơn $orderNumber',
+                    style: TextStyle(
+                      color: c.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+          ],
           if (loading)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 28),
@@ -3894,6 +4172,70 @@ class _ReferenceBox extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BankTransferWaitingBox extends StatelessWidget {
+  const _BankTransferWaitingBox({
+    required this.waitingLabel,
+    required this.autoLabel,
+    required this.manualHint,
+  });
+
+  final String waitingLabel;
+  final String autoLabel;
+  final String manualHint;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = kuruColors(context);
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: c.accent50,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: c.accent100),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(TablerIcons.clock, color: c.accent700, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  waitingLabel,
+                  style: TextStyle(
+                    color: c.accent700,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            autoLabel,
+            style: TextStyle(
+              color: c.textSecondary,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            manualHint,
+            style: TextStyle(
+              color: c.textMuted,
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ],
       ),
@@ -4010,7 +4352,7 @@ class _SuccessView extends StatelessWidget {
             OutlinedButton.icon(
               onPressed: orderId == null
                   ? null
-                  : () => context.go('/orders/$orderId'),
+                  : () => context.push('/orders/$orderId'),
               icon: const Icon(TablerIcons.receipt),
               label: Text(l.posViewOrder),
               style: OutlinedButton.styleFrom(
@@ -4130,17 +4472,7 @@ String? _effectiveBranchId(
   return _effectiveBranch(branches, selectedId)?.warehouseId;
 }
 
-String _generatePaymentReference() {
-  final now = DateTime.now();
-  final date =
-      '${(now.year % 100).toString().padLeft(2, '0')}'
-      '${now.month.toString().padLeft(2, '0')}'
-      '${now.day.toString().padLeft(2, '0')}';
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  final rng = math.Random.secure();
-  final suffix = List.generate(
-    6,
-    (_) => alphabet[rng.nextInt(alphabet.length)],
-  ).join();
-  return 'DH$date$suffix';
+String? _trimToNull(String? value) {
+  final trimmed = value?.trim();
+  return trimmed == null || trimmed.isEmpty ? null : trimmed;
 }

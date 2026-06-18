@@ -90,6 +90,30 @@ class OrderRepository {
     String? terminalId,
     OrderPaymentInput? payment,
   }) async {
+    final result = await createOrderWithResult(
+      orgId: orgId,
+      idempotencyKey: idempotencyKey,
+      draft: draft,
+      storeId: storeId,
+      terminalId: terminalId,
+      payment: payment,
+    );
+    return switch (result) {
+      ApiSuccess<CreateOrderResult>(:final data) => ApiResult.success(
+        data.orderId,
+      ),
+      ApiFailure<CreateOrderResult>(:final err) => ApiResult.failure(err),
+    };
+  }
+
+  Future<ApiResult<CreateOrderResult>> createOrderWithResult({
+    required String orgId,
+    required String idempotencyKey,
+    required OrderCartDraft draft,
+    String? storeId,
+    String? terminalId,
+    OrderPaymentInput? payment,
+  }) async {
     try {
       String? trimOrNull(String? s) {
         final t = s?.trim();
@@ -137,8 +161,14 @@ class OrderRepository {
           ),
         );
       }
-      log.i('CreateOrder ← ${res.statusCode} orderId=$orderId');
-      return ApiResult.success(orderId);
+      final orderNumber = data['orderNumber'] as String?;
+      log.i(
+        'CreateOrder ← ${res.statusCode} orderId=$orderId '
+        'orderNumber=$orderNumber',
+      );
+      return ApiResult.success(
+        CreateOrderResult(orderId: orderId, orderNumber: orderNumber),
+      );
     } on DioException catch (e) {
       log.w('CreateOrder failed: ${e.message}');
       return ApiResult.failure(_extract(e));
@@ -259,6 +289,13 @@ class OrderRepository {
     final mapped = mapDioError(e);
     return mapped;
   }
+}
+
+class CreateOrderResult {
+  const CreateOrderResult({required this.orderId, this.orderNumber});
+
+  final String orderId;
+  final String? orderNumber;
 }
 
 class OrderPaymentInput {

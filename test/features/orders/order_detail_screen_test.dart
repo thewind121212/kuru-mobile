@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_tabler_icons/flutter_tabler_icons.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:kuru_mobile/app/theme/kuru_palettes.dart';
 import 'package:kuru_mobile/app/theme/theme_controller.dart';
 import 'package:kuru_mobile/core/i18n/generated/app_localizations.dart';
@@ -53,4 +55,63 @@ void main() {
     expect(find.text('Chờ xử lý'), findsOneWidget);
     expect(find.text('Đã thanh toán'), findsOneWidget);
   });
+
+  testWidgets(
+    'back button falls back to orders list when detail has no stack',
+    (tester) async {
+      final detail = OrderDetail(
+        id: 'o_1',
+        orgId: 'org',
+        orderNumber: 'A-99',
+        status: OrderStatus.pending,
+        paymentStatus: OrderPaymentStatus.paid,
+        subtotal: 100000,
+        totalAmount: 100000,
+        paidAmount: 100000,
+        createdAt: DateTime(2026, 5, 23),
+        updatedAt: DateTime(2026, 5, 23),
+        createdBy: 'u',
+        itemCount: 1,
+        saleChannel: OrderSaleChannel.shop,
+      );
+      final router = GoRouter(
+        initialLocation: '/orders/o_1',
+        routes: [
+          GoRoute(path: '/orders', builder: (_, __) => const Text('ORDERS')),
+          GoRoute(
+            path: '/orders/:id',
+            builder: (_, state) =>
+                OrderDetailScreen(orderId: state.pathParameters['id']!),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            orderDetailProvider('o_1').overrideWith((_) async => detail),
+          ],
+          child: MaterialApp.router(
+            routerConfig: router,
+            theme: buildKuruTheme(KuruPalette.indigo, Brightness.light),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('vi'),
+          ),
+        ),
+      );
+
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('#A-99'), findsOneWidget);
+
+      await tester.tap(find.byIcon(TablerIcons.arrow_left));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      expect(find.text('ORDERS'), findsOneWidget);
+    },
+  );
 }

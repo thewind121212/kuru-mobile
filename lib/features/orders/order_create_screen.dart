@@ -142,7 +142,7 @@ class _OrderCreateScreenState extends ConsumerState<OrderCreateScreen> {
           context,
           payment ? l.orderCreatePaid : l.orderCreateSavedDraft,
         );
-        context.go('/orders/$data');
+        context.pushReplacement('/orders/$data');
       case ApiFailure<String>(:final err):
         KNotify.warning(context, err.message);
     }

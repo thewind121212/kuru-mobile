@@ -1202,6 +1202,48 @@ abstract class AppLocalizations {
   /// **'Đơn sẽ được tạo và ghi nhận thanh toán ngay.'**
   String get posPaymentNote;
 
+  /// No description provided for @posCreateBankTransferOrder.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tạo đơn và hiện QR'**
+  String get posCreateBankTransferOrder;
+
+  /// No description provided for @posBankTransferManualConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Tôi đã nhận chuyển khoản'**
+  String get posBankTransferManualConfirm;
+
+  /// No description provided for @posBankTransferCreateNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đơn sẽ được tạo trước, sau đó QR sẽ chờ ngân hàng xác nhận.'**
+  String get posBankTransferCreateNote;
+
+  /// No description provided for @posBankTransferPendingNote.
+  ///
+  /// In vi, this message translates to:
+  /// **'Webhook có thể tự đánh dấu đơn đã thanh toán. Chỉ xác nhận thủ công sau khi kiểm tra app ngân hàng.'**
+  String get posBankTransferPendingNote;
+
+  /// No description provided for @posBankTransferWaiting.
+  ///
+  /// In vi, this message translates to:
+  /// **'Đang chờ ngân hàng xác nhận'**
+  String get posBankTransferWaiting;
+
+  /// No description provided for @posBankTransferAutoConfirm.
+  ///
+  /// In vi, this message translates to:
+  /// **'Ứng dụng sẽ kiểm tra trạng thái đơn khi QR đang mở.'**
+  String get posBankTransferAutoConfirm;
+
+  /// No description provided for @posBankTransferManualHint.
+  ///
+  /// In vi, this message translates to:
+  /// **'Xác nhận thủ công sẽ ghi nhận thanh toán chuyển khoản ngay.'**
+  String get posBankTransferManualHint;
+
   /// No description provided for @posPaymentReference.
   ///
   /// In vi, this message translates to:

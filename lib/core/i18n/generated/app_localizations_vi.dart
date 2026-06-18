@@ -595,6 +595,31 @@ class AppLocalizationsVi extends AppLocalizations {
   String get posPaymentNote => 'Đơn sẽ được tạo và ghi nhận thanh toán ngay.';
 
   @override
+  String get posCreateBankTransferOrder => 'Tạo đơn và hiện QR';
+
+  @override
+  String get posBankTransferManualConfirm => 'Tôi đã nhận chuyển khoản';
+
+  @override
+  String get posBankTransferCreateNote =>
+      'Đơn sẽ được tạo trước, sau đó QR sẽ chờ ngân hàng xác nhận.';
+
+  @override
+  String get posBankTransferPendingNote =>
+      'Webhook có thể tự đánh dấu đơn đã thanh toán. Chỉ xác nhận thủ công sau khi kiểm tra app ngân hàng.';
+
+  @override
+  String get posBankTransferWaiting => 'Đang chờ ngân hàng xác nhận';
+
+  @override
+  String get posBankTransferAutoConfirm =>
+      'Ứng dụng sẽ kiểm tra trạng thái đơn khi QR đang mở.';
+
+  @override
+  String get posBankTransferManualHint =>
+      'Xác nhận thủ công sẽ ghi nhận thanh toán chuyển khoản ngay.';
+
+  @override
   String get posPaymentReference => 'Nội dung chuyển khoản';
 
   @override
