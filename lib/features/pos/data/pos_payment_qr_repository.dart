@@ -19,6 +19,8 @@ class PosPaymentQrRepository {
     required String orgId,
     required String refNumber,
     required double amount,
+    String? terminalId,
+    String? orderId,
   }) async {
     try {
       final trimmedRef = refNumber.trim();
@@ -33,15 +35,22 @@ class PosPaymentQrRepository {
         );
       }
 
-      final res = await _dio.post<dynamic>(
-        '/payment/GenerateQR',
-        data: {
-          'orgId': orgId,
-          'refType': 'ORDER',
-          'refNumber': trimmedRef,
-          'amount': amount,
-        },
-      );
+      final trimmedTerminalId = terminalId?.trim();
+      final trimmedOrderId = orderId?.trim();
+      final body = <String, dynamic>{
+        'orgId': orgId,
+        'refType': 'ORDER',
+        'refNumber': trimmedRef,
+        'amount': amount,
+      };
+      if (trimmedTerminalId != null && trimmedTerminalId.isNotEmpty) {
+        body['terminalId'] = trimmedTerminalId;
+      }
+      if (trimmedOrderId != null && trimmedOrderId.isNotEmpty) {
+        body['orderId'] = trimmedOrderId;
+      }
+
+      final res = await _dio.post<dynamic>('/payment/GenerateQR', data: body);
       final data =
           (res.data as Map<String, dynamic>)['data'] as Map<String, dynamic>?;
       if (data == null) {

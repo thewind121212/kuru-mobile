@@ -21,7 +21,12 @@ import 'package:kuru_mobile/features/catalog/products/models/product_warehouse_o
 import 'package:kuru_mobile/features/catalog/products/providers/product_providers.dart';
 import 'package:kuru_mobile/features/orders/data/order_repository.dart';
 import 'package:kuru_mobile/features/orders/models/order_cart_draft.dart';
+import 'package:kuru_mobile/features/orders/models/order_detail.dart';
 import 'package:kuru_mobile/features/orders/models/order_line_item.dart';
+import 'package:kuru_mobile/features/orders/models/order_payment_method.dart';
+import 'package:kuru_mobile/features/orders/models/order_payment_status.dart';
+import 'package:kuru_mobile/features/orders/models/order_sale_channel.dart';
+import 'package:kuru_mobile/features/orders/models/order_status.dart';
 import 'package:kuru_mobile/features/orders/providers/order_providers.dart';
 import 'package:kuru_mobile/features/pos/data/pos_customer_display_repository.dart';
 import 'package:kuru_mobile/features/pos/data/pos_payment_qr_repository.dart';
@@ -140,6 +145,13 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(find.text('ORDER_order_pos_1'), findsOneWidget);
+    expect(router.canPop(), isTrue);
+
+    router.pop();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(find.text('Thanh toán thành công'), findsOneWidget);
   });
 
   testWidgets('opens POS cart line adjustment in a bottom sheet', (
@@ -345,11 +357,14 @@ void main() {
   ) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final prefs = await SharedPreferences.getInstance();
+    final orderRepo = _FakeBankTransferOrderRepository();
+    final qrRepo = _FakeQrRepository();
     final container = ProviderContainer(
       overrides: [
         sharedPrefsProvider.overrideWithValue(prefs),
         currentOrgIdProvider.overrideWithValue('org_test'),
-        posPaymentQrRepositoryProvider.overrideWithValue(_FakeQrRepository()),
+        orderRepositoryProvider.overrideWithValue(orderRepo),
+        posPaymentQrRepositoryProvider.overrideWithValue(qrRepo),
         productWarehouseOptionsProvider.overrideWith((ref) async {
           return const [
             ProductWarehouseOption(
@@ -399,12 +414,36 @@ void main() {
     await tester.pump();
     await tester.tap(find.text('Chuyển khoản'));
     await tester.pump();
+
+    expect(find.byKey(const ValueKey('pos-vietqr-image')), findsNothing);
+    expect(find.text('Tạo đơn và hiện QR'), findsOneWidget);
+
+    await tester.tap(find.text('Tạo đơn và hiện QR'));
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
+    expect(orderRepo.createCalls, 1);
+    expect(qrRepo.refNumber, 'ODH250524ABC123');
+    expect(qrRepo.orderId, 'order_pos_1');
     expect(find.byKey(const ValueKey('pos-vietqr-image')), findsOneWidget);
     expect(find.text('VCB'), findsOneWidget);
     expect(find.text('123456789'), findsOneWidget);
-    expect(find.text('KURUODH250524ABC123'), findsOneWidget);
+    expect(find.text('KURUOODH250524ABC123'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -520));
+    await tester.pump();
+
+    expect(find.text('Tôi đã nhận chuyển khoản'), findsOneWidget);
+
+    await tester.ensureVisible(find.text('Tôi đã nhận chuyển khoản'));
+    await tester.pump();
+    await tester.tap(find.text('Tôi đã nhận chuyển khoản'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(orderRepo.addPaymentCalls, 1);
+    expect(orderRepo.paymentReference, 'KURUOODH250524ABC123');
+    expect(find.text('Thanh toán thành công'), findsOneWidget);
   });
 
   testWidgets('selects customer display terminal and pushes cart snapshot', (
@@ -1134,21 +1173,103 @@ class _FakeOrderRepository extends OrderRepository {
   }
 }
 
+class _FakeBankTransferOrderRepository extends OrderRepository {
+  _FakeBankTransferOrderRepository()
+    : super(Dio(), uuidFactory: () => 'idem-pos-bank');
+
+  int createCalls = 0;
+  int addPaymentCalls = 0;
+  String? paymentReference;
+
+  @override
+  Future<ApiResult<CreateOrderResult>> createOrderWithResult({
+    required String orgId,
+    required String idempotencyKey,
+    required OrderCartDraft draft,
+    String? storeId,
+    String? terminalId,
+    OrderPaymentInput? payment,
+  }) async {
+    createCalls++;
+    expect(orgId, 'org_test');
+    expect(idempotencyKey, 'idem-pos-bank');
+    expect(storeId, 'branch-1');
+    expect(terminalId, isNull);
+    expect(draft.items.single.productName, 'Cà phê sữa');
+    expect(payment, isNull);
+    return ApiResult.success(
+      const CreateOrderResult(
+        orderId: 'order_pos_1',
+        orderNumber: 'ODH250524ABC123',
+      ),
+    );
+  }
+
+  @override
+  Future<ApiResult<String>> addOrderPayment({
+    required String orderId,
+    required String idempotencyKey,
+    required OrderPaymentMethod method,
+    required double amount,
+    String? reference,
+    String? note,
+  }) async {
+    addPaymentCalls++;
+    expect(orderId, 'order_pos_1');
+    expect(idempotencyKey, 'order_pos_1');
+    expect(method, OrderPaymentMethod.bankTransfer);
+    expect(amount, 25000);
+    paymentReference = reference;
+    return ApiResult.success('payment_pos_1');
+  }
+
+  @override
+  Future<ApiResult<OrderDetail>> getOrderById(String orderId) async {
+    expect(orderId, 'order_pos_1');
+    return ApiResult.success(
+      OrderDetail(
+        id: 'order_pos_1',
+        orgId: 'org_test',
+        orderNumber: 'ODH250524ABC123',
+        status: OrderStatus.pending,
+        paymentStatus: OrderPaymentStatus.unpaid,
+        subtotal: 25000,
+        totalAmount: 25000,
+        createdAt: DateTime(2026, 1, 1, 10),
+        updatedAt: DateTime(2026, 1, 1, 10),
+        createdBy: 'cashier',
+        itemCount: 1,
+        saleChannel: OrderSaleChannel.shop,
+      ),
+    );
+  }
+}
+
 class _FakeQrRepository extends PosPaymentQrRepository {
   _FakeQrRepository() : super(Dio());
+
+  String? refNumber;
+  String? orderId;
+  String? terminalId;
 
   @override
   Future<ApiResult<PosPaymentQr>> generate({
     required String orgId,
     required String refNumber,
     required double amount,
+    String? terminalId,
+    String? orderId,
   }) async {
     expect(orgId, 'org_test');
+    expect(refNumber, 'ODH250524ABC123');
     expect(amount, 25000);
+    this.refNumber = refNumber;
+    this.orderId = orderId;
+    this.terminalId = terminalId;
     return ApiResult.success(
       const PosPaymentQr(
         qrUrl: 'https://example.com/vietqr.png',
-        memo: 'KURUODH250524ABC123',
+        memo: 'KURUOODH250524ABC123',
         bankCode: 'VCB',
         accountNumber: '123456789',
         accountName: 'Kuru Test',

@@ -66,6 +66,11 @@ class OrderDetailScreen extends ConsumerWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
+        leading: IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+          icon: const Icon(TablerIcons.arrow_left),
+          onPressed: () => _goBack(context),
+        ),
         title: Text(
           async.maybeWhen(
             data: (d) => '#${d.orderNumber}',
@@ -172,6 +177,18 @@ class OrderDetailScreen extends ConsumerWidget {
       case 'void':
         await _onVoid(context, ref, d);
     }
+  }
+}
+
+void _goBack(BuildContext context) {
+  final nav = Navigator.of(context);
+  if (nav.canPop()) {
+    nav.maybePop();
+    return;
+  }
+  final router = GoRouter.maybeOf(context);
+  if (router != null) {
+    router.go('/orders');
   }
 }
 

@@ -601,6 +601,31 @@ class AppLocalizationsEn extends AppLocalizations {
       'The order will be created and paid immediately.';
 
   @override
+  String get posCreateBankTransferOrder => 'Create order and show QR';
+
+  @override
+  String get posBankTransferManualConfirm => 'I have received the transfer';
+
+  @override
+  String get posBankTransferCreateNote =>
+      'The order will be created first, then the QR will wait for bank confirmation.';
+
+  @override
+  String get posBankTransferPendingNote =>
+      'Webhook can mark this order paid automatically. Use manual confirm only after checking the bank app.';
+
+  @override
+  String get posBankTransferWaiting => 'Waiting for bank confirmation';
+
+  @override
+  String get posBankTransferAutoConfirm =>
+      'The app checks the order status while this QR is open.';
+
+  @override
+  String get posBankTransferManualHint =>
+      'Manual confirmation records the bank-transfer payment immediately.';
+
+  @override
   String get posPaymentReference => 'Transfer reference';
 
   @override
