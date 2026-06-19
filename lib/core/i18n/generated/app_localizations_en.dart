@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'Simplestore';
+  String get appTitle => 'TuiBuonBan';
 
   @override
   String get splashTagline => 'Connecting...';
@@ -19,7 +19,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loginSubtitle =>
-      'Log in to Simplestore to keep managing your store.';
+      'Log in to TuiBuonBan to keep managing your store.';
 
   @override
   String get fieldEmail => 'Email';
@@ -170,7 +170,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingStep4Body =>
-      'Cash, bank transfer, or QR — you accept, Simplestore records every method instantly.';
+      'Cash, bank transfer, or QR — you accept, TuiBuonBan records every method instantly.';
 
   @override
   String get onboardingStep5Title => 'One account, many stores.';
@@ -190,7 +190,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get registerTitle => 'Create an account';
 
   @override
-  String get registerSubtitle => 'Start with Simplestore in 30 seconds.';
+  String get registerSubtitle => 'Start with TuiBuonBan in 30 seconds.';
 
   @override
   String get fieldFullName => 'Full name';

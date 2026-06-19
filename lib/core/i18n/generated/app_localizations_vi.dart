@@ -9,7 +9,7 @@ class AppLocalizationsVi extends AppLocalizations {
   AppLocalizationsVi([String locale = 'vi']) : super(locale);
 
   @override
-  String get appTitle => 'Simplestore';
+  String get appTitle => 'TuiBuonBan';
 
   @override
   String get splashTagline => 'Đang kết nối...';
@@ -19,7 +19,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get loginSubtitle =>
-      'Đăng nhập Simplestore để tiếp tục quản lý cửa hàng.';
+      'Đăng nhập TuiBuonBan để tiếp tục quản lý cửa hàng.';
 
   @override
   String get fieldEmail => 'Email';
@@ -167,7 +167,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get onboardingStep4Body =>
-      'Tiền mặt, chuyển khoản, hay quét QR — bạn nhận, Simplestore ghi nhận tức thì.';
+      'Tiền mặt, chuyển khoản, hay quét QR — bạn nhận, TuiBuonBan ghi nhận tức thì.';
 
   @override
   String get onboardingStep5Title => 'Một tài khoản, nhiều cửa hàng.';
@@ -187,7 +187,7 @@ class AppLocalizationsVi extends AppLocalizations {
   String get registerTitle => 'Tạo tài khoản';
 
   @override
-  String get registerSubtitle => 'Bắt đầu với Simplestore chỉ trong 30 giây.';
+  String get registerSubtitle => 'Bắt đầu với TuiBuonBan chỉ trong 30 giây.';
 
   @override
   String get fieldFullName => 'Họ và tên';

@@ -176,7 +176,7 @@ void main() {
             'data': {
               'deviceName': 'device-1',
               'secret': 'SECRET',
-              'qrCodeString': 'otpauth://totp/SimpleStore:test',
+              'qrCodeString': 'otpauth://totp/TuiBuonBan:test',
             },
           },
         ),

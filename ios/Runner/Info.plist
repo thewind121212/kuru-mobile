@@ -7,7 +7,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Simplestore</string>
+		<string>TuiBuonBan</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -15,7 +15,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>kuru_mobile</string>
+		<string>TuiBuonBan</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -80,7 +80,7 @@
 			</dict>
 		</dict>
 		<key>NSLocalNetworkUsageDescription</key>
-		<string>Simplestore needs local network access to connect to the development backend and the Dart VM service for hot reload.</string>
+		<string>TuiBuonBan needs local network access to connect to the development backend and the Dart VM service for hot reload.</string>
 		<key>NSBonjourServices</key>
 		<array>
 			<string>_dartVmService._tcp</string>

@@ -18,7 +18,7 @@ class KuruApp extends ConsumerWidget {
     final locale = ref.watch(localeControllerProvider);
     return ToastificationWrapper(
       child: MaterialApp.router(
-        title: 'Simplestore',
+        title: 'TuiBuonBan',
         debugShowCheckedModeBanner: false,
         theme: buildKuruTheme(palette, Brightness.light),
         darkTheme: buildKuruTheme(palette, Brightness.dark),
