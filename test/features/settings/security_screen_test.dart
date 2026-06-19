@@ -195,7 +195,7 @@ class _FakeProfileRepository extends ProfileRepository {
       const TotpDeviceSetup(
         deviceName: 'device-1',
         secret: 'SECRET',
-        qrCodeString: 'otpauth://totp/SimpleStore:test?secret=SECRET',
+        qrCodeString: 'otpauth://totp/TuiBuonBan:test?secret=SECRET',
       ),
     );
   }
