@@ -115,7 +115,7 @@ class HomeStubScreen extends ConsumerWidget {
                 ? state.user.orgInfos.first
                 : null;
             return _HomeLedgerView(
-              userName: state.user.name ?? state.user.email ?? 'kuru',
+              userName: state.user.name ?? state.user.email ?? 'bạn',
               orgName: org?.name ?? 'Cửa hàng',
             );
           },

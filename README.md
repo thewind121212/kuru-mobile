@@ -1,6 +1,6 @@
-# kuru-mobile
+# TuiBuonBan Mobile (`kuru-mobile`)
 
-Flutter mobile identity flow built as a portfolio / learning project. The companion to a multi-tenant retail platform (separate private backend repo). Covers the full pre-authenticated-feature surface:
+Flutter mobile app for TuiBuonBan, built as a portfolio / learning project. The companion to a multi-tenant retail platform (separate private backend repo). Covers the full pre-authenticated-feature surface:
 
 - **Splash + bootstrap** — checks SuperTokens session, branches the app
 - **6-step onboarding** — PageView carousel with custom illustrations (barcode scan, inventory, sales chart, payment methods, multi-store, customer insights)
@@ -60,7 +60,7 @@ Backend must be running on the host given via `--dart-define=API_BASE_URL=...`.
 
 Hot reload: `r` · Hot restart: `R` · Quit: `q`.
 
-To replay onboarding mid-session: long-press the kuru logo on the Login screen (debug-only via `kDebugMode`).
+To replay onboarding mid-session: long-press the TuiBuonBan logo on the Login screen (debug-only via `kDebugMode`).
 
 ## Tests
 
